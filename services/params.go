@@ -33,18 +33,23 @@ func (t Transport) String() string {
 }
 
 type InputParam struct {
-	Where string
-	What  domain.Object
+	Where      string
+	What       domain.Object
+	Validation string
+}
+
+func (ip InputParam) URLParamName() string {
+	return ip.What.FieldName()
 }
 
 type Inputs []InputParam
 
 func (i Inputs) Path() string {
-	path := ""
+	path := "/"
 
 	for _, ip := range i {
 		if ip.Where == "path" {
-			path += fmt.Sprintf("/{%s}", ip.What.Name)
+			path += fmt.Sprintf("{%s}", ip.What.Name)
 		}
 	}
 

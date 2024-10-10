@@ -12,13 +12,13 @@ const (
 func (m Method) HttpName() string {
 	switch m {
 	case Create:
-		return "POST"
+		return "Post"
 	case Read:
-		return "GET"
+		return "Get"
 	case Update:
-		return "PUT"
+		return "Put"
 	case Delete:
-		return "DELETE"
+		return "Delete"
 	}
 
 	return "!!!!!!! undefined"

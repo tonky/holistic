@@ -10,34 +10,71 @@ import (
 func main() {
     r := chi.NewRouter()
     r.Use(middleware.Logger)
+
+    // config := 
+    handlers := handlers{deps: dependencies}
+    
     {% for h in handlers %}
-
-    // swagger definitions here
-    r.{{ h.Method.HttpName() }}("{{ h.In.Path() }}", func(w http.ResponseWriter, r *http.Request) {
-        // parse request into domain types
-        // run validations, if defined
-
-        // call http handler
-        responseModel, err := {{h.FuncName()}}({{h.FuncArgs()}})
-
-        response, err := json.Marshal(responseModel)
-        if err != nil {
-            w.WriteHeader(http.StatusInternalServerError)
-            w.Write([]byte("{{ h.Out["server_error"] }}"))
-        }
-
-        json.NewEncoder(w).Encode(response)
-    })
+    r.{{h.Method.HttpName()}}("{{ h.In.Path() }}", handlers.{{h.FuncName()}})
     {% end %}
 
     http.ListenAndServe(":{{ port }}", r)
 }
 
 {% for h in handlers %}
+type {{h.FuncName()}}Request struct {
+    {% for input in h.In %}
+    {{input.What.FieldName()}} {{input.What.Name}} {% if input.Validation %}`validate:"{{ input.Validation }}"`{% end %}
+    {% end %}
+} 
 
-func {{h.FuncName()}}({{h.FuncArgs()}}) ({{h.Out["ok"]}}, error) {
-    var responseModel {{ h.Out["ok"] }}
+validate.RegisterStructValidation({{h.FuncName()}}RequestValidator, {{h.FuncName()}}Request{})
 
-    return responseModel
+func {{h.FuncName()}}RequestValidator()(sl validator.StructLevel) {
+    // add custom validator here, if specified on endpoint
+    return nil
 }
+
+type {{h.FuncName()}}Response struct {} 
+
+// swagger definitions here
+func (h handlers) {{h.FuncName()}}(w http.ResponseWriter, r *http.Request)
+    func (in {{h.FuncName()}}Request) (responseModel, error) {
+        requestModel := {{h.FuncName()}}RequestParse(r)
+
+        if err := validate.Struct(requestModel); err != nil {
+            w.WriteHeader(http.StatusBadRequest)
+            w.Write(w, err)
+            
+            return
+        }
+
+        responseModel, err := app.{{h.FuncName()}}(r.context, requestModel, h.deps)
+
+        response, err := json.Marshal(responseModel)
+        if err != nil {
+            w.WriteHeader(http.StatusInternalServerError)
+            return
+        }
+
+        json.NewEncoder(w).Encode(response)
+    }
+}
+
+func {{h.FuncName()}}RequestParse(r *http.Request) {{h.FuncName()}}Request {
+    var model {{h.FuncName()}}Request{}
+
+    {% for param in h.In %}
+        {% if param.Where == "path" %}
+    model.{{ param.URLParamName() }} = chi.URLParam(r, "{{ param.URLParamName() }}")
+        {% end %}
+    {% end %}
+
+    return model
+}
+
 {% end %}
+
+type handlers struct {
+    deps *do.Injector
+}

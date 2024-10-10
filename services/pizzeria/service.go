@@ -70,7 +70,9 @@ func New() services.Service {
 	getOrder := services.Endpoint{
 		Name:   "orders",
 		Method: services.Read,
-		In:     []services.InputParam{{Where: "path", What: domain.Object{Name: "food.OrderID"}}},
+		In: []services.InputParam{
+			{Where: "path", What: domain.Object{Name: "food.OrderID"}, Validation: "required,len=16"},
+		},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK:          "food.Order",
 			services.ResponseNotFound:    "OrderNotFound",
