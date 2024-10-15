@@ -3,7 +3,8 @@ package main
 import (
 	"flag"
 	"fmt"
-	"hf/holistic/services/pizzeria"
+	"tonky/holistic/domain"
+	"tonky/holistic/services/pizzeria"
 )
 
 func main() {
@@ -13,6 +14,7 @@ func main() {
 
 	fmt.Printf("\n%s", pizzeria.New().Debug())
 
+	domain.Generate()
 	// pizzeria.Generate()
 	pizzeria.GenScrig()
 }

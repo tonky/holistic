@@ -1,12 +1,11 @@
 package pizzeria
 
 import (
-	"hf/holistic/domain"
-	"hf/holistic/services"
 	"io/fs"
 	"log"
 	"os"
 	"text/template"
+	"tonky/holistic/services"
 
 	"github.com/open2b/scriggo"
 	"github.com/open2b/scriggo/builtin"
@@ -33,9 +32,10 @@ func GenScrig() {
 
 	opts := &scriggo.BuildOptions{
 		Globals: native.Declarations{
-			"cap":      builtin.Capitalize,
-			"port":     (*int)(nil),
-			"handlers": &ps.Endpoints,
+			"cap":          builtin.Capitalize,
+			"port":         (*int)(nil),
+			"handlers":     &ps.Endpoints,
+			"service_name": ps.Name,
 		},
 	}
 
@@ -45,7 +45,13 @@ func GenScrig() {
 		log.Fatal(err)
 	}
 
-	err = temp.Run(os.Stdout, map[string]any{"port": 3001}, nil)
+	// open a file and get a writer
+	fm, err := os.Create("./gen/services/pizzeria/http/server_http.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = temp.Run(fm, map[string]any{"port": 3001}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -67,12 +73,11 @@ func Generate() {
 }
 
 func New() services.Service {
+	// rpc: net/rpc, twirp
 	getOrder := services.Endpoint{
-		Name:   "orders",
+		Name:   "order",
 		Method: services.Read,
-		In: []services.InputParam{
-			{Where: "path", What: domain.Object{Name: "food.OrderID"}, Validation: "required,len=16"},
-		},
+		In:     services.Inputs{Name: "food.OrderID"},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK:          "food.Order",
 			services.ResponseNotFound:    "OrderNotFound",
@@ -81,16 +86,16 @@ func New() services.Service {
 	}
 
 	createOrder := services.Endpoint{
-		Name:   "orders",
+		Name:   "order",
 		Method: services.Create,
-		In:     []services.InputParam{{Where: "body", What: domain.Object{Name: "food.Order"}}},
+		In:     services.Inputs{Name: "food.Order"},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK:          "food.Order",
 			services.ResponseServerError: "http.ServerError",
 		},
 	}
 
-	return services.Service{Name: "pizzeria", T: services.HTTP, Endpoints: []services.Endpoint{getOrder, createOrder}}
+	return services.Service{Name: "pizzeria", Rpc: services.GoNative, Endpoints: []services.Endpoint{getOrder, createOrder}}
 }
 
 type OrderNotFound struct{}

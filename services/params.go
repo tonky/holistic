@@ -2,16 +2,24 @@ package services
 
 import (
 	"fmt"
-	"hf/holistic/domain"
+	"tonky/holistic/domain"
 
 	"github.com/open2b/scriggo/builtin"
 )
 
-type Transport string
+type RPC string
 
 const (
-	HTTP Transport = "http"
-	GRPC Transport = "grpc"
+	GoNative RPC = "net/rpc"
+	Twirp    RPC = "twirp"
+	GRPC     RPC = "grpc"
+)
+
+type ObjectType int
+
+const (
+	DomainType ObjectType = iota
+	ServiceType
 )
 
 // topics: generate static list of topics from schema registry
@@ -24,12 +32,12 @@ const (
 	Orders ServiceName = "orders"
 )
 
-func (t Transport) String() string {
-	if t == HTTP {
-		return "HTTP"
+func (r RPC) String() string {
+	if r == GoNative {
+		return "Go net/rpc"
 	}
 
-	return "gRPC"
+	return "twirp"
 }
 
 type InputParam struct {
@@ -42,8 +50,17 @@ func (ip InputParam) URLParamName() string {
 	return ip.What.FieldName()
 }
 
-type Inputs []InputParam
+type Inputs struct {
+	// Typ  ObjectType
+	Name string
+	// Validation string
+}
 
+func (i Inputs) ModelName() string {
+	return "modelName"
+}
+
+/*
 func (i Inputs) Path() string {
 	path := "/"
 
@@ -55,9 +72,10 @@ func (i Inputs) Path() string {
 
 	return path
 }
+*/
 
-func (i Inputs) FuncArgs() string {
-	return "fa funcArgs"
+func (i Inputs) String() string {
+	return i.Name
 }
 
 type ResponseObject string
@@ -91,16 +109,12 @@ type Endpoint struct {
 }
 
 func (e Endpoint) FuncName() string {
-	return string(e.Method) + builtin.Capitalize(e.Name)
-}
-
-func (e Endpoint) FuncArgs() string {
-	return e.In.FuncArgs()
+	return builtin.Capitalize(string(e.Method) + builtin.Capitalize(e.Name))
 }
 
 type Service struct {
 	Name      string
-	T         Transport
+	Rpc       RPC
 	Endpoints []Endpoint
 	Secrets   map[string]string
 	Publishes []Topic
@@ -108,29 +122,22 @@ type Service struct {
 	// ACLs
 }
 
-func (e Endpoint) Debug(t Transport) string {
-	method := ""
+func (e Endpoint) Debug(r RPC) string {
 	out := ""
-
-	if t == HTTP {
-		if e.Method == Read {
-			method = "GET"
-		}
-	}
 
 	for rt, o := range e.Out {
 		out += fmt.Sprintf("    %-9s: %s\n", rt, o)
 	}
 
-	return fmt.Sprintf("%s %s\n%s", method, e.In.Path(), out)
+	return fmt.Sprintf("%s %s\n%s", r, e.In.String(), out)
 }
 
 func (s Service) Debug() string {
-	header := fmt.Sprintf("%s\n====\n", s.T)
+	header := fmt.Sprintf("%s\n====\n", s.Rpc)
 	res := ""
 
 	for _, e := range s.Endpoints {
-		res += e.Debug(s.T)
+		res += e.Debug(s.Rpc)
 	}
 
 	return header + res
