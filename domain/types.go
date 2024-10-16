@@ -48,12 +48,9 @@ type Object struct {
 }
 
 func (o Object) GoImports(domainName string) []string {
-	fmt.Println("goimports", o)
-
 	res := []string{}
 
 	for _, t := range o.Fields {
-		fmt.Println("goimports", t)
 		tdn := strings.Split(string(t.T), ".")
 
 		if len(tdn) != 2 {
@@ -79,7 +76,6 @@ func (o Object) GoImports(domainName string) []string {
 }
 
 func resolveDomainImport(d string) (string, error) {
-	fmt.Println("resolving import", d)
 	switch d {
 	case "billing":
 		return "tonky/holistic/domain/billing", nil

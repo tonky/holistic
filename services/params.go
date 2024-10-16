@@ -129,7 +129,7 @@ func (e Endpoint) Debug(r RPC) string {
 		out += fmt.Sprintf("    %-9s: %s\n", rt, o)
 	}
 
-	return fmt.Sprintf("%s %s\n%s", r, e.In.String(), out)
+	return fmt.Sprintf("%s %s\n%s", e.Method, e.In.String(), out)
 }
 
 func (s Service) Debug() string {

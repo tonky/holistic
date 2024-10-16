@@ -1,6 +1,7 @@
 package pizzeria
 
 import (
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -17,18 +18,29 @@ type ServiceTpl struct {
 }
 
 func GenScrig() {
-	st := "server_http.tpl"
+	fmt.Println("Generated pizza service Go files")
+
+	stn := "server_http.tpl"
+	ctn := "client.tpl"
 
 	fSys := os.DirFS("templates")
 
-	contents, err := fs.ReadFile(fSys, st)
+	sContents, err := fs.ReadFile(fSys, stn)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cContents, err := fs.ReadFile(fSys, ctn)
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	ps := New()
 
-	fsys := scriggo.Files{"server_http.tpl": contents}
+	fsys := scriggo.Files{
+		stn: sContents,
+		ctn: cContents,
+	}
 
 	opts := &scriggo.BuildOptions{
 		Globals: native.Declarations{
@@ -39,22 +51,47 @@ func GenScrig() {
 		},
 	}
 
-	// Build the program.
-	temp, err := scriggo.BuildTemplate(fsys, st, opts)
+	sTemp, err := scriggo.BuildTemplate(fsys, stn, opts)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	// open a file and get a writer
-	fm, err := os.Create("./gen/services/pizzeria/http/server_http.go")
+	sGoFile, err := os.Create("./gen/services/pizzeria/http/server_http.go")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	err = temp.Run(fm, map[string]any{"port": 3001}, nil)
+	err = sTemp.Run(sGoFile, map[string]any{"port": 3001}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	fmt.Println("Generated server")
+
+	clientOpts := &scriggo.BuildOptions{
+		Globals: native.Declarations{
+			"cap":          builtin.Capitalize,
+			"handlers":     &ps.Endpoints,
+			"service_name": ps.Name,
+		},
+	}
+
+	cGoFile, err := os.Create("./gen/clients/pizzeria_client.go")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cTemp, err := scriggo.BuildTemplate(fsys, ctn, clientOpts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = cTemp.Run(cGoFile, nil, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Generated client")
 }
 
 func Generate() {

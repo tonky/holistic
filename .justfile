@@ -3,3 +3,6 @@ r:
 
 rr:
   fd -E gen '(.go|.tpl)' | entr -cr go run main.go 
+
+rsp:
+  ls gen/services/pizzeria/http/*.go | entr -cr go run gen/services/pizzeria/http/server_http.go
