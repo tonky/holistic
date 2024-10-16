@@ -1,4 +1,4 @@
-package main
+package service
 
 import (
     "context"
@@ -28,25 +28,20 @@ func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
         return err
     }
 
-    reply = &res
+    *reply = res
 
     return nil
 }
 
 {% end %}
 
-func main() {
-    dependencies := do.New()
-    // do.ProvideValue(dependencies, &Config{ Port: 4242, })
-
-    // car, err := do.Invoke[*Car](i)
-    // if err != nil { log.Fatal(err.Error()) }
-    // car.Start()
-
+func New{{ cap(service_name) }}(dependencies do.Injector) ServiceStarter {
     handlers := {{ cap(service_name) }}{deps: dependencies}
-    
-    rpc.Register(handlers)
+    return handlers
+}
 
+func (h {{ cap(service_name) }}) Start() error {
+    rpc.Register(h)
     rpc.HandleHTTP()
 
     fmt.Println(">> starging server on port 1234")
@@ -56,6 +51,9 @@ func main() {
         log.Fatal("listen error:", err)
     }
 
-    http.Serve(l, nil)
+    return http.Serve(l, nil)
 }
 
+type ServiceStarter interface {
+    Start() error
+}
