@@ -20,26 +20,17 @@ type ServiceTpl struct {
 func GenScrig() {
 	fmt.Println("Generated pizza service Go files")
 
+	template_dir := "templates"
 	stn := "server_http.tpl"
 	ctn := "client.tpl"
-
-	fSys := os.DirFS("templates")
-
-	sContents, err := fs.ReadFile(fSys, stn)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cContents, err := fs.ReadFile(fSys, ctn)
-	if err != nil {
-		log.Fatal(err)
-	}
+	service_config_tpl := "service_config.tpl"
 
 	ps := New()
 
 	fsys := scriggo.Files{
-		stn: sContents,
-		ctn: cContents,
+		stn:                readContent(template_dir, stn),
+		ctn:                readContent(template_dir, ctn),
+		service_config_tpl: readContent(template_dir, service_config_tpl),
 	}
 
 	opts := &scriggo.BuildOptions{
@@ -47,49 +38,14 @@ func GenScrig() {
 			"cap":          builtin.Capitalize,
 			"port":         (*int)(nil),
 			"handlers":     &ps.Endpoints,
-			"service_name": ps.Name,
+			"service_name": &ps.Name,
+			"config_items": &ps.ConfigItems,
 		},
 	}
 
-	sTemp, err := scriggo.BuildTemplate(fsys, stn, opts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	sGoFile, err := os.Create("./gen/services/pizzeria/http/server_http.go")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = sTemp.Run(sGoFile, map[string]any{"port": 3001}, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	fmt.Println("Generated server")
-
-	clientOpts := &scriggo.BuildOptions{
-		Globals: native.Declarations{
-			"cap":          builtin.Capitalize,
-			"handlers":     &ps.Endpoints,
-			"service_name": ps.Name,
-		},
-	}
-
-	cGoFile, err := os.Create("./gen/clients/pizzeria_client.go")
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	cTemp, err := scriggo.BuildTemplate(fsys, ctn, clientOpts)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	err = cTemp.Run(cGoFile, nil, nil)
-	if err != nil {
-		log.Fatal(err)
-	}
+	writeTemplate(fsys, stn, opts, nil, "gen/services/pizzeria/http/server_http.go")
+	writeTemplate(fsys, ctn, opts, nil, "gen/clients/pizzeria_client.go")
+	writeTemplate(fsys, service_config_tpl, opts, nil, "gen/services/pizzeria/pizzeria_config.go")
 
 	fmt.Println("Generated client")
 }
@@ -116,9 +72,7 @@ func New() services.Service {
 		Method: services.Read,
 		In:     services.Inputs{Name: "food.OrderID"},
 		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK:          "food.Order",
-			services.ResponseNotFound:    "OrderNotFound",
-			services.ResponseServerError: "http.ServerError",
+			services.ResponseOK: "food.Order",
 		},
 	}
 
@@ -127,12 +81,40 @@ func New() services.Service {
 		Method: services.Create,
 		In:     services.Inputs{Name: "food.Order"},
 		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK:          "food.Order",
-			services.ResponseServerError: "http.ServerError",
+			services.ResponseOK: "food.Order",
 		},
 	}
 
-	return services.Service{Name: "pizzeria", Rpc: services.GoNative, Endpoints: []services.Endpoint{getOrder, createOrder}}
+	return services.Service{
+		Name:        "pizzeria",
+		Rpc:         services.GoNative,
+		Endpoints:   []services.Endpoint{getOrder, createOrder},
+		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
+	}
 }
 
-type OrderNotFound struct{}
+func writeTemplate(fsys scriggo.Files, tplName string, opts *scriggo.BuildOptions, vars map[string]any, outFile string) {
+	goFile, err := os.Create(outFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	cTemp, err := scriggo.BuildTemplate(fsys, tplName, opts)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	err = cTemp.Run(goFile, vars, nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func readContent(dir string, file string) []byte {
+	content, err := fs.ReadFile(os.DirFS(dir), file)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	return content
+}

@@ -12,6 +12,7 @@ import (
     "github.com/samber/do/v2"
 
 	"tonky/holistic/gen/domain/food"
+	"tonky/holistic/gen/services/{{ service_name }}"
 	"tonky/holistic/gen/services/{{ service_name }}/app"
 )
 
@@ -41,12 +42,17 @@ func New{{ cap(service_name) }}(dependencies do.Injector) ServiceStarter {
 }
 
 func (h {{ cap(service_name) }}) Start() error {
-    rpc.Register(h)
-    rpc.HandleHTTP()
+	cfg := do.MustInvoke[*{{ service_name}}.Config](h.deps)
+	port := cfg.Port
 
-    fmt.Println(">> starging server on port 1234")
+    fmt.Printf(">> {{ service_name }}.Start() config: %+v\n", cfg)
 
-    l, err := net.Listen("tcp", ":1234")
+	rpc.Register(h)
+	rpc.HandleHTTP()
+
+	fmt.Println(">> starging server on port ", port)
+
+	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if err != nil {
         log.Fatal("listen error:", err)
     }
