@@ -60,20 +60,6 @@ func (i Inputs) ModelName() string {
 	return "modelName"
 }
 
-/*
-func (i Inputs) Path() string {
-	path := "/"
-
-	for _, ip := range i {
-		if ip.Where == "path" {
-			path += fmt.Sprintf("{%s}", ip.What.Name)
-		}
-	}
-
-	return path
-}
-*/
-
 func (i Inputs) String() string {
 	return i.Name
 }
@@ -120,6 +106,7 @@ type Service struct {
 	Publishes   []Topic
 	Consumes    []Topic
 	ConfigItems []ConfigItem
+	Infra       []Infra
 	// ACLs
 }
 
@@ -147,4 +134,19 @@ func (s Service) Debug() string {
 type ConfigItem struct {
 	Name string
 	Typ  string
+}
+
+type Infra struct {
+	Name string
+}
+
+func (i Infra) ConfigVar() string {
+	switch i.Name {
+	case "postgres":
+		return "PostgresConfig"
+	case "kafka":
+		return "KafkaConfig"
+	default:
+		panic("unknown infra")
+	}
 }

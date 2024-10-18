@@ -40,6 +40,7 @@ func GenScrig() {
 			"handlers":     &ps.Endpoints,
 			"service_name": &ps.Name,
 			"config_items": &ps.ConfigItems,
+			"infra":        &ps.Infra,
 		},
 	}
 
@@ -90,6 +91,7 @@ func New() services.Service {
 		Rpc:         services.GoNative,
 		Endpoints:   []services.Endpoint{getOrder, createOrder},
 		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
+		Infra:       []services.Infra{{Name: "postgres"}},
 	}
 }
 
