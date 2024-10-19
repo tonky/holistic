@@ -6,7 +6,6 @@ import (
 	"tonky/holistic/gen/clients"
 	"tonky/holistic/gen/domain/food"
 	"tonky/holistic/gen/services/pizzeria"
-	svc "tonky/holistic/gen/services/pizzeria/http"
 
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/require"
@@ -17,7 +16,7 @@ func init() {
 		injector := do.New()
 		do.Provide(injector, pizzeria.NewConfig)
 
-		pizzeria := svc.NewPizzeria(injector)
+		pizzeria := pizzeria.NewPizzeria(injector)
 		pizzeria.Start()
 	}()
 }

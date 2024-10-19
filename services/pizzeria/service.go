@@ -5,7 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
-	"text/template"
+	"path/filepath"
 	"tonky/holistic/services"
 
 	"github.com/open2b/scriggo"
@@ -21,11 +21,25 @@ func GenScrig() {
 	fmt.Println("Generated pizza service Go files")
 
 	template_dir := "templates"
-	stn := "server_http.tpl"
+	stn := "server_net_rpc.tpl"
 	ctn := "client.tpl"
 	service_config_tpl := "service_config.tpl"
 
 	ps := New()
+
+	if err := os.MkdirAll(filepath.Join(".", "gen", "clients"), os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	if err := os.MkdirAll(filepath.Join(".", "gen", "services", ps.Name), os.ModePerm); err != nil {
+		panic(err)
+	}
+
+	tplGenPath := map[string]string{
+		stn:                fmt.Sprintf("gen/services/%s/server_%s.go", ps.Name, ps.Rpc.String()),
+		service_config_tpl: fmt.Sprintf("gen/services/%s/config.go", ps.Name),
+		ctn:                fmt.Sprintf("gen/clients/%s_client.go", ps.Name),
+	}
 
 	fsys := scriggo.Files{
 		stn:                readContent(template_dir, stn),
@@ -44,26 +58,11 @@ func GenScrig() {
 		},
 	}
 
-	writeTemplate(fsys, stn, opts, nil, "gen/services/pizzeria/http/server_http.go")
-	writeTemplate(fsys, ctn, opts, nil, "gen/clients/pizzeria_client.go")
-	writeTemplate(fsys, service_config_tpl, opts, nil, "gen/services/pizzeria/pizzeria_config.go")
+	writeTemplate(fsys, stn, opts, nil, tplGenPath[stn])
+	writeTemplate(fsys, ctn, opts, nil, tplGenPath[ctn])
+	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
 
 	fmt.Println("Generated client")
-}
-
-func Generate() {
-	svc := ServiceTpl{3000}
-	tmplFile := "templates/server_http.tpl"
-
-	tmpl, err := template.New("server_http.tpl").ParseFiles(tmplFile)
-	if err != nil {
-		panic(err)
-	}
-
-	err = tmpl.Execute(os.Stdout, svc)
-	if err != nil {
-		panic(err)
-	}
 }
 
 func New() services.Service {

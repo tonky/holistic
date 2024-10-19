@@ -1,4 +1,4 @@
-package service
+package {{ service_name}}
 
 import (
     "context"
@@ -12,8 +12,7 @@ import (
     "github.com/samber/do/v2"
 
 	"tonky/holistic/gen/domain/food"
-	"tonky/holistic/gen/services/{{ service_name }}"
-	"tonky/holistic/gen/services/{{ service_name }}/app"
+	"tonky/holistic/apps"
 )
 
 type {{ cap(service_name) }} struct {
@@ -22,7 +21,7 @@ type {{ cap(service_name) }} struct {
 
 {% for h in handlers %}
 func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Out.ok }}) error {
-    application := app.New(h.deps)
+    application := apps.NewPizzeria(h.deps)
 
     res, err := application.{{h.FuncName()}}(context.TODO(), arg)
     if err != nil {
@@ -42,7 +41,7 @@ func New{{ cap(service_name) }}(dependencies do.Injector) ServiceStarter {
 }
 
 func (h {{ cap(service_name) }}) Start() error {
-	cfg := do.MustInvoke[*{{ service_name}}.Config](h.deps)
+	cfg := do.MustInvoke[*Config](h.deps)
 	port := cfg.Port
 
     fmt.Printf(">> {{ service_name }}.Start() config: %+v\n", cfg)

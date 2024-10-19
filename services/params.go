@@ -10,7 +10,7 @@ import (
 type RPC string
 
 const (
-	GoNative RPC = "net/rpc"
+	GoNative RPC = "net_rpc"
 	Twirp    RPC = "twirp"
 	GRPC     RPC = "grpc"
 )
@@ -34,7 +34,7 @@ const (
 
 func (r RPC) String() string {
 	if r == GoNative {
-		return "Go net/rpc"
+		return "net_rpc"
 	}
 
 	return "twirp"

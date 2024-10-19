@@ -4,6 +4,9 @@ r:
 rr:
   fd -E gen '(.go|.tpl)' | entr -cr go run main.go 
 
+t:
+  go test tests/*
+
 ts:
   ls gen/services/pizzeria/http/*.go | entr -cr go run tst/server/pizzeria.go
 

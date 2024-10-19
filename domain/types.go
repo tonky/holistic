@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"log"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/open2b/scriggo"
@@ -88,6 +89,12 @@ func resolveDomainImport(d string) (string, error) {
 
 func Generate() {
 	domainName := "food"
+
+	newpath := filepath.Join(".", "gen", "domain", domainName)
+	err := os.MkdirAll(newpath, os.ModePerm)
+	if err != nil {
+		panic(err)
+	}
 
 	st := "domain_model.tpl"
 
