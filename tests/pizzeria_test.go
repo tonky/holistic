@@ -3,9 +3,9 @@ package tests
 import (
 	"context"
 	"testing"
-	"tonky/holistic/gen/clients"
-	"tonky/holistic/gen/domain/food"
-	"tonky/holistic/gen/services/pizzeria"
+	"tonky/holistic/clients"
+	"tonky/holistic/domain/food"
+	"tonky/holistic/services/pizzeria"
 
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/require"

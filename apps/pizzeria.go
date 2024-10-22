@@ -2,7 +2,7 @@ package apps
 
 import (
 	"context"
-	"tonky/holistic/gen/domain/food"
+	"tonky/holistic/domain/food"
 
 	"github.com/samber/do/v2"
 )

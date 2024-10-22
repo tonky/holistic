@@ -3,8 +3,9 @@ package main
 import (
 	"flag"
 	"fmt"
-	"tonky/holistic/domain"
-	"tonky/holistic/services/pizzeria"
+	"tonky/holistic/decl"
+	"tonky/holistic/generator"
+	"tonky/holistic/generator/domain"
 )
 
 func main() {
@@ -12,9 +13,12 @@ func main() {
 	flag.Parse()
 	fmt.Printf("my cmd: \"%v\"\n", string(*genServiceName))
 
-	fmt.Printf("\n%s", pizzeria.New().Debug())
+	// fmt.Printf("\n%s", pizzeria.New().Debug())
 
 	domain.Generate()
+
+	pizzeriaDecl := decl.PizzeriaService()
+	generator.GenService(pizzeriaDecl)
 	// pizzeria.Generate()
-	pizzeria.GenScrig()
+	// pizzeria.GenScrig()
 }

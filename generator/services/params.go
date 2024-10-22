@@ -2,7 +2,7 @@ package services
 
 import (
 	"fmt"
-	"tonky/holistic/domain"
+	"tonky/holistic/generator/domain"
 
 	"github.com/open2b/scriggo/builtin"
 )

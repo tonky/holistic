@@ -126,7 +126,7 @@ func Generate() {
 		}
 
 		// open a file and get a writer
-		fm, err := os.Create(fmt.Sprintf("./gen/domain/%s/%s.go", domainName, builtin.ToLower(foodModel.Name)))
+		fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", domainName, builtin.ToLower(foodModel.Name)))
 		if err != nil {
 			log.Fatal(err)
 		}
