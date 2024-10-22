@@ -17,6 +17,7 @@ import (
 )
 
 type {{ cap(service_name) }} struct {
+    config Config
     deps do.Injector
 }
 
@@ -37,15 +38,17 @@ func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
 {% end %}
 
 func New{{ cap(service_name) }}(dependencies do.Injector) ServiceStarter {
-    handlers := {{ cap(service_name) }}{deps: dependencies}
+	cfg := do.MustInvoke[Config](dependencies)
+
+    handlers := {{ cap(service_name) }}{deps: dependencies, config: cfg}
+
     return handlers
 }
 
 func (h {{ cap(service_name) }}) Start() error {
-	cfg := do.MustInvoke[*Config](h.deps)
-	port := cfg.Port
+	port := h.config.Port
 
-    fmt.Printf(">> {{ service_name }}.Start() config: %+v\n", cfg)
+    fmt.Printf(">> {{ service_name }}.Start() config: %+v\n", h.config)
 
 	rpc.Register(h)
 	rpc.HandleHTTP()

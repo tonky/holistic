@@ -17,6 +17,7 @@ import (
 )
 
 type Pizzeria struct {
+    config Config
     deps do.Injector
 }
 
@@ -48,15 +49,17 @@ func (h Pizzeria) CreateOrder(arg food.Order, reply *food.Order) error {
 
 
 func NewPizzeria(dependencies do.Injector) ServiceStarter {
-    handlers := Pizzeria{deps: dependencies}
+	cfg := do.MustInvoke[Config](dependencies)
+
+    handlers := Pizzeria{deps: dependencies, config: cfg}
+
     return handlers
 }
 
 func (h Pizzeria) Start() error {
-	cfg := do.MustInvoke[*Config](h.deps)
-	port := cfg.Port
+	port := h.config.Port
 
-    fmt.Printf(">> pizzeria.Start() config: %+v\n", cfg)
+    fmt.Printf(">> pizzeria.Start() config: %+v\n", h.config)
 
 	rpc.Register(h)
 	rpc.HandleHTTP()
