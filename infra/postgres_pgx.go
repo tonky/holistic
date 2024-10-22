@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5"
+	"github.com/kelseyhightower/envconfig"
 )
 
 type PostgresConfig struct {
@@ -18,6 +19,12 @@ type PostgresConfig struct {
 
 type PostgresClient struct {
 	PgxConn *pgx.Conn
+}
+
+func NewPostgresEnvConfig() (PostgresConfig, error) {
+	var c PostgresConfig
+
+	return c, envconfig.Process("pizzeria", &c)
 }
 
 func NewPosgresClient(conf PostgresConfig) (*PostgresClient, error) {
