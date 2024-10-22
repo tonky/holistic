@@ -27,7 +27,7 @@ func NewPostgresEnvConfig() (PostgresConfig, error) {
 	return c, envconfig.Process("pizzeria", &c)
 }
 
-func NewPosgresClient(conf PostgresConfig) (*PostgresClient, error) {
+func NewPostgresClient(conf PostgresConfig) (PostgresClient, error) {
 	dsnPgx := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Database)
 
 	conn, err := pgx.Connect(context.Background(), dsnPgx)
@@ -37,5 +37,5 @@ func NewPosgresClient(conf PostgresConfig) (*PostgresClient, error) {
 		// os.Exit(1)
 	}
 
-	return &PostgresClient{PgxConn: conn}, nil
+	return PostgresClient{PgxConn: conn}, nil
 }

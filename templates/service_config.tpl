@@ -3,6 +3,7 @@ package {{ service_name }}
 
 import (
 	"tonky/holistic/infra"
+	"tonky/holistic/infra/logger"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
@@ -14,7 +15,7 @@ type Config struct {
 	Port int `default:"1234"`
 
     {% for i in infra %}
-    {{ cap(i.Name) }} infra.{{ i.ConfigVar() }}
+    {{ cap(i.Typ) }} infra.{{ i.ConfigVar() }}
     {% end %}
 
     {% for configItem in config_items %}
@@ -33,6 +34,11 @@ func NewConfig(i do.Injector) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+    {% for i in infra %}
+	do.ProvideValue(i, &config.{{ cap(i.Typ) }})
+    {% end %}
+	do.Provide(i, logger.NewSlogLogger)
 
 	return &config, nil
 }

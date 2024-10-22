@@ -3,6 +3,7 @@ package pizzeria
 
 import (
 	"tonky/holistic/infra"
+	"tonky/holistic/infra/logger"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
@@ -29,6 +30,9 @@ func NewConfig(i do.Injector) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	do.ProvideValue(i, &config.Postgres)
+	do.Provide(i, logger.NewSlogLogger)
 
 	return &config, nil
 }

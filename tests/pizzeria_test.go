@@ -6,7 +6,6 @@ import (
 	"time"
 	"tonky/holistic/clients"
 	"tonky/holistic/domain/food"
-	"tonky/holistic/infra/logger"
 	"tonky/holistic/services/pizzeria"
 
 	"github.com/samber/do/v2"
@@ -16,16 +15,19 @@ import (
 func init() {
 	go func() {
 		injector := do.New()
+		do.Provide(injector, pizzeria.NewConfig)
 
-		conf, err := pizzeria.NewEnvConfig()
-		if err != nil {
-			panic(err)
-		}
+		/*
+			conf, err := pizzeria.NewEnvConfig()
+			if err != nil {
+				panic(err)
+			}
 
-		do.ProvideValue(injector, conf)
-		do.Provide(injector, logger.NewSlogLogger)
+			do.ProvideValue(injector, conf)
+			do.Provide(injector, logger.NewSlogLogger)
 
-		do.ProvideValue(injector, conf.Postgres)
+			do.ProvideValue(injector, conf.Postgres)
+		*/
 
 		pizzeria := pizzeria.NewPizzeria(injector)
 		pizzeria.Start()
@@ -62,4 +64,5 @@ func TestPizzeriaCRD(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, order.ID, createdOrder.ID)
+	// require.False(t, true)
 }

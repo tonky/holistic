@@ -136,17 +136,54 @@ type ConfigItem struct {
 	Typ  string
 }
 
-type Infra struct {
+type InfraObject struct {
 	Name string
+	Typ  string
+}
+
+type InOut struct {
+	Name string
+	In   InfraObject
+	Out  InfraObject
+}
+
+type Infra struct {
+	Name  string
+	Typ   string
+	InOut []InOut
 }
 
 func (i Infra) ConfigVar() string {
-	switch i.Name {
+	switch i.Typ {
 	case "postgres":
 		return "PostgresConfig"
 	case "kafka":
 		return "KafkaConfig"
 	default:
-		panic("unknown infra")
+		panic("Infra.ConfigVar(): unknown infra " + i.Typ)
 	}
+}
+
+func (i Infra) AppVarName() string {
+	return builtin.ToLower(i.Name) + "Repo"
+}
+
+func (i Infra) InterfaceName() string {
+	return i.Name + "Repository"
+}
+
+func (i Infra) ImplName() string {
+	return builtin.Capitalize(i.Typ) + i.Name
+}
+
+func (i Infra) ClientName() string {
+	return "infra.New" + builtin.Capitalize(i.Typ) + "Client()"
+}
+
+func (i Infra) ConfigFQN() string {
+	return "infra." + builtin.Capitalize(i.Typ) + "Config"
+}
+
+func (i Infra) ClientFQN() string {
+	return "infra.New" + builtin.Capitalize(i.Typ) + "Client"
 }

@@ -20,6 +20,8 @@ func GenService(s services.Service) {
 	stn := "server_net_rpc.tpl"
 	ctn := "client.tpl"
 	service_config_tpl := "service_config.tpl"
+	app_tpl := "app.tpl"
+	repo_tpl := "repository.tpl"
 
 	if err := os.MkdirAll(filepath.Join(".", "clients"), os.ModePerm); err != nil {
 		panic(err)
@@ -29,16 +31,23 @@ func GenService(s services.Service) {
 		panic(err)
 	}
 
+	if err := os.MkdirAll(filepath.Join(".", "apps", s.Name), os.ModePerm); err != nil {
+		panic(err)
+	}
+
 	tplGenPath := map[string]string{
 		stn:                fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
 		service_config_tpl: fmt.Sprintf("services/%s/config.go", s.Name),
 		ctn:                fmt.Sprintf("clients/%s_client.go", s.Name),
+		app_tpl:            fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
 	}
 
 	fsys := scriggo.Files{
 		stn:                readContent(template_dir, stn),
 		ctn:                readContent(template_dir, ctn),
 		service_config_tpl: readContent(template_dir, service_config_tpl),
+		app_tpl:            readContent(template_dir, app_tpl),
+		repo_tpl:           readContent(template_dir, repo_tpl),
 	}
 
 	opts := &scriggo.BuildOptions{
@@ -55,8 +64,21 @@ func GenService(s services.Service) {
 	writeTemplate(fsys, stn, opts, nil, tplGenPath[stn])
 	writeTemplate(fsys, ctn, opts, nil, tplGenPath[ctn])
 	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
+	writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
 
-	fmt.Println("Generated client")
+	for _, i := range s.Infra {
+		opts := &scriggo.BuildOptions{
+			Globals: native.Declarations{
+				"cap":          builtin.Capitalize,
+				"service_name": &s.Name,
+				"infra":        &i,
+			},
+		}
+		outFile := fmt.Sprintf("apps/%s/gen_%s_repository_%s.go", s.Name, builtin.ToLower(i.Name), i.Typ)
+		writeTemplate(fsys, repo_tpl, opts, nil, outFile)
+	}
+
+	fmt.Println("Generated Go files for service", s.Name)
 }
 
 func writeTemplate(fsys scriggo.Files, tplName string, opts *scriggo.BuildOptions, vars map[string]any, outFile string) {

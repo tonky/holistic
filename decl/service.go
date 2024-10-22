@@ -29,6 +29,23 @@ func PizzeriaService() services.Service {
 		Rpc:         services.GoNative,
 		Endpoints:   []services.Endpoint{getOrder, createOrder},
 		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
-		Infra:       []services.Infra{{Name: "postgres"}},
+		Infra: []services.Infra{
+			{
+				Name: "Orderer",
+				Typ:  "postgres",
+				InOut: []services.InOut{
+					{
+						Name: "ReadOrderByID",
+						In:   services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+						Out:  services.InfraObject{Name: "order", Typ: "food.Order"},
+					},
+					{
+						Name: "SaveOrder",
+						In:   services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
+						Out:  services.InfraObject{Name: "order", Typ: "food.Order"},
+					},
+				},
+			},
+		},
 	}
 }

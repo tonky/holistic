@@ -13,7 +13,7 @@ func NewSlogLogger(i do.Injector) (*SlogLogger, error) {
 type SlogLogger struct{}
 
 func (sl SlogLogger) Info(msg string, fields ...interface{}) {
-	fmt.Println("SlogLogger.Info", msg, fields)
+	fmt.Println(">> SlogLogger.Info | ", msg, fields)
 }
 
 func (sl SlogLogger) Debug(msg string, fields ...interface{}) {}
