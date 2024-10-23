@@ -3,7 +3,6 @@
 package {{ service_name }}
 
 import (
-	"tonky/holistic/infra"
 	"tonky/holistic/infra/logger"
 
 	"github.com/samber/do/v2"
@@ -19,22 +18,11 @@ type App struct {
 }
 
 func NewApp(deps do.Injector) (*App, error) {
-{% for i in infra %}
-    {{ i.Typ }}Conf := do.MustInvoke[*{{ i.ConfigFQN() }}](deps)
-
-    {{ i.Typ }}Client, err := {{ i.ClientFQN() }}(*{{ i.Typ }}Conf)
-	if err != nil {
-        return nil, err
-    }
-{% end %}
-
 	return &App{
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.SlogLogger](deps),
 {% for i in infra %}
-        {{ i.AppVarName() }}: {{ i.ImplName() }}{
-            client: {{ i.Typ }}Client,
-        },
+        {{ i.AppVarName() }}: do.MustInvokeAs[{{ i.InterfaceName() }}](deps),
 {% end %}
 	}, nil
 }

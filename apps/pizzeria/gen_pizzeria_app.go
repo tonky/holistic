@@ -3,7 +3,6 @@
 package pizzeria
 
 import (
-	"tonky/holistic/infra"
 	"tonky/holistic/infra/logger"
 
 	"github.com/samber/do/v2"
@@ -17,18 +16,9 @@ type App struct {
 }
 
 func NewApp(deps do.Injector) (*App, error) {
-    postgresConf := do.MustInvoke[*infra.PostgresConfig](deps)
-
-    postgresClient, err := infra.NewPostgresClient(*postgresConf)
-	if err != nil {
-        return nil, err
-    }
-
 	return &App{
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.SlogLogger](deps),
-        ordererRepo: PostgresOrderer{
-            client: postgresClient,
-        },
+        ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
 	}, nil
 }

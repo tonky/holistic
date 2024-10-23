@@ -13,9 +13,9 @@ func (app App) ReadOrder(ctx context.Context, id food.OrderID) (food.Order, erro
 	return res, nil
 }
 
-func (app App) CreateOrder(ctx context.Context, in food.Order) (food.Order, error) {
+func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error) {
 	// var res food.Order
-	res, err := app.ordererRepo.SaveOrder(ctx, NewOrder{})
+	res, err := app.ordererRepo.SaveOrder(ctx, in)
 
 	return res, err
 }

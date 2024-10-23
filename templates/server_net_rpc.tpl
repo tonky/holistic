@@ -28,7 +28,7 @@ func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
         return appErr
     }
 
-    res, err := application.{{h.FuncName()}}(context.TODO(), arg)
+    res, err := application.{{h.FuncName()}}(context.TODO(), arg{{ h.In.SvcToApp() }})
     if err != nil {
         return err
     }

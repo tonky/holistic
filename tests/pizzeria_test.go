@@ -4,9 +4,9 @@ import (
 	"context"
 	"testing"
 	"time"
+	app "tonky/holistic/apps/pizzeria"
 	"tonky/holistic/clients"
-	"tonky/holistic/domain/food"
-	"tonky/holistic/services/pizzeria"
+	svc "tonky/holistic/services/pizzeria"
 
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/require"
@@ -15,21 +15,10 @@ import (
 func init() {
 	go func() {
 		injector := do.New()
-		do.Provide(injector, pizzeria.NewConfig)
+		do.Provide(injector, svc.NewConfig)
+		do.Provide(injector, app.NewMemoryOrdererRepository)
 
-		/*
-			conf, err := pizzeria.NewEnvConfig()
-			if err != nil {
-				panic(err)
-			}
-
-			do.ProvideValue(injector, conf)
-			do.Provide(injector, logger.NewSlogLogger)
-
-			do.ProvideValue(injector, conf.Postgres)
-		*/
-
-		pizzeria := pizzeria.NewPizzeria(injector)
+		pizzeria := svc.NewPizzeria(injector)
 		pizzeria.Start()
 	}()
 
@@ -37,12 +26,9 @@ func init() {
 }
 
 func TestPizzeriaCRD(t *testing.T) {
-	oid, err := food.NewOrderID("123e4567-e89b-12d3-a456-426614174000")
-	require.NoError(t, err)
-
 	injector := do.New()
-	do.Provide(injector, pizzeria.NewConfig)
-	port := do.MustInvoke[*pizzeria.Config](injector).Port
+	do.Provide(injector, svc.NewConfig)
+	port := do.MustInvoke[*svc.Config](injector).Port
 
 	conf := clients.Config{
 		Host: "localhost",
@@ -51,14 +37,13 @@ func TestPizzeriaCRD(t *testing.T) {
 
 	pc := clients.NewPizzeria(conf)
 
-	newOrder := food.Order{
-		ID:      oid,
+	newOrder := svc.NewOrder{
 		Content: "new order",
 	}
 
 	createdOrder, err := pc.CreateOrder(context.TODO(), newOrder)
 	require.NoError(t, err)
-	require.Equal(t, newOrder, createdOrder)
+	require.Equal(t, newOrder.Content, createdOrder.Content)
 
 	order, err := pc.ReadOrder(context.TODO(), createdOrder.ID)
 	require.NoError(t, err)

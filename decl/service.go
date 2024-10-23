@@ -18,7 +18,7 @@ func PizzeriaService() services.Service {
 	createOrder := services.Endpoint{
 		Name:   "order",
 		Method: services.Create,
-		In:     services.Inputs{Name: "food.Order"},
+		In:     services.Inputs{Name: "NewOrder"},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK: "food.Order",
 		},

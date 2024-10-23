@@ -5,10 +5,13 @@ rr:
   fd -E apps -E services -E clients -E domain '(.go|.tpl)' | entr -cr go run main.go 
 
 t:
-  go test tests/*
+  PIZZERIA_PORT=1246 go test tests/*
 
 ts:
   ls services/pizzeria/*.go | entr -cr go run tst/server/pizzeria.go
+
+tc:
+  PIZZERIA_PORT=1245 go run tst/main.go
 
 ms:
   PIZZERIA_SHOULD_MOCK_APP=true just ts

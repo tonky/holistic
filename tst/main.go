@@ -6,6 +6,7 @@ import (
 	"log"
 	"tonky/holistic/clients"
 	"tonky/holistic/domain/food"
+	svc "tonky/holistic/services/pizzeria"
 )
 
 func main() {
@@ -29,8 +30,7 @@ func main() {
 
 	fmt.Printf("ReadOrder(%+v)\nReply: %+v\n\n", oid, order)
 
-	newOrder := food.Order{
-		ID:      oid,
+	newOrder := svc.NewOrder{
 		Content: "new order",
 	}
 

@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/rpc"
 	"tonky/holistic/domain/food"
+	svc "tonky/holistic/services/pizzeria"
     // generate imports
 )
 
@@ -36,7 +37,7 @@ func (c PizzeriaClient) ReadOrder(ctx context.Context, req food.OrderID) (food.O
 	return reply, nil
 }
 
-func (c PizzeriaClient) CreateOrder(ctx context.Context, req food.Order) (food.Order, error) {
+func (c PizzeriaClient) CreateOrder(ctx context.Context, req svc.NewOrder) (food.Order, error) {
 	client, err := rpc.DialHTTP("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)

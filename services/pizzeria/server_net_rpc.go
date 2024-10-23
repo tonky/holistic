@@ -37,13 +37,13 @@ func (h Pizzeria) ReadOrder(arg food.OrderID, reply *food.Order) error {
     return nil
 }
 
-func (h Pizzeria) CreateOrder(arg food.Order, reply *food.Order) error {
+func (h Pizzeria) CreateOrder(arg NewOrder, reply *food.Order) error {
     application, appErr := pizzeria.NewApp(h.deps)
     if appErr != nil {
         return appErr
     }
 
-    res, err := application.CreateOrder(context.TODO(), arg)
+    res, err := application.CreateOrder(context.TODO(), arg.ToApp())
     if err != nil {
         return err
     }

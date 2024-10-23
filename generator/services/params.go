@@ -2,6 +2,7 @@ package services
 
 import (
 	"fmt"
+	"strings"
 	"tonky/holistic/generator/domain"
 
 	"github.com/open2b/scriggo/builtin"
@@ -58,6 +59,22 @@ type Inputs struct {
 
 func (i Inputs) ModelName() string {
 	return "modelName"
+}
+
+func (i Inputs) ServiceModel() string {
+	if strings.Contains(i.Name, ".") {
+		return i.Name
+	}
+
+	return "svc." + i.Name
+}
+
+func (i Inputs) SvcToApp() string {
+	if strings.Contains(i.Name, ".") {
+		return ""
+	}
+
+	return ".ToApp()"
 }
 
 func (i Inputs) String() string {
