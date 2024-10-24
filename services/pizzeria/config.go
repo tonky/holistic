@@ -2,8 +2,9 @@
 package pizzeria
 
 import (
-	"tonky/holistic/infra"
 	"tonky/holistic/infra/logger"
+
+	"tonky/holistic/infra/postgres"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
@@ -14,7 +15,7 @@ type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
 
-    Postgres infra.PostgresConfig
+    Postgres postgres.Config
 
     ShouldMockApp bool `split_words:"true"`
 }

@@ -1,41 +1,15 @@
 package infra
 
 import (
-	"context"
-	"fmt"
-	"os"
+	"tonky/holistic/infra/postgres"
 
-	"github.com/jackc/pgx/v5"
-	"github.com/kelseyhightower/envconfig"
+	"github.com/samber/do/v2"
 )
 
-type PostgresConfig struct {
-	Host     string `default:"localhost"`
-	Port     int    `default:"5432"`
-	User     string `default:"postgres"`
-	Password string `default:"postgres"`
-	Database string `default:"postgres"`
-}
+func NewPostgresClient(i do.Injector) (*postgres.Client, error) {
+	conf := do.MustInvoke[*postgres.Config](i)
 
-type PostgresClient struct {
-	PgxConn *pgx.Conn
-}
+	pgc, err := postgres.NewClient(*conf)
 
-func NewPostgresEnvConfig() (PostgresConfig, error) {
-	var c PostgresConfig
-
-	return c, envconfig.Process("pizzeria", &c)
-}
-
-func NewPostgresClient(conf PostgresConfig) (PostgresClient, error) {
-	dsnPgx := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Database)
-
-	conn, err := pgx.Connect(context.Background(), dsnPgx)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		// return nil, err
-		// os.Exit(1)
-	}
-
-	return PostgresClient{PgxConn: conn}, nil
+	return &pgc, err
 }

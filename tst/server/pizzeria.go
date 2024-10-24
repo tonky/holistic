@@ -1,6 +1,8 @@
 package main
 
 import (
+	app "tonky/holistic/apps/pizzeria"
+	"tonky/holistic/infra"
 	"tonky/holistic/services/pizzeria"
 
 	"github.com/samber/do/v2"
@@ -11,19 +13,11 @@ func main() {
 	do.Provide(injector, pizzeria.NewConfig)
 
 	// provide infra dependencies
-	// do.Provide(injector, NewPostgresClient)
+	do.Provide(injector, infra.NewPostgresClient)
+
+	do.Provide(injector, app.NewPostgresOrdererRepository)
 
 	svc := pizzeria.NewPizzeria(injector)
 
 	svc.Start()
 }
-
-/*
-func NewPostgresClient(i do.Injector) (*infra.PostgresClient, error) {
-	conf := do.MustInvoke[*pizzeria.Config](i)
-
-	pgc, err := infra.NewPostgresClient(conf.Postgres)
-
-	return &pgc, err
-}
-*/
