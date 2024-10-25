@@ -17,6 +17,7 @@ func init() {
 		injector := do.New()
 		do.Provide(injector, svc.NewConfig)
 		do.Provide(injector, app.NewMemoryOrdererRepository)
+		do.Provide(injector, app.NewMemoryOrderProducerRepository)
 
 		pizzeria := svc.NewPizzeria(injector)
 		pizzeria.Start()

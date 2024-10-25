@@ -46,6 +46,16 @@ func PizzeriaService() services.Service {
 					},
 				},
 			},
+			{
+				Name: "OrderProducer",
+				Typ:  "kafka",
+				InOut: []services.InOut{
+					{
+						Name: "ProduceNewOrder",
+						Out:  services.InfraObject{Name: "pizzeria.orders", Typ: "food.Order"},
+					},
+				},
+			},
 		},
 	}
 }

@@ -14,5 +14,14 @@ func (app App) ReadOrder(ctx context.Context, in food.OrderID) (food.Order, erro
 func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error) {
 	app.logger.Info("App.CreateOrder", in)
 
-	return app.ordererRepo.SaveOrder(ctx, in)
+	newOrder, err := app.ordererRepo.SaveOrder(ctx, in)
+	if err != nil {
+		return food.Order{}, err
+	}
+
+	if err := app.orderproducerRepo.ProduceNewOrder(ctx, newOrder); err != nil {
+		return food.Order{}, err
+	}
+
+	return newOrder, nil
 }

@@ -12,18 +12,32 @@ import (
 
 type {{ infra.Name}}Repository interface {
     {% for io in infra.InOut %}
-    {{ io.Name }}(context.Context{% if io.In %}, {{ io.In.Typ }}{% end %}) ({{ io.Out.Typ}}, error)
+	{% if infra.Typ == "kafka" %}
+    {{ io.Name }}(context.Context{% if io.Out %}, {{ io.Out.Typ }}{% end %}) ({% if io.In %}{{ io.In.Typ }}, {% end %}error)
+	{% else %}
+    {{ io.Name }}(context.Context{% if io.In %}, {{ io.In.Typ }}{% end %}) ({% if io.Out %}{{ io.Out.Typ }}, {% end %}error)
+    {% end %}
     {% end %}
 }
 
 type {{ cap(infra.Typ) }}{{ infra.Name }} struct {
 	logger logger.SlogLogger
-	client {{ infra.Typ }}.Client
+	client {{ infra.Typ }}.{{ infra.ClientType() }}
 }
 
 func New{{ cap(infra.Typ) }}{{ infra.Name }}Repository(deps do.Injector) (*{{ cap(infra.Typ) }}{{ infra.Name }}, error) {
+	{% if infra.Typ == "kafka" %}
+	config := *do.MustInvoke[*{{ infra.Typ }}.Config](deps)
+	client := {{ infra.Typ }}.New{{ infra.ClientType() }}(config, "{{ infra.TopicName() }}")
+
+	return &{{ cap(infra.Typ) }}{{ infra.Name }}{
+		logger: *do.MustInvoke[*logger.SlogLogger](deps),
+		client: client,
+	}, nil
+	{% else %}
 	return &{{ cap(infra.Typ) }}{{ infra.Name }}{
 		logger: *do.MustInvoke[*logger.SlogLogger](deps),
 		client: *do.MustInvoke[*{{ infra.Typ }}.Client](deps),
 	}, nil
+	{% end %}
 }

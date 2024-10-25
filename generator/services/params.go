@@ -204,3 +204,23 @@ func (i Infra) ConfigFQN() string {
 func (i Infra) ClientFQN() string {
 	return "infra.New" + builtin.Capitalize(i.Typ) + "Client"
 }
+
+func (i Infra) ClientType() string {
+	if i.Typ != "kafka" {
+		return "Client"
+	}
+
+	if i.InOut[0].In.Name != "" {
+		return "Consumer"
+	}
+
+	return "Producer"
+}
+
+func (i Infra) TopicName() string {
+	if i.InOut[0].In.Name != "" {
+		return i.InOut[0].In.Name
+	}
+
+	return i.InOut[0].Out.Name
+}
