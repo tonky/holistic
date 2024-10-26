@@ -65,9 +65,11 @@ func GenService(s services.Service) {
 
 	appDeps := []AppDep{}
 	infraDeps := []InfraDep{{Typ: "kafkaProducer", Name: "default"}}
+	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
 	opts.Globals["infra_deps"] = &infraDeps
+	opts.Globals["client_relative_imports"] = &configImports
 
 	for _, pg := range s.Postgres {
 		appDeps = append(appDeps, pg)

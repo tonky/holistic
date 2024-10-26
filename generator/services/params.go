@@ -126,6 +126,7 @@ type Service struct {
 	Infra          []Infra
 	Postgres       []Postgres
 	KafkaProducers []KafkaProducer
+	KafkaConsumers []KafkaConsumer
 	// specific infra
 	// generic escape hatches
 	// ACLs
@@ -152,9 +153,61 @@ func (s Service) Debug() string {
 	return header + res
 }
 
+func (s Service) ClientImports() []ClientImport {
+	res := []ClientImport{}
+
+	for _, e := range s.Endpoints {
+		split := strings.Split(e.In.Name, ".")
+
+		fmt.Println("split: ", split)
+
+		if len(split) == 2 {
+			res = append(res, ClientImport{RelPath: "domain/" + split[0]})
+		} else {
+			res = append(res, ClientImport{RelPath: "services/" + s.Name, Alias: "svc"})
+		}
+
+		splitOut := strings.Split(string(e.Out[ResponseOK]), ".")
+
+		fmt.Println("split out: ", splitOut)
+
+		if len(splitOut) == 2 {
+			res = append(res, ClientImport{RelPath: "domain/" + splitOut[0]})
+		} else {
+			res = append(res, ClientImport{RelPath: "services/" + s.Name, Alias: "svc"})
+		}
+	}
+
+	fmt.Printf("ClientImports: %+v\n", res)
+
+	seen := map[string]bool{}
+	dedup := []ClientImport{}
+
+	for _, ci := range res {
+		if seen[ci.RelPath] {
+			continue
+		}
+
+		seen[ci.RelPath] = true
+
+		dedup = append(dedup, ci)
+	}
+
+	fmt.Printf("ClientImports dedup: %+v\n", dedup)
+
+	return dedup
+}
+
+type ClientImport struct {
+	Alias   string
+	RelPath string
+}
+
 type ConfigItem struct {
-	Name string
-	Typ  string
+	Name       string
+	Typ        string
+	SplitWords bool
+	Default    string
 }
 
 type InfraObject struct {

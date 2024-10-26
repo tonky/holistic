@@ -78,22 +78,28 @@ func (o Object) GoImports(domainName string) []string {
 
 func resolveDomainImport(d string) (string, error) {
 	switch d {
-	case "billing":
-		return "tonky/holistic/domain/billing", nil
+	case "food":
+		return "tonky/holistic/domain/food", nil
+	case "accounting":
+		return "tonky/holistic/domain/accounting", nil
 	case "uuid":
 		return "github.com/google/uuid", nil
 	}
 
-	return "undefined", fmt.Errorf("domain import unresolved")
+	return "undefined", fmt.Errorf("domain import unresolved: %s", d)
 }
 
 func Generate() {
-	domainName := "food"
+	// domainName := "food"
+	domainObjects := map[string][]Object{"food": foods, "accounting": accounting}
 
-	newpath := filepath.Join(".", "gen", "domain", domainName)
-	err := os.MkdirAll(newpath, os.ModePerm)
-	if err != nil {
-		panic(err)
+	for domain := range domainObjects {
+		newpath := filepath.Join(".", "domain", domain)
+
+		err := os.MkdirAll(newpath, os.ModePerm)
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	st := "domain_model.tpl"
@@ -107,33 +113,35 @@ func Generate() {
 
 	fsys := scriggo.Files{st: contents}
 
-	for _, foodModel := range foods {
-		imports := foodModel.GoImports(domainName)
+	for domain, models := range domainObjects {
+		for _, model := range models {
+			imports := model.GoImports(domain)
 
-		opts := &scriggo.BuildOptions{
-			Globals: native.Declarations{
-				"imports": &imports,
-				"fields":  &foodModel.Fields,
-				"domain":  &domainName,
-				"model":   &foodModel.Name,
-			},
-		}
+			opts := &scriggo.BuildOptions{
+				Globals: native.Declarations{
+					"imports": &imports,
+					"fields":  &model.Fields,
+					"domain":  &domain,
+					"model":   &model.Name,
+				},
+			}
 
-		// Build the program.
-		temp, err := scriggo.BuildTemplate(fsys, st, opts)
-		if err != nil {
-			log.Fatal(err)
-		}
+			// Build the program.
+			temp, err := scriggo.BuildTemplate(fsys, st, opts)
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		// open a file and get a writer
-		fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", domainName, builtin.ToLower(foodModel.Name)))
-		if err != nil {
-			log.Fatal(err)
-		}
+			// open a file and get a writer
+			fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", domain, builtin.ToLower(model.Name)))
+			if err != nil {
+				log.Fatal(err)
+			}
 
-		err = temp.Run(fm, nil, nil)
-		if err != nil {
-			log.Fatal(err)
+			err = temp.Run(fm, nil, nil)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
 	}
 }
@@ -164,4 +172,15 @@ var FoodOrder = Object{
 	},
 }
 
+var AccountingOrder = Object{
+	Name: "Order",
+	Fields: []Field{
+		{Name: "ID", T: "food.OrderID"},
+		{Name: "Content", T: "string"},
+		{Name: "Cost", T: "int"},
+		{Name: "IsPaid", T: "bool"},
+	},
+}
+
 var foods = []Object{FoodOrderID, FoodOrder}
+var accounting = []Object{AccountingOrder}

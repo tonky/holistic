@@ -6,6 +6,7 @@ import (
 	"time"
 	app "tonky/holistic/apps/pizzeria"
 	"tonky/holistic/clients"
+	"tonky/holistic/infra/logger"
 	svc "tonky/holistic/services/pizzeria"
 
 	"github.com/samber/do/v2"
@@ -15,7 +16,10 @@ import (
 func init() {
 	go func() {
 		injector := do.New()
-		do.Provide(injector, svc.NewConfig)
+
+		do.ProvideValue(injector, &svc.Config{Port: 1234})
+		do.ProvideValue(injector, &logger.Slog{})
+
 		do.Provide(injector, app.NewMemoryOrdererRepository)
 		do.Provide(injector, app.NewMemoryOrderProducerRepository)
 
@@ -32,13 +36,10 @@ func init() {
 
 func TestPizzeriaCRD(t *testing.T) {
 	injector := do.New()
-	do.Provide(injector, svc.NewConfig)
-	port := do.MustInvoke[*svc.Config](injector).Port
 
-	conf := clients.Config{
-		Host: "localhost",
-		Port: port,
-	}
+	conf := clients.Config{Host: "localhost", Port: 1234}
+
+	do.ProvideValue(injector, &conf)
 
 	pc := clients.NewPizzeria(conf)
 

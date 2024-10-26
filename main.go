@@ -19,6 +19,7 @@ func main() {
 
 	pizzeriaDecl := decl.PizzeriaService()
 	generator.GenService(pizzeriaDecl)
+	generator.GenService(decl.BackofficeService())
 	// pizzeria.Generate()
 	// pizzeria.GenScrig()
 }

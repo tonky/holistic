@@ -6,9 +6,9 @@ import (
 	"context"
 	"log"
 	"net/rpc"
-	"tonky/holistic/domain/food"
-	svc "tonky/holistic/services/{{ service_name }}"
-    // generate imports
+	{% for imp in client_relative_imports %}
+	{{ imp.Alias}} "tonky/holistic/{{ imp.RelPath }}"
+	{% end %}
 )
 
 func New{{ cap(service_name) }}(config Config) {{ cap(service_name) }}Client {
@@ -28,9 +28,9 @@ func (c {{ cap(service_name) }}Client) {{ h.FuncName() }}(ctx context.Context, r
 		log.Fatal("dialing error:", err)
 	}
 
-	var reply food.Order
+	var reply {{ h.Out.ok }}
 
-	err = client.Call("Pizzeria.{{ h.FuncName() }}", req, &reply)
+	err = client.Call("{{ cap(service_name) }}.{{ h.FuncName() }}", req, &reply)
 	if err != nil {
 		log.Fatal("server call error:", err)
 	}

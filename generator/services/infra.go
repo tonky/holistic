@@ -36,3 +36,21 @@ func (kp KafkaProducer) AppVarName() string {
 func (kp KafkaProducer) InterfaceName() string {
 	return strings.ToUpper(kp.Name[0:1]) + kp.Name[1:] + "Producer"
 }
+
+type KafkaConsumer struct {
+	Name  string
+	Topic string
+	Model string
+}
+
+func (kp KafkaConsumer) StructName() string {
+	return "Kafka" + kp.InterfaceName()
+}
+
+func (kp KafkaConsumer) AppVarName() string {
+	return kp.Name + "Consumer"
+}
+
+func (kp KafkaConsumer) InterfaceName() string {
+	return strings.ToUpper(kp.Name[0:1]) + kp.Name[1:] + "Consumer"
+}

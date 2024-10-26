@@ -6,9 +6,8 @@ import (
 	"context"
 	"log"
 	"net/rpc"
-	"tonky/holistic/domain/food"
+	 "tonky/holistic/domain/food"
 	svc "tonky/holistic/services/pizzeria"
-    // generate imports
 )
 
 func NewPizzeria(config Config) PizzeriaClient {
