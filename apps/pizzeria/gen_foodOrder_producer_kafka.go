@@ -10,20 +10,21 @@ import (
 	"github.com/samber/do/v2"
 )
 
-type OrderProducerRepository interface {
-    ProduceNewOrder(context.Context, food.Order) (error)
+type FoodOrderProducer interface {
+	ProduceFoodOrder(context.Context, food.Order) error
+	ProduceFoodOrderBatch(context.Context, []food.Order) error
 }
 
-type KafkaOrderProducer struct {
+type KafkaFoodOrderProducer struct {
 	logger logger.SlogLogger
-	client kafka.Producer
+	client kafka.IProducer
 }
 
-func NewKafkaOrderProducerRepository(deps do.Injector) (*KafkaOrderProducer, error) {
+func NewKafkaFoodOrderProducer(deps do.Injector) (*KafkaFoodOrderProducer, error) {
 	config := *do.MustInvoke[*kafka.Config](deps)
 	client := kafka.NewProducer(config, "pizzeria.orders")
 
-	return &KafkaOrderProducer{
+	return &KafkaFoodOrderProducer{
 		logger: *do.MustInvoke[*logger.SlogLogger](deps),
 		client: client,
 	}, nil

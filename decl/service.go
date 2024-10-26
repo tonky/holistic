@@ -29,33 +29,39 @@ func PizzeriaService() services.Service {
 		Rpc:         services.GoNative,
 		Endpoints:   []services.Endpoint{getOrder, createOrder},
 		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
-		Infra: []services.Infra{
-			{
-				Name: "Orderer",
-				Typ:  "postgres",
-				InOut: []services.InOut{
-					{
-						Name: "ReadOrderByID",
-						In:   services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
-						Out:  services.InfraObject{Name: "order", Typ: "food.Order"},
-					},
-					{
-						Name: "SaveOrder",
-						In:   services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
-						Out:  services.InfraObject{Name: "order", Typ: "food.Order"},
+		Postgres: []services.Postgres{{
+			Name: "orderer",
+			Interface: []services.Interface{
+				{
+					Method: "ReadOrderByID",
+					Arg:    services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Ret:    services.InfraObject{Name: "order", Typ: "food.Order"},
+				},
+				{
+					Method: "SaveOrder",
+					Arg:    services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
+					Ret:    services.InfraObject{Name: "order", Typ: "food.Order"},
+				},
+			},
+		}},
+		KafkaProducers: []services.KafkaProducer{{
+			Name:  "foodOrder",
+			Topic: "pizzeria.orders",
+			Model: "food.Order",
+		}},
+		/*
+			Infra: []services.Infra{
+				{
+					Name: "OrderProducer",
+					Typ:  "kafka",
+					InOut: []services.InOut{
+						{
+							Name: "ProduceNewOrder",
+							Out:  services.InfraObject{Name: "pizzeria.orders", Typ: "food.Order"},
+						},
 					},
 				},
 			},
-			{
-				Name: "OrderProducer",
-				Typ:  "kafka",
-				InOut: []services.InOut{
-					{
-						Name: "ProduceNewOrder",
-						Out:  services.InfraObject{Name: "pizzeria.orders", Typ: "food.Order"},
-					},
-				},
-			},
-		},
+		*/
 	}
 }

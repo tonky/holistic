@@ -13,7 +13,7 @@ type App struct {
 	logger     *logger.SlogLogger
 
     ordererRepo OrdererRepository
-    orderproducerRepo OrderProducerRepository
+    foodOrderProducer FoodOrderProducer
 }
 
 func NewApp(deps do.Injector) (*App, error) {
@@ -21,6 +21,6 @@ func NewApp(deps do.Injector) (*App, error) {
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.SlogLogger](deps),
         ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
-        orderproducerRepo: do.MustInvokeAs[OrderProducerRepository](deps),
+        foodOrderProducer: do.MustInvokeAs[FoodOrderProducer](deps),
 	}, nil
 }

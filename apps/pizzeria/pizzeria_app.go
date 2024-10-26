@@ -19,7 +19,7 @@ func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error)
 		return food.Order{}, err
 	}
 
-	if err := app.orderproducerRepo.ProduceNewOrder(ctx, newOrder); err != nil {
+	if err := app.foodOrderProducer.ProduceFoodOrder(ctx, newOrder); err != nil {
 		return food.Order{}, err
 	}
 

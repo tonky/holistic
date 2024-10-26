@@ -116,14 +116,18 @@ func (e Endpoint) FuncName() string {
 }
 
 type Service struct {
-	Name        string
-	Rpc         RPC
-	Endpoints   []Endpoint
-	Secrets     map[string]string
-	Publishes   []Topic
-	Consumes    []Topic
-	ConfigItems []ConfigItem
-	Infra       []Infra
+	Name           string
+	Rpc            RPC
+	Endpoints      []Endpoint
+	Secrets        map[string]string
+	Publishes      []Topic
+	Consumes       []Topic
+	ConfigItems    []ConfigItem
+	Infra          []Infra
+	Postgres       []Postgres
+	KafkaProducers []KafkaProducer
+	// specific infra
+	// generic escape hatches
 	// ACLs
 }
 

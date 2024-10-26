@@ -12,8 +12,8 @@ type App struct {
 	deps       do.Injector
 	logger     *logger.SlogLogger
 
-{% for i in infra %}
-    {{ i.AppVarName() }} {{ i.InterfaceName() }}
+{% for ad in app_deps %}
+    {{ ad.AppVarName() }} {{ ad.InterfaceName() }}
 {% end %}
 }
 
@@ -21,8 +21,8 @@ func NewApp(deps do.Injector) (*App, error) {
 	return &App{
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.SlogLogger](deps),
-{% for i in infra %}
-        {{ i.AppVarName() }}: do.MustInvokeAs[{{ i.InterfaceName() }}](deps),
+{% for ad in app_deps %}
+        {{ ad.AppVarName() }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
 {% end %}
 	}, nil
 }

@@ -1,6 +1,9 @@
 package kafka
 
-import "context"
+import (
+	"context"
+	"fmt"
+)
 
 type IProducer interface {
 	Produce(context.Context, []byte) error
@@ -17,4 +20,16 @@ func NewProducer(config Config, topic string) Producer {
 		config: config,
 		topic:  topic,
 	}
+}
+
+func (p Producer) Produce(ctx context.Context, data []byte) error {
+	fmt.Println("Producer.Produce", p.topic, len(data))
+
+	return nil
+}
+
+func (p Producer) ProduceBatch(ctx context.Context, data [][]byte) error {
+	fmt.Println("Producer.ProduceBatch", p.topic, len(data))
+
+	return nil
 }
