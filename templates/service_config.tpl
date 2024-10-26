@@ -4,8 +4,8 @@ package {{ service_name }}
 import (
 	"tonky/holistic/infra/logger"
 
-    {% for i in infra %}
-	"tonky/holistic/infra/{{ i.Typ }}"
+    {% for id in infra_deps %}
+	"tonky/holistic/infra/{{ id.Typ }}"
     {% end %}
 
 	"github.com/kelseyhightower/envconfig"
@@ -17,8 +17,8 @@ type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
 
-    {% for i in infra %}
-    {{ cap(i.Typ) }} {{ i.Typ }}.Config
+    {% for id in infra_deps %}
+    {{ cap(id.Typ) }}{{ cap(id.Name) }} {{ id.Typ }}.Config
     {% end %}
 
     {% for configItem in config_items %}

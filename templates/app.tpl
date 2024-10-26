@@ -10,7 +10,7 @@ import (
 
 type App struct {
 	deps       do.Injector
-	logger     *logger.SlogLogger
+	logger     *logger.Slog
 
 {% for ad in app_deps %}
     {{ ad.AppVarName() }} {{ ad.InterfaceName() }}
@@ -20,7 +20,7 @@ type App struct {
 func NewApp(deps do.Injector) (*App, error) {
 	return &App{
 		deps:       deps,
-		logger:     do.MustInvoke[*logger.SlogLogger](deps),
+		logger:     do.MustInvoke[*logger.Slog](deps),
 {% for ad in app_deps %}
         {{ ad.AppVarName() }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
 {% end %}

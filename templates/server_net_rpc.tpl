@@ -19,16 +19,12 @@ import (
 type {{ cap(service_name) }} struct {
     config Config
     deps do.Injector
+    app {{ service_name }}.App
 }
 
 {% for h in handlers %}
 func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Out.ok }}) error {
-    application, appErr := {{ service_name }}.NewApp(h.deps)
-    if appErr != nil {
-        return appErr
-    }
-
-    res, err := application.{{h.FuncName()}}(context.TODO(), arg{{ h.In.SvcToApp() }})
+    res, err := h.app.{{h.FuncName()}}(context.TODO(), arg{{ h.In.SvcToApp() }})
     if err != nil {
         return err
     }
@@ -40,12 +36,17 @@ func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
 
 {% end %}
 
-func New{{ cap(service_name) }}(dependencies do.Injector) ServiceStarter {
+func New{{ cap(service_name) }}(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)
 
-    handlers := {{ cap(service_name) }}{deps: dependencies, config: *cfg}
+    application, appErr := {{ service_name }}.NewApp(dependencies)
+    if appErr != nil {
+        return nil, appErr
+    }
 
-    return handlers
+    handlers := {{ cap(service_name) }}{deps: dependencies, config: *cfg, app: *application}
+
+    return handlers, nil
 }
 
 func (h {{ cap(service_name) }}) Start() error {

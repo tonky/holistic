@@ -6,8 +6,6 @@ import (
 	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
-
-	"github.com/samber/do/v2"
 )
 
 type {{ repo.InterfaceName() }} interface {
@@ -17,13 +15,18 @@ type {{ repo.InterfaceName() }} interface {
 }
 
 type {{ repo.StructName() }} struct {
-	logger logger.SlogLogger
+	logger logger.Slog
 	client {{ kind }}.Client
 }
 
-func New{{ repo.StructName() }}Repository(deps do.Injector) (*{{ repo.StructName() }}, error) {
+func New{{ repo.StructName() }}Repository(logger logger.Slog, conf postgres.Config) (*{{ repo.StructName() }}, error) {
+	client, err := postgres.NewClient(conf)
+	if err != nil {
+		return nil, err
+	}
+
 	return &{{ repo.StructName() }}{
-		logger: *do.MustInvoke[*logger.SlogLogger](deps),
-		client: *do.MustInvoke[*{{ kind }}.Client](deps),
+		logger: logger,
+		client: client,
 	}, nil
 }

@@ -4,6 +4,8 @@ package pizzeria
 import (
 	"tonky/holistic/infra/logger"
 
+	"tonky/holistic/infra/kafkaProducer"
+	"tonky/holistic/infra/postgres"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
@@ -14,6 +16,8 @@ type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
 
+    KafkaProducerDefault kafkaProducer.Config
+    PostgresOrderer postgres.Config
 
     ShouldMockApp bool `split_words:"true"`
 }

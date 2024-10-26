@@ -5,14 +5,14 @@ import (
 	"tonky/holistic/domain/food"
 )
 
-func (r KafkaFoodOrderProducer) ProduceOrder(ctx context.Context, in food.Order) error {
-	r.logger.Info("KafkaOrderProducer.ProduceOrder", in)
+func (r KafkaFoodOrderProducer) ProduceFoodOrder(ctx context.Context, in food.Order) error {
+	r.logger.Info("KafkaFoodOrderProducer.ProduceOrder", in)
 
-	return r.client.Produce(ctx, []byte(in.Content))
+	return r.client.Produce(ctx, []byte(in.ID.ID.String()+in.Content))
 }
 
-func (r KafkaFoodOrderProducer) ProduceOrderBatch(ctx context.Context, in []food.Order) error {
-	r.logger.Info("KafkaOrderProducer.ProduceOrderBatch", in)
+func (r KafkaFoodOrderProducer) ProduceFoodOrderBatch(ctx context.Context, in []food.Order) error {
+	r.logger.Info("KafkaFoodOrderProducer.ProduceOrderBatch", in)
 
 	var data [][]byte
 	for _, order := range in {

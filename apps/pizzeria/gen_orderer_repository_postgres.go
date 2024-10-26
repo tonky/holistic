@@ -6,8 +6,6 @@ import (
 	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
-
-	"github.com/samber/do/v2"
 )
 
 type OrdererRepository interface {
@@ -16,13 +14,18 @@ type OrdererRepository interface {
 }
 
 type PostgresOrderer struct {
-	logger logger.SlogLogger
+	logger logger.Slog
 	client postgres.Client
 }
 
-func NewPostgresOrdererRepository(deps do.Injector) (*PostgresOrderer, error) {
+func NewPostgresOrdererRepository(logger logger.Slog, conf postgres.Config) (*PostgresOrderer, error) {
+	client, err := postgres.NewClient(conf)
+	if err != nil {
+		return nil, err
+	}
+
 	return &PostgresOrderer{
-		logger: *do.MustInvoke[*logger.SlogLogger](deps),
-		client: *do.MustInvoke[*postgres.Client](deps),
+		logger: logger,
+		client: client,
 	}, nil
 }

@@ -6,14 +6,14 @@ import (
 	"github.com/samber/do/v2"
 )
 
-func NewSlogLogger(i do.Injector) (*SlogLogger, error) {
-	return &SlogLogger{}, nil
+func NewSlogLogger(i do.Injector) (*Slog, error) {
+	return &Slog{}, nil
 }
 
-type SlogLogger struct{}
+type Slog struct{}
 
-func (sl SlogLogger) Info(msg string, fields ...interface{}) {
+func (sl Slog) Info(msg string, fields ...interface{}) {
 	fmt.Println(">> SlogLogger.Info | ", msg, fields)
 }
 
-func (sl SlogLogger) Debug(msg string, fields ...interface{}) {}
+func (sl Slog) Debug(msg string, fields ...interface{}) {}

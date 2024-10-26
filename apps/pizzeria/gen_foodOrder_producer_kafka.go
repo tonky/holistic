@@ -5,9 +5,7 @@ import (
 	"context"
 	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
-	"tonky/holistic/infra/kafka"
-
-	"github.com/samber/do/v2"
+	"tonky/holistic/infra/kafkaProducer"
 )
 
 type FoodOrderProducer interface {
@@ -16,16 +14,15 @@ type FoodOrderProducer interface {
 }
 
 type KafkaFoodOrderProducer struct {
-	logger logger.SlogLogger
-	client kafka.IProducer
+	logger logger.Slog
+	client kafkaProducer.IProducer
 }
 
-func NewKafkaFoodOrderProducer(deps do.Injector) (*KafkaFoodOrderProducer, error) {
-	config := *do.MustInvoke[*kafka.Config](deps)
-	client := kafka.NewProducer(config, "pizzeria.orders")
+func NewKafkaFoodOrderProducer(logger logger.Slog, config kafkaProducer.Config) (*KafkaFoodOrderProducer, error) {
+	client := kafkaProducer.NewProducer(config, "pizzeria.order")
 
 	return &KafkaFoodOrderProducer{
-		logger: *do.MustInvoke[*logger.SlogLogger](deps),
+		logger: logger,
 		client: client,
 	}, nil
 }

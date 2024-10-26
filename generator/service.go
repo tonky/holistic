@@ -21,7 +21,7 @@ func GenService(s services.Service) {
 	ctn := "client.tpl"
 	service_config_tpl := "service_config.tpl"
 	app_tpl := "app.tpl"
-	repo_tpl := "repository.tpl"
+	repo_pg_tpl := "repository_postgres.tpl"
 	kafka_prod_tpl := "kafka_producer.tpl"
 
 	if err := os.MkdirAll(filepath.Join(".", "clients"), os.ModePerm); err != nil {
@@ -48,7 +48,7 @@ func GenService(s services.Service) {
 		ctn:                readContent(template_dir, ctn),
 		service_config_tpl: readContent(template_dir, service_config_tpl),
 		app_tpl:            readContent(template_dir, app_tpl),
-		repo_tpl:           readContent(template_dir, repo_tpl),
+		repo_pg_tpl:        readContent(template_dir, repo_pg_tpl),
 		kafka_prod_tpl:     readContent(template_dir, kafka_prod_tpl),
 	}
 
@@ -64,19 +64,25 @@ func GenService(s services.Service) {
 	}
 
 	appDeps := []AppDep{}
+	infraDeps := []InfraDep{{Typ: "kafkaProducer", Name: "default"}}
+
 	opts.Globals["app_deps"] = &appDeps
+	opts.Globals["infra_deps"] = &infraDeps
 
 	for _, pg := range s.Postgres {
 		appDeps = append(appDeps, pg)
+		infraDeps = append(infraDeps, InfraDep{Typ: "postgres", Name: pg.Name})
+
 		opts.Globals["repo"] = &pg
 		opts.Globals["kind"] = "postgres"
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_repository_postgres.go", s.Name, pg.Name)
-		writeTemplate(fsys, repo_tpl, opts, nil, outFile)
+		writeTemplate(fsys, repo_pg_tpl, opts, nil, outFile)
 	}
 
 	for _, kp := range s.KafkaProducers {
 		appDeps = append(appDeps, kp)
+
 		opts.Globals["kp"] = &kp
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_producer_kafka.go", s.Name, kp.Name)
@@ -120,4 +126,9 @@ func readContent(dir string, file string) []byte {
 type AppDep interface {
 	AppVarName() string
 	InterfaceName() string
+}
+
+type InfraDep struct {
+	Typ  string
+	Name string
 }

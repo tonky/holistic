@@ -19,15 +19,11 @@ import (
 type Pizzeria struct {
     config Config
     deps do.Injector
+    app pizzeria.App
 }
 
 func (h Pizzeria) ReadOrder(arg food.OrderID, reply *food.Order) error {
-    application, appErr := pizzeria.NewApp(h.deps)
-    if appErr != nil {
-        return appErr
-    }
-
-    res, err := application.ReadOrder(context.TODO(), arg)
+    res, err := h.app.ReadOrder(context.TODO(), arg)
     if err != nil {
         return err
     }
@@ -38,12 +34,7 @@ func (h Pizzeria) ReadOrder(arg food.OrderID, reply *food.Order) error {
 }
 
 func (h Pizzeria) CreateOrder(arg NewOrder, reply *food.Order) error {
-    application, appErr := pizzeria.NewApp(h.deps)
-    if appErr != nil {
-        return appErr
-    }
-
-    res, err := application.CreateOrder(context.TODO(), arg.ToApp())
+    res, err := h.app.CreateOrder(context.TODO(), arg.ToApp())
     if err != nil {
         return err
     }
@@ -54,12 +45,17 @@ func (h Pizzeria) CreateOrder(arg NewOrder, reply *food.Order) error {
 }
 
 
-func NewPizzeria(dependencies do.Injector) ServiceStarter {
+func NewPizzeria(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)
 
-    handlers := Pizzeria{deps: dependencies, config: *cfg}
+    application, appErr := pizzeria.NewApp(dependencies)
+    if appErr != nil {
+        return nil, appErr
+    }
 
-    return handlers
+    handlers := Pizzeria{deps: dependencies, config: *cfg, app: *application}
+
+    return handlers, nil
 }
 
 func (h Pizzeria) Start() error {

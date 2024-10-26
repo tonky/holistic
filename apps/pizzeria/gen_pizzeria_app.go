@@ -10,7 +10,7 @@ import (
 
 type App struct {
 	deps       do.Injector
-	logger     *logger.SlogLogger
+	logger     *logger.Slog
 
     ordererRepo OrdererRepository
     foodOrderProducer FoodOrderProducer
@@ -19,7 +19,7 @@ type App struct {
 func NewApp(deps do.Injector) (*App, error) {
 	return &App{
 		deps:       deps,
-		logger:     do.MustInvoke[*logger.SlogLogger](deps),
+		logger:     do.MustInvoke[*logger.Slog](deps),
         ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
         foodOrderProducer: do.MustInvokeAs[FoodOrderProducer](deps),
 	}, nil
