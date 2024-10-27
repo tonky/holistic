@@ -37,20 +37,34 @@ func (kp KafkaProducer) InterfaceName() string {
 	return strings.ToUpper(kp.Name[0:1]) + kp.Name[1:] + "Producer"
 }
 
+func (k KafkaProducer) Imports() []ClientImport {
+	return []ClientImport{importFromModel(k.Model)}
+}
+
 type KafkaConsumer struct {
 	Name  string
 	Topic string
 	Model string
 }
 
-func (kp KafkaConsumer) StructName() string {
-	return "Kafka" + kp.InterfaceName()
+func (k KafkaConsumer) StructName() string {
+	return "Kafka" + k.InterfaceName()
 }
 
-func (kp KafkaConsumer) AppVarName() string {
-	return kp.Name + "Consumer"
+func (k KafkaConsumer) AppVarName() string {
+	return k.Name + "Consumer"
 }
 
-func (kp KafkaConsumer) InterfaceName() string {
-	return strings.ToUpper(kp.Name[0:1]) + kp.Name[1:] + "Consumer"
+func (k KafkaConsumer) InterfaceName() string {
+	return strings.ToUpper(k.Name[0:1]) + k.Name[1:] + "Consumer"
+}
+
+func (k KafkaConsumer) Imports() []ClientImport {
+	return []ClientImport{importFromModel(k.Model)}
+}
+
+func importFromModel(model string) ClientImport {
+	split := strings.Split(model, ".")
+
+	return ClientImport{RelPath: "domain/" + split[0]}
 }

@@ -1,9 +1,9 @@
 package main
 
 import (
-	app "tonky/holistic/apps/pizzeria"
+	app "tonky/holistic/apps/accounting"
 	"tonky/holistic/infra/logger"
-	svc "tonky/holistic/services/pizzeria"
+	svc "tonky/holistic/services/accounting"
 
 	"github.com/samber/do/v2"
 )
@@ -16,12 +16,7 @@ func main() {
 
 	logger := logger.Slog{}
 
-	por, err := app.NewPostgresOrdererRepository(logger, config.PostgresOrderer)
-	if err != nil {
-		panic(err)
-	}
-
-	kpfo, err := app.NewKafkaFoodOrderProducer(logger, config.Kafka)
+	consumer, err := app.NewKafkaFoodOrderConsumer(logger, config.Kafka)
 	if err != nil {
 		panic(err)
 	}
@@ -31,10 +26,9 @@ func main() {
 	do.ProvideValue(injector, &logger)
 
 	// provide infra dependencies
-	do.ProvideValue(injector, kpfo)
-	do.ProvideValue(injector, por)
+	do.ProvideValue(injector, consumer)
 
-	svc, err := svc.NewPizzeria(injector)
+	svc, err := svc.NewAccounting(injector)
 	if err != nil {
 		panic(err)
 	}

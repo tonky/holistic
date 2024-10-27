@@ -6,20 +6,19 @@ import (
     "fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
 	"tonky/holistic/domain/food"
-	"tonky/holistic/apps/pizzeria"
+	app "tonky/holistic/apps/pizzeria"
 )
 
 type Pizzeria struct {
     config Config
     deps do.Injector
-    app pizzeria.App
+    app app.App
 }
 
 func (h Pizzeria) ReadOrder(arg food.OrderID, reply *food.Order) error {
@@ -48,7 +47,7 @@ func (h Pizzeria) CreateOrder(arg NewOrder, reply *food.Order) error {
 func NewPizzeria(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)
 
-    application, appErr := pizzeria.NewApp(dependencies)
+    application, appErr := app.NewApp(dependencies)
     if appErr != nil {
         return nil, appErr
     }
@@ -63,8 +62,8 @@ func (h Pizzeria) Start() error {
 
     fmt.Printf(">> pizzeria.Start() config: %+v\n", h.config)
 
-	rpc.Register(h)
-	rpc.HandleHTTP()
+	server := rpc.NewServer()
+	server.Register(h)
 
 	fmt.Println(">> starging server on port ", port)
 
@@ -73,7 +72,16 @@ func (h Pizzeria) Start() error {
         log.Fatal("listen error:", err)
     }
 
-    return http.Serve(l, nil)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			panic(err)
+		}
+
+		go func() {
+			server.ServeConn(conn)
+		}()
+	}
 }
 
 type ServiceStarter interface {

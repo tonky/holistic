@@ -4,7 +4,7 @@ package accounting
 import (
 	"tonky/holistic/infra/logger"
 
-	"tonky/holistic/infra/kafkaProducer"
+	"tonky/holistic/infra/kafka"
 
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
@@ -15,7 +15,7 @@ type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
 
-    KafkaProducerDefault kafkaProducer.Config
+    Kafka kafka.Config
 
     KafkaConsumptionRPS int `split_words:"true"`
 }
@@ -23,7 +23,7 @@ type Config struct {
 func NewEnvConfig() (Config, error) {
 	var c Config
 
-	return c, envconfig.Process("pizzeria", &c)
+	return c, envconfig.Process("accounting", &c)
 }
 
 func NewConfig(i do.Injector) (*Config, error) {

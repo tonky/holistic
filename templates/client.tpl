@@ -23,7 +23,7 @@ type {{ cap(service_name) }}Client struct {
 
 {% for h in handlers %}
 func (c {{ cap(service_name) }}Client) {{ h.FuncName() }}(ctx context.Context, req {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error) {
-	client, err := rpc.DialHTTP("tcp", c.config.ServerAddress())
+	client, err := rpc.Dial("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)
 	}

@@ -2,6 +2,7 @@ package tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 	"time"
 	app "tonky/holistic/apps/pizzeria"
@@ -13,33 +14,33 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func init() {
-	go func() {
-		injector := do.New()
+func initPizzeriaServer() do.Injector {
+	injector := do.New()
 
-		do.ProvideValue(injector, &svc.Config{Port: 1234})
-		do.ProvideValue(injector, &logger.Slog{})
+	do.ProvideValue(injector, &svc.Config{Port: 1234})
+	do.ProvideValue(injector, &logger.Slog{})
 
-		do.Provide(injector, app.NewMemoryOrdererRepository)
-		do.Provide(injector, app.NewMemoryOrderProducerRepository)
+	do.Provide(injector, app.NewMemoryOrdererRepository)
+	do.Provide(injector, app.NewMemoryOrderProducerRepository)
 
-		pizzeria, err := svc.NewPizzeria(injector)
-		if err != nil {
-			panic(err)
-		}
+	pizzeria, err := svc.NewPizzeria(injector)
+	if err != nil {
+		panic(err)
+	}
 
-		pizzeria.Start()
-	}()
+	go pizzeria.Start()
 
-	time.Sleep(100 * time.Millisecond)
+	return injector
 }
 
 func TestPizzeriaCRD(t *testing.T) {
-	injector := do.New()
+	deps := initPizzeriaServer()
 
-	conf := clients.Config{Host: "localhost", Port: 1234}
+	time.Sleep(100 * time.Millisecond)
 
-	do.ProvideValue(injector, &conf)
+	conf := clients.Config{Host: "localhost", Port: do.MustInvoke[*svc.Config](deps).Port}
+
+	do.ProvideValue(deps, &conf)
 
 	pc := clients.NewPizzeria(conf)
 
@@ -47,6 +48,7 @@ func TestPizzeriaCRD(t *testing.T) {
 		Content: "new order",
 	}
 
+	fmt.Println("calling server")
 	createdOrder, err := pc.CreateOrder(context.TODO(), newOrder)
 	require.NoError(t, err)
 	require.Equal(t, newOrder.Content, createdOrder.Content)

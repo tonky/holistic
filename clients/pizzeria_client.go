@@ -21,7 +21,7 @@ type PizzeriaClient struct {
 }
 
 func (c PizzeriaClient) ReadOrder(ctx context.Context, req food.OrderID) (food.Order, error) {
-	client, err := rpc.DialHTTP("tcp", c.config.ServerAddress())
+	client, err := rpc.Dial("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)
 	}
@@ -37,7 +37,7 @@ func (c PizzeriaClient) ReadOrder(ctx context.Context, req food.OrderID) (food.O
 }
 
 func (c PizzeriaClient) CreateOrder(ctx context.Context, req svc.NewOrder) (food.Order, error) {
-	client, err := rpc.DialHTTP("tcp", c.config.ServerAddress())
+	client, err := rpc.Dial("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)
 	}

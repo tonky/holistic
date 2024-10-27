@@ -3,10 +3,17 @@ package {{ service_name }}
 
 import (
 	"context"
-	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaProducer"
+
+	{% for imp in kp.Imports() %}
+	{{ imp.Alias}} "tonky/holistic/{{ imp.RelPath }}"
+	{% end %}
 )
+
+// compile-time check to make sure app-level interface is implemented
+var _ {{ kp.InterfaceName() }} = new({{ kp.StructName() }}) 
 
 type {{ kp.InterfaceName() }} interface {
 	Produce{{ cap(kp.Name) }}(context.Context, {{ kp.Model }}) error
@@ -18,7 +25,7 @@ type {{ kp.StructName() }} struct {
 	client kafkaProducer.IProducer
 }
 
-func New{{ kp.StructName() }}(logger logger.Slog, config kafkaProducer.Config) (*{{ kp.StructName() }}, error) {
+func New{{ kp.StructName() }}(logger logger.Slog, config kafka.Config) (*{{ kp.StructName() }}, error) {
 	client := kafkaProducer.NewProducer(config, "{{ kp.Topic }}")
 
 	return &{{ kp.StructName() }}{

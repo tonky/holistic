@@ -22,7 +22,8 @@ func GenService(s services.Service) {
 	service_config_tpl := "service_config.tpl"
 	app_tpl := "app.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
-	kafka_prod_tpl := "kafka_producer.tpl"
+	kafka_producer_tpl := "kafka_producer.tpl"
+	kafka_consumer_tpl := "kafka_consumer.tpl"
 
 	if err := os.MkdirAll(filepath.Join(".", "clients"), os.ModePerm); err != nil {
 		panic(err)
@@ -49,11 +50,13 @@ func GenService(s services.Service) {
 		service_config_tpl: readContent(template_dir, service_config_tpl),
 		app_tpl:            readContent(template_dir, app_tpl),
 		repo_pg_tpl:        readContent(template_dir, repo_pg_tpl),
-		kafka_prod_tpl:     readContent(template_dir, kafka_prod_tpl),
+		kafka_producer_tpl: readContent(template_dir, kafka_producer_tpl),
+		kafka_consumer_tpl: readContent(template_dir, kafka_consumer_tpl),
 	}
 
 	opts := &scriggo.BuildOptions{
 		Globals: native.Declarations{
+			"service":      &s,
 			"cap":          builtin.Capitalize,
 			"port":         (*int)(nil),
 			"handlers":     &s.Endpoints,
@@ -64,7 +67,7 @@ func GenService(s services.Service) {
 	}
 
 	appDeps := []AppDep{}
-	infraDeps := []InfraDep{{Typ: "kafkaProducer", Name: "default"}}
+	infraDeps := []InfraDep{{Typ: "kafka", Name: ""}}
 	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
@@ -88,7 +91,16 @@ func GenService(s services.Service) {
 		opts.Globals["kp"] = &kp
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_producer_kafka.go", s.Name, kp.Name)
-		writeTemplate(fsys, kafka_prod_tpl, opts, nil, outFile)
+		writeTemplate(fsys, kafka_producer_tpl, opts, nil, outFile)
+	}
+
+	for _, k := range s.KafkaConsumers {
+		appDeps = append(appDeps, k)
+
+		opts.Globals["k"] = &k
+
+		outFile := fmt.Sprintf("apps/%s/gen_%s_consumer_kafka.go", s.Name, k.Name)
+		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFile)
 	}
 
 	writeTemplate(fsys, stn, opts, nil, tplGenPath[stn])

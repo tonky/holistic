@@ -6,20 +6,24 @@ import (
     "fmt"
 	"log"
 	"net"
-	"net/http"
 	"net/rpc"
 
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
-	"tonky/holistic/domain/food"
-	"tonky/holistic/apps/{{ service_name }}"
+	{% for imp in service.ClientImports() %}
+    {% if imp.Alias == "svc" %}
+        {% continue %}
+    {% end if %}
+	{% if imp.Alias %}{{ imp.Alias }} {% end if %}"tonky/holistic/{{ imp.RelPath }}"
+	{% end %}
+	app "tonky/holistic/apps/{{ service_name }}"
 )
 
 type {{ cap(service_name) }} struct {
     config Config
     deps do.Injector
-    app {{ service_name }}.App
+    app app.App
 }
 
 {% for h in handlers %}
@@ -39,7 +43,7 @@ func (h {{ cap(service_name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
 func New{{ cap(service_name) }}(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)
 
-    application, appErr := {{ service_name }}.NewApp(dependencies)
+    application, appErr := app.NewApp(dependencies)
     if appErr != nil {
         return nil, appErr
     }
@@ -54,8 +58,8 @@ func (h {{ cap(service_name) }}) Start() error {
 
     fmt.Printf(">> {{ service_name }}.Start() config: %+v\n", h.config)
 
-	rpc.Register(h)
-	rpc.HandleHTTP()
+	server := rpc.NewServer()
+	server.Register(h)
 
 	fmt.Println(">> starging server on port ", port)
 
@@ -64,7 +68,16 @@ func (h {{ cap(service_name) }}) Start() error {
         log.Fatal("listen error:", err)
     }
 
-    return http.Serve(l, nil)
+	for {
+		conn, err := l.Accept()
+		if err != nil {
+			panic(err)
+		}
+
+		go func() {
+			server.ServeConn(conn)
+		}()
+	}
 }
 
 type ServiceStarter interface {

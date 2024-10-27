@@ -21,7 +21,7 @@ type AccountingClient struct {
 }
 
 func (c AccountingClient) ReadOrder(ctx context.Context, req food.OrderID) (accounting.Order, error) {
-	client, err := rpc.DialHTTP("tcp", c.config.ServerAddress())
+	client, err := rpc.Dial("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)
 	}

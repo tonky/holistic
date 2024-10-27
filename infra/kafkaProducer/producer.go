@@ -6,6 +6,9 @@ import (
 	"log"
 	"time"
 
+	kafkaInfra "tonky/holistic/infra/kafka"
+	"tonky/holistic/infra/logger"
+
 	"github.com/segmentio/kafka-go"
 )
 
@@ -15,19 +18,21 @@ type IProducer interface {
 }
 
 type Producer struct {
-	config Config
+	config kafkaInfra.Config
 	topic  string
+	logger *logger.Slog
 }
 
-func NewProducer(config Config, topic string) Producer {
+func NewProducer(config kafkaInfra.Config, topic string) Producer {
 	return Producer{
 		config: config,
 		topic:  topic,
+		logger: &logger.Slog{},
 	}
 }
 
 func (p Producer) Produce(ctx context.Context, data []byte) error {
-	fmt.Println("Producer.Produce", p.topic, len(data))
+	p.logger.Info("Producer.Produce", p.topic, len(data))
 
 	conn, err := kafka.DialLeader(context.Background(), "tcp", p.config.Brokers[0], p.topic, 0)
 	if err != nil {
@@ -46,7 +51,7 @@ func (p Producer) Produce(ctx context.Context, data []byte) error {
 		log.Fatal("failed to close writer:", err)
 	}
 
-	fmt.Println("Producer.Produce", p.topic, len(data), "done")
+	p.logger.Info("Producer.Produce", p.topic, len(data), "done")
 	return nil
 }
 

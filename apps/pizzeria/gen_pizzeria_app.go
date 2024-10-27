@@ -17,10 +17,12 @@ type App struct {
 }
 
 func NewApp(deps do.Injector) (*App, error) {
-	return &App{
+	app := App{
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
         ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
         foodOrderProducer: do.MustInvokeAs[FoodOrderProducer](deps),
-	}, nil
+	}
+
+	return &app, nil
 }

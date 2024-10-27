@@ -3,6 +3,10 @@ package pizzeria
 import (
 	"context"
 	"tonky/holistic/domain/food"
+	"tonky/holistic/infra/kafka"
+	"tonky/holistic/infra/logger"
+
+	"github.com/samber/do/v2"
 )
 
 func (r KafkaFoodOrderProducer) ProduceFoodOrder(ctx context.Context, in food.Order) error {
@@ -20,4 +24,11 @@ func (r KafkaFoodOrderProducer) ProduceFoodOrderBatch(ctx context.Context, in []
 	}
 
 	return r.client.ProduceBatch(ctx, data)
+}
+
+func NewDOKafkaFoodOrderProducer(deps do.Injector) (*KafkaFoodOrderProducer, error) {
+	config := do.MustInvoke[*kafka.Config](deps)
+	logger := do.MustInvoke[*logger.Slog](deps)
+
+	return NewKafkaFoodOrderProducer(*logger, *config)
 }

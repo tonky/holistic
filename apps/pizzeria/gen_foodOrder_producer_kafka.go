@@ -3,10 +3,15 @@ package pizzeria
 
 import (
 	"context"
-	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaProducer"
+
+	 "tonky/holistic/domain/food"
 )
+
+// compile-time check to make sure app-level interface is implemented
+var _ FoodOrderProducer = new(KafkaFoodOrderProducer) 
 
 type FoodOrderProducer interface {
 	ProduceFoodOrder(context.Context, food.Order) error
@@ -18,7 +23,7 @@ type KafkaFoodOrderProducer struct {
 	client kafkaProducer.IProducer
 }
 
-func NewKafkaFoodOrderProducer(logger logger.Slog, config kafkaProducer.Config) (*KafkaFoodOrderProducer, error) {
+func NewKafkaFoodOrderProducer(logger logger.Slog, config kafka.Config) (*KafkaFoodOrderProducer, error) {
 	client := kafkaProducer.NewProducer(config, "pizzeria.order")
 
 	return &KafkaFoodOrderProducer{
