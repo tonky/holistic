@@ -11,6 +11,7 @@ func BackofficeService() services.Service {
 			services.ResponseOK: "accounting.Order",
 		},
 	}
+
 	return services.Service{
 		Name:        "accounting",
 		Rpc:         services.GoNative,
@@ -20,6 +21,23 @@ func BackofficeService() services.Service {
 			Name:  "foodOrder",
 			Topic: "pizzeria.order",
 			Model: "food.Order",
+		}},
+		Interfaces: []services.JustInterface{{
+			Name:   "AccountOrdersRepoReader",
+			Struct: "OrdersRepository",
+			Deps: map[string]services.FQImport{
+				"logger": {
+					RelPath: "infra/logger",
+					Model:   "Slog",
+				},
+			},
+			Methods: []services.InterfaceMethod{
+				{
+					Name: "ReadOrderByFoodID",
+					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
+				},
+			},
 		}},
 	}
 }

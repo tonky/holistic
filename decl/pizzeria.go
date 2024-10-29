@@ -31,16 +31,16 @@ func PizzeriaService() services.Service {
 		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
 		Postgres: []services.Postgres{{
 			Name: "orderer",
-			Interface: []services.Interface{
+			Methods: []services.InterfaceMethod{
 				{
-					Method: "ReadOrderByID",
-					Arg:    services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
-					Ret:    services.InfraObject{Name: "order", Typ: "food.Order"},
+					Name: "ReadOrderByID",
+					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
 				},
 				{
-					Method: "SaveOrder",
-					Arg:    services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
-					Ret:    services.InfraObject{Name: "order", Typ: "food.Order"},
+					Name: "SaveOrder",
+					Arg:  services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
+					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
 				},
 			},
 		}},

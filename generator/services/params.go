@@ -106,7 +106,7 @@ func (rt ResponseType) String() string {
 
 type Endpoint struct {
 	Name   string
-	Method Method
+	Method MethodAction
 	In     Inputs
 	Out    map[ResponseType]ResponseObject
 }
@@ -124,6 +124,7 @@ type Service struct {
 	Consumes       []Topic
 	ConfigItems    []ConfigItem
 	Infra          []Infra
+	Interfaces     []JustInterface
 	Postgres       []Postgres
 	KafkaProducers []KafkaProducer
 	KafkaConsumers []KafkaConsumer
@@ -203,6 +204,14 @@ type ClientImport struct {
 	RelPath string
 }
 
+func (ci ClientImport) String(mod string) string {
+	if ci.Alias != "" {
+		return fmt.Sprintf("%s \"%s/%s\"", ci.Alias, mod, ci.RelPath)
+	}
+
+	return fmt.Sprintf("\"%s/%s\"", mod, ci.RelPath)
+}
+
 type ConfigItem struct {
 	Name       string
 	Typ        string
@@ -213,6 +222,22 @@ type ConfigItem struct {
 type InfraObject struct {
 	Name string
 	Typ  string
+}
+
+func (io InfraObject) Import(s Service) ClientImport {
+	split := strings.Split(io.Typ, ".")
+
+	// app model
+	if len(split) <= 1 {
+		return ClientImport{RelPath: "apps/" + strings.ToLower(s.Name) + "/" + io.Typ}
+	}
+
+	// not enough data, assume 'domain'?
+	if len(split) == 2 {
+		return ClientImport{RelPath: strings.Join([]string{"domain", split[0]}, "/")}
+	}
+
+	return ClientImport{RelPath: strings.Join(split[0:len(split)-3], "/")}
 }
 
 type InOut struct {

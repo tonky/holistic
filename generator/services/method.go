@@ -1,15 +1,15 @@
 package services
 
-type Method string
+type MethodAction string
 
 const (
-	Create Method = "create"
-	Read   Method = "read"
-	Update Method = "update"
-	Delete Method = "delete"
+	Create MethodAction = "create"
+	Read   MethodAction = "read"
+	Update MethodAction = "update"
+	Delete MethodAction = "delete"
 )
 
-func (m Method) HttpName() string {
+func (m MethodAction) HttpName() string {
 	switch m {
 	case Create:
 		return "Post"

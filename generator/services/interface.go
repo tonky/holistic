@@ -1,7 +1,7 @@
 package services
 
-type Interface struct {
-	Method string
-	Arg    InfraObject
-	Ret    InfraObject
+type InterfaceMethod struct {
+	Name string
+	Arg  InfraObject
+	Ret  InfraObject
 }

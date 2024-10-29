@@ -6,6 +6,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 	"tonky/holistic/generator/services"
 
 	"github.com/open2b/scriggo"
@@ -22,6 +24,7 @@ func GenService(s services.Service) {
 	service_config_tpl := "service_config.tpl"
 	app_tpl := "app.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
+	repo_generic_tpl := "repository_generic.tpl"
 	kafka_producer_tpl := "kafka_producer.tpl"
 	kafka_consumer_tpl := "kafka_consumer.tpl"
 
@@ -50,12 +53,14 @@ func GenService(s services.Service) {
 		service_config_tpl: readContent(template_dir, service_config_tpl),
 		app_tpl:            readContent(template_dir, app_tpl),
 		repo_pg_tpl:        readContent(template_dir, repo_pg_tpl),
+		repo_generic_tpl:   readContent(template_dir, repo_generic_tpl),
 		kafka_producer_tpl: readContent(template_dir, kafka_producer_tpl),
 		kafka_consumer_tpl: readContent(template_dir, kafka_consumer_tpl),
 	}
 
 	opts := &scriggo.BuildOptions{
 		Globals: native.Declarations{
+			"mod":          "tonky/holistic",
 			"service":      &s,
 			"cap":          builtin.Capitalize,
 			"port":         (*int)(nil),
@@ -85,12 +90,19 @@ func GenService(s services.Service) {
 		writeTemplate(fsys, repo_pg_tpl, opts, nil, outFile)
 	}
 
+	for _, i := range s.Interfaces {
+		opts.Globals["repo"] = &i
+
+		outFile := fmt.Sprintf("apps/%s/gen_%s_repo_generic.go", s.Name, toSnakeCase(i.Struct))
+		writeTemplate(fsys, repo_generic_tpl, opts, nil, outFile)
+	}
+
 	for _, kp := range s.KafkaProducers {
 		appDeps = append(appDeps, kp)
 
 		opts.Globals["kp"] = &kp
 
-		outFile := fmt.Sprintf("apps/%s/gen_%s_producer_kafka.go", s.Name, kp.Name)
+		outFile := fmt.Sprintf("apps/%s/gen_%s_producer_kafka.go", s.Name, toSnakeCase(kp.Name))
 		writeTemplate(fsys, kafka_producer_tpl, opts, nil, outFile)
 	}
 
@@ -99,7 +111,7 @@ func GenService(s services.Service) {
 
 		opts.Globals["k"] = &k
 
-		outFile := fmt.Sprintf("apps/%s/gen_%s_consumer_kafka.go", s.Name, k.Name)
+		outFile := fmt.Sprintf("apps/%s/gen_%s_consumer_kafka.go", s.Name, toSnakeCase(k.Name))
 		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFile)
 	}
 
@@ -145,4 +157,13 @@ type AppDep interface {
 type InfraDep struct {
 	Typ  string
 	Name string
+}
+
+var matchFirstCap = regexp.MustCompile("(.)([A-Z][a-z]+)")
+var matchAllCap = regexp.MustCompile("([a-z0-9])([A-Z])")
+
+func toSnakeCase(str string) string {
+	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
+	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
+	return strings.ToLower(snake)
 }

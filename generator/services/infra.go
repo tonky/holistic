@@ -3,8 +3,8 @@ package services
 import "strings"
 
 type Postgres struct {
-	Name      string
-	Interface []Interface
+	Name    string
+	Methods []InterfaceMethod
 }
 
 func (p Postgres) StructName() string {

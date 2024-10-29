@@ -9,8 +9,8 @@ import (
 )
 
 type {{ repo.InterfaceName() }} interface {
-    {% for io in repo.Interface %}
-    {{ io.Method }}(context.Context{% if io.Arg %}, {{ io.Arg.Typ }}{% end %}) ({% if io.Ret %}{{ io.Ret.Typ }}, {% end %}error)
+    {% for io in repo.Methods %}
+    {{ io.Name }}(context.Context{% if io.Arg %}, {{ io.Arg.Typ }}{% end %}) ({% if io.Ret %}{{ io.Ret.Typ }}, {% end %}error)
     {% end %}
 }
 
