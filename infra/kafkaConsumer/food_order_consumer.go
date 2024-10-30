@@ -2,6 +2,7 @@ package kafkaConsumer
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"tonky/holistic/domain/food"
 )
@@ -24,7 +25,15 @@ func ConsumeFoodOrder(consumer IConsumer) (chan food.Order, chan error) {
 				fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder got error from kafka", err)
 				resErrors <- fmt.Errorf("failed to consume message: %w", err)
 			case m := <-kafkaMessages:
-				order := food.Order{Content: string(m.Value)}
+				var order food.Order
+				err := json.Unmarshal(m.Value, &order)
+
+				if err != nil {
+					fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder | failed to unmarshal message", err)
+					resErrors <- fmt.Errorf("failed to unmarshal message order from pizzeria.food topic: %w", err)
+					continue
+				}
+
 				fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder | got order from kafka, returning model", order)
 				resModels <- order
 			}

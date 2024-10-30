@@ -33,6 +33,11 @@ func BackofficeService() services.Service {
 			},
 			Methods: []services.InterfaceMethod{
 				{
+					Name: "SaveOrder",
+					Arg:  services.InfraObject{Name: "order", Typ: "NewOrder"},
+					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
+				},
+				{
 					Name: "ReadOrderByFoodID",
 					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
 					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},

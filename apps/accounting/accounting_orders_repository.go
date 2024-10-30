@@ -13,3 +13,11 @@ func (a OrdersRepository) ReadOrderByFoodID(ctx context.Context, in food.OrderID
 
 	return out, nil
 }
+
+func (a OrdersRepository) SaveOrder(ctx context.Context, in NewOrder) (accounting.Order, error) {
+	var out accounting.Order
+
+	a.logger.Info("AccountingOrdersRepository.SaveAccountingOrder", in)
+
+	return out, nil
+}

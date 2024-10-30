@@ -2,6 +2,7 @@ package pizzeria
 
 import (
 	"context"
+	"encoding/json"
 	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
@@ -12,7 +13,12 @@ import (
 func (r KafkaFoodOrderProducer) ProduceFoodOrder(ctx context.Context, in food.Order) error {
 	r.logger.Info("KafkaFoodOrderProducer.ProduceOrder", in)
 
-	return r.client.Produce(ctx, []byte(in.ID.ID.String()+in.Content))
+	orderData, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+
+	return r.client.Produce(ctx, orderData)
 }
 
 func (r KafkaFoodOrderProducer) ProduceFoodOrderBatch(ctx context.Context, in []food.Order) error {

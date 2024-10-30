@@ -224,20 +224,24 @@ type InfraObject struct {
 	Typ  string
 }
 
-func (io InfraObject) Import(s Service) ClientImport {
+func (io InfraObject) Import(s Service) (*ClientImport, error) {
 	split := strings.Split(io.Typ, ".")
 
-	// app model
+	// app model, no need to import
 	if len(split) <= 1 {
-		return ClientImport{RelPath: "apps/" + strings.ToLower(s.Name) + "/" + io.Typ}
+		err := fmt.Errorf("InfraObject.Import: %s not enough data in %s", s, io.Typ)
+
+		fmt.Println(err)
+
+		return nil, err
 	}
 
 	// not enough data, assume 'domain'?
 	if len(split) == 2 {
-		return ClientImport{RelPath: strings.Join([]string{"domain", split[0]}, "/")}
+		return &ClientImport{RelPath: strings.Join([]string{"domain", split[0]}, "/")}, nil
 	}
 
-	return ClientImport{RelPath: strings.Join(split[0:len(split)-3], "/")}
+	return &ClientImport{RelPath: strings.Join(split[0:len(split)-3], "/")}, nil
 }
 
 type InOut struct {

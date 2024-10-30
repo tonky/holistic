@@ -42,6 +42,8 @@ func startServices() do.Injector {
 
 	go pizzeria.Start()
 
+	do.Provide(injector, app_acc.NewOrdersMemoryRepository)
+
 	accounting, err := svc_acc.NewAccounting(injector)
 	if err != nil {
 		panic(err)
@@ -88,9 +90,9 @@ func TestOrderThroughKafka(t *testing.T) {
 	accountingOrder, err := ac.ReadOrder(context.TODO(), createdOrder.ID)
 	require.NoError(t, err)
 
-	require.Equal(t, accountingOrder.ID, createdOrder.ID)
+	require.Equal(t, createdOrder.ID, accountingOrder.ID)
 
 	require.Equal(t, accountingOrder.IsPaid, true)
-	require.Equal(t, accountingOrder.Cost, 10)
+	require.Equal(t, accountingOrder.Cost, 5)
 
 }

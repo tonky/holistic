@@ -5,6 +5,12 @@ import (
 	"strings"
 )
 
+type InterfaceMethod struct {
+	Name string
+	Arg  InfraObject
+	Ret  InfraObject
+}
+
 type JustInterface struct {
 	Name    string
 	Struct  string
@@ -21,11 +27,29 @@ func (ji JustInterface) InterfaceName() string {
 }
 
 func (ji JustInterface) Imports(s Service) []ClientImport {
-	var out []ClientImport
+	var all []ClientImport
 
 	for _, m := range ji.Methods {
-		out = append(out, m.Arg.Import(s))
-		out = append(out, m.Ret.Import(s))
+		if argImport, err := m.Arg.Import(s); err == nil {
+			all = append(all, *argImport)
+		}
+
+		if retImport, err := m.Ret.Import(s); err == nil {
+			all = append(all, *retImport)
+		}
+	}
+
+	var out []ClientImport
+	seen := map[string]bool{}
+
+	for _, dep := range all {
+		if seen[dep.RelPath] {
+			continue
+		}
+
+		seen[dep.RelPath] = true
+
+		out = append(out, dep)
 	}
 
 	return out
