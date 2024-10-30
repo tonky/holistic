@@ -9,6 +9,7 @@ import (
 	"tonky/holistic/clients"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/postgres"
 	svc_acc "tonky/holistic/services/accounting"
 	svc_piz "tonky/holistic/services/pizzeria"
 
@@ -17,9 +18,11 @@ import (
 )
 
 func startServices() do.Injector {
+	l := logger.Slog{}
+
 	injector := do.New()
 	kc := kafka.Config{Brokers: []string{"localhost:19092"}}
-	kfc, err := app_acc.NewKafkaFoodOrderConsumer(logger.Slog{}, kc)
+	kfc, err := app_acc.NewKafkaFoodOrderConsumer(l, kc)
 	if err != nil {
 		panic(err)
 	}
@@ -30,7 +33,18 @@ func startServices() do.Injector {
 
 	do.ProvideValue(injector, &logger.Slog{})
 
-	do.Provide(injector, app_piz.NewMemoryOrdererRepository)
+	pgConf := postgres.Config{
+		Host:     "localhost",
+		Port:     5432,
+		User:     "postgres",
+		Password: "postgres",
+	}
+	po, err := app_piz.NewPostgresOrdererRepository(l, pgConf)
+	if err != nil {
+		panic(err)
+	}
+
+	do.ProvideValue(injector, po)
 	do.Provide(injector, app_piz.NewDOKafkaFoodOrderProducer)
 
 	do.ProvideValue(injector, kfc)
