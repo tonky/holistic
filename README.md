@@ -1,4 +1,5 @@
 #  Service generator
+![Overview](https://github.com/tonky/holistic/blob/main/docs/arch_v2.svg)
 
 ## Stats
 Lines of code

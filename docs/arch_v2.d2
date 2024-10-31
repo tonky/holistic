@@ -1,0 +1,52 @@
+direction: right
+
+DomainDeclaration: Declarative Domain Models {
+    BoundedContext: Models by Bounded Context
+}
+
+ServiceDeclaration: Declarative Services {
+    Transport: Transport(gRPC, HTTP, net/rpc)
+    Endpoints
+    ConfigItems: Config Variables
+    Infra: Infrastructure dependencies {
+        KafkaPublishers: Kafka publishers
+        KafkaSubscribers: Kafka subscribers
+        Postgres
+        MongoDB
+        Elasticsearch
+        Custom dependencies
+    }
+    # Interfaces: Application interfaces
+}
+
+ClientUsage: Strongly typed clients used in developers code 
+
+DomainGen: Domain code generator
+ServiceGen: Service code generator
+
+ServiceDeclaration -> ServiceGen -> ServiceCode -> Service
+DomainDeclaration -> DomainGen -> DomainCode -> Service.App
+ServiceDeclaration -> ServiceGen -> ClientCode -> ClientUsage
+Service.Server.EndpointHandlers -> Service.App.Handlers
+
+Service.App.InfraDependencies -> Service.Dev.InfraDepsCode
+Service.App.Handlers -> Service.Dev.AppHandlers
+Service.App.InterfaceHandlers -> Service.Dev.AppInterfaces
+
+Service {
+    Server: {
+        Config
+        EndpointHandlers: Endpoint Handlers
+        Runner
+    }
+    App {
+        InfraDependencies: Infra Dependencies
+        Handlers: Endpoint Handlers
+        InterfaceHandlers: Custom Handlers
+    }
+    Dev: {
+        InfraDepsCode: Infra code
+        AppHandlers: Application handlers code
+        AppInterfaces: Application custom code
+    }
+}
