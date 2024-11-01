@@ -27,4 +27,4 @@ rpcl:
 
 stats:
   wc -l apps/pizzeria/order* apps/pizzeria/pizzeria_app.go
-  wc -l apps/pizzeria/gen* services/pizzeria/*.go
+  wc -l apps/pizzeria/gen* services/pizzeria/*.go clients/pizzeria*.go
