@@ -3,6 +3,7 @@ package {{ service_name }}
 
 import (
 	"context"
+	"encoding/json"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaProducer"
@@ -32,4 +33,32 @@ func New{{ kp.StructName() }}(logger logger.Slog, config kafka.Config) (*{{ kp.S
 		logger: logger,
 		client: client,
 	}, nil
+}
+
+func (r {{ kp.StructName() }}) Produce{{ cap(kp.Name) }}(ctx context.Context, in {{ kp.Model }}) error {
+	r.logger.Info("{{ kp.StructName() }}.Produce{{ cap(kp.Name) }}", in)
+
+	inBytes, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+
+	return r.client.Produce(ctx, inBytes)
+}
+
+func (r {{ kp.StructName() }}) Produce{{ cap(kp.Name) }}Batch(ctx context.Context, ins []{{ kp.Model }}) error {
+	r.logger.Info("{{ kp.StructName() }}.Produce{{ cap(kp.Name) }}Batch", ins)
+
+	var data [][]byte
+
+	for _, in  := range ins {
+		inBytes, err := json.Marshal(in)
+		if err != nil {
+			return err
+		}
+	
+		data = append(data, inBytes)
+	}
+
+	return r.client.ProduceBatch(ctx, data)
 }

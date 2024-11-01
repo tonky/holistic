@@ -24,3 +24,7 @@ pgs:
 
 rpcl:
   docker exec -it redpanda-0 rpk topic consume pizzeria.order -o -1 -n 1
+
+stats:
+  wc -l apps/pizzeria/order* apps/pizzeria/pizzeria_app.go
+  wc -l apps/pizzeria/gen* services/pizzeria/*.go

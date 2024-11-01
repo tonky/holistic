@@ -3,6 +3,7 @@ package pizzeria
 
 import (
 	"context"
+	"encoding/json"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaProducer"
@@ -30,4 +31,32 @@ func NewKafkaFoodOrderProducer(logger logger.Slog, config kafka.Config) (*KafkaF
 		logger: logger,
 		client: client,
 	}, nil
+}
+
+func (r KafkaFoodOrderProducer) ProduceFoodOrder(ctx context.Context, in food.Order) error {
+	r.logger.Info("KafkaFoodOrderProducer.ProduceFoodOrder", in)
+
+	inBytes, err := json.Marshal(in)
+	if err != nil {
+		return err
+	}
+
+	return r.client.Produce(ctx, inBytes)
+}
+
+func (r KafkaFoodOrderProducer) ProduceFoodOrderBatch(ctx context.Context, ins []food.Order) error {
+	r.logger.Info("KafkaFoodOrderProducer.ProduceFoodOrderBatch", ins)
+
+	var data [][]byte
+
+	for _, in  := range ins {
+		inBytes, err := json.Marshal(in)
+		if err != nil {
+			return err
+		}
+	
+		data = append(data, inBytes)
+	}
+
+	return r.client.ProduceBatch(ctx, data)
 }

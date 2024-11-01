@@ -93,7 +93,7 @@ func GenService(s services.Service) {
 	for _, i := range s.Interfaces {
 		opts.Globals["repo"] = &i
 
-		outFile := fmt.Sprintf("apps/%s/gen_%s_repo_generic.go", s.Name, toSnakeCase(i.Struct))
+		outFile := fmt.Sprintf("apps/%s/gen_%s.go", s.Name, toSnakeCase(i.Struct))
 		writeTemplate(fsys, repo_generic_tpl, opts, nil, outFile)
 	}
 
