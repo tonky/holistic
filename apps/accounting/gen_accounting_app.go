@@ -25,6 +25,11 @@ func NewApp(deps do.Injector) (*App, error) {
         foodOrderConsumer: do.MustInvokeAs[FoodOrderConsumer](deps),
 	}
 
-	go app.foodOrderConsumer.Run(ctx, app.FoodOrderProcessor)
+	go func() {
+		for err := range app.foodOrderConsumer.Run(ctx, app.FoodOrderProcessor) {
+			app.logger.Warn(err.Error())
+		}
+	}()
+	
 	return &app, nil
 }

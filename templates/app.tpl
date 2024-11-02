@@ -34,7 +34,12 @@ func NewApp(deps do.Injector) (*App, error) {
 	}
 
 	{% for consumer in service.KafkaConsumers %}
-	go app.{{ consumer.Name }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor)
+	go func() {
+		for err := range app.{{ consumer.Name }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
+			app.logger.Warn(err.Error())
+		}
+	}()
+	
 	{% end %}
 	return &app, nil
 }

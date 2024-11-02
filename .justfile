@@ -22,8 +22,8 @@ pgc:
 pgs:
   docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres
 
-rpcl:
-  docker exec -it redpanda-0 rpk topic consume pizzeria.order -o -1 -n 1
+rpw:
+  docker exec -it redpanda-0 rpk topic consume pizzeria.order -o -1
 
 stats:
   wc -l apps/pizzeria/order* apps/pizzeria/pizzeria_app.go

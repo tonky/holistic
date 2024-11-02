@@ -73,7 +73,7 @@ func startServices() do.Injector {
 func TestOrderThroughKafka(t *testing.T) {
 	injector := startServices()
 
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(100 * time.Millisecond)
 
 	accountingConfig := do.MustInvoke[*svc_acc.Config](injector)
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
@@ -97,7 +97,7 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	require.Equal(t, order.ID, createdOrder.ID)
 
-	time.Sleep(1000 * time.Millisecond)
+	time.Sleep(50 * time.Millisecond)
 
 	ac := clients.NewAccounting(clients.Config{Host: "localhost", Port: accountingConfig.Port})
 

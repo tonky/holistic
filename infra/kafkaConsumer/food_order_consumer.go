@@ -18,23 +18,24 @@ func ConsumeFoodOrder(consumer IConsumer) (chan food.Order, chan error) {
 	kafkaMessages, kafkaErrors := consumer.Consume(context.Background())
 
 	go func() {
-		fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder | started goroutine")
+		consumer.Logger().Info("infra.kafkaConsumer.ConsumeFoodOrder | started goroutine")
 		for {
+			// consumer.Logger().Info("infra.kafkaConsumer.ConsumeFoodOrder | for loop...")
 			select {
 			case err := <-kafkaErrors:
-				fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder got error from kafka", err)
+				consumer.Logger().Error("infra.kafkaConsumer.ConsumeFoodOrder got error from kafka", err)
 				resErrors <- fmt.Errorf("failed to consume message: %w", err)
 			case m := <-kafkaMessages:
 				var order food.Order
 				err := json.Unmarshal(m.Value, &order)
 
 				if err != nil {
-					fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder | failed to unmarshal message", err)
-					resErrors <- fmt.Errorf("failed to unmarshal message order from pizzeria.food topic: %w", err)
+					// consumer.Logger().Error("infra.kafkaConsumer.ConsumeFoodOrder | failed to unmarshal message", err, m.Value)
+					resErrors <- fmt.Errorf("failed to unmarshal '%s' as food.Order from pizzeria.food topic: %w", string(m.Value), err)
 					continue
 				}
 
-				fmt.Println("infra.kafkaConsumer.ConsumeFoodOrder | got order from kafka, returning model", order)
+				consumer.Logger().Debug("infra.kafkaConsumer.ConsumeFoodOrder | got order from kafka, returning model", order)
 				resModels <- order
 			}
 		}
