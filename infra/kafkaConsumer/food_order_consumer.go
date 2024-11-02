@@ -7,6 +7,10 @@ import (
 	"tonky/holistic/domain/food"
 )
 
+type FoodOrderConsumer interface {
+	Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error
+}
+
 func ConsumeFoodOrder(consumer IConsumer) (chan food.Order, chan error) {
 	resModels := make(chan food.Order)
 	resErrors := make(chan error)

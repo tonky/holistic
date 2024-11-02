@@ -123,6 +123,7 @@ type Service struct {
 	Publishes      []Topic
 	Consumes       []Topic
 	ConfigItems    []ConfigItem
+	AppConfigItems []ConfigItem
 	Infra          []Infra
 	Interfaces     []JustInterface
 	Postgres       []Postgres

@@ -2,11 +2,7 @@
 package pizzeria
 
 import (
-	"tonky/holistic/infra/logger"
-
-	"tonky/holistic/infra/kafka"
-	"tonky/holistic/infra/postgres"
-
+	app "tonky/holistic/apps/pizzeria"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
 )
@@ -16,10 +12,9 @@ type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
 
-    Kafka kafka.Config
-    PostgresOrderer postgres.Config
+	App app.Config
 
-    ShouldMockApp bool `split_words:"true"`
+    StartDelayMs int `split_words:"true"`
 }
 
 func NewEnvConfig() (Config, error) {
@@ -33,8 +28,6 @@ func NewConfig(i do.Injector) (*Config, error) {
 	if err != nil {
 		return nil, err
 	}
-
-	do.Provide(i, logger.NewSlogLogger)
 
 	return &config, nil
 }

@@ -28,10 +28,10 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, &kc)
-	do.ProvideValue(injector, &svc_piz.Config{Port: 1236, Kafka: kc})
-	do.ProvideValue(injector, &svc_acc.Config{Port: 1235, Kafka: kc})
+	do.ProvideValue(injector, &svc_piz.Config{Port: 1236})
+	do.ProvideValue(injector, &svc_acc.Config{Port: 1235})
 
-	do.ProvideValue(injector, &logger.Slog{})
+	do.ProvideValue(injector, &l)
 
 	pgConf := postgres.Config{
 		Host:     "localhost",

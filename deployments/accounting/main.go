@@ -16,7 +16,7 @@ func main() {
 
 	logger := logger.Slog{}
 
-	consumer, err := app.NewKafkaFoodOrderConsumer(logger, config.Kafka)
+	consumer, err := app.NewKafkaFoodOrderConsumer(logger, config.App.Kafka)
 	if err != nil {
 		panic(err)
 	}
@@ -27,6 +27,7 @@ func main() {
 
 	// provide infra dependencies
 	do.ProvideValue(injector, consumer)
+	do.Provide(injector, app.NewOrdersMemoryRepository)
 
 	svc, err := svc.NewAccounting(injector)
 	if err != nil {

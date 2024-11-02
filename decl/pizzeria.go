@@ -25,10 +25,11 @@ func PizzeriaService() services.Service {
 	}
 
 	return services.Service{
-		Name:        "pizzeria",
-		Rpc:         services.GoNative,
-		Endpoints:   []services.Endpoint{getOrder, createOrder},
-		ConfigItems: []services.ConfigItem{{Name: "ShouldMockApp", Typ: "bool"}},
+		Name:           "pizzeria",
+		Rpc:            services.GoNative,
+		Endpoints:      []services.Endpoint{getOrder, createOrder},
+		ConfigItems:    []services.ConfigItem{{Name: "StartDelayMs", Typ: "int"}},
+		AppConfigItems: []services.ConfigItem{{Name: "EnabledInRegions", Typ: "[]string"}},
 		Postgres: []services.Postgres{{
 			Name: "orderer",
 			Methods: []services.InterfaceMethod{

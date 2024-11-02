@@ -2,19 +2,22 @@
 package {{ service.Name }}
 
 import (
-	app "tonky/holistic/apps/{{ service.Name }}"
+    {% for id in infra_deps %}
+	"tonky/holistic/infra/{{ id.Typ }}"
+    {% end %}
+
 	"github.com/kelseyhightower/envconfig"
-	"github.com/samber/do/v2"
 )
 
-// service specific config - env, secrets, run mode, flags etc
+// app specific config - infra, flags etc
 type Config struct {
 	Environment   string `default:"dev"`
-	Port int `default:"1234"`
 
-	App app.Config
+    {% for id in infra_deps %}
+    {{ cap(id.Typ) }}{{ cap(id.Name) }} {{ id.Typ }}.Config
+    {% end %}
 
-    {% for configItem in config_items %}
+    {% for configItem in app_config_items %}
     {{ configItem.Name }} {{ configItem.Typ }} `split_words:"true"`
     {% end %}
 }
@@ -23,13 +26,4 @@ func NewEnvConfig() (Config, error) {
 	var c Config
 
 	return c, envconfig.Process("{{ service.Name }}", &c)
-}
-
-func NewConfig(i do.Injector) (*Config, error) {
-	config, err := NewEnvConfig()
-	if err != nil {
-		return nil, err
-	}
-
-	return &config, nil
 }

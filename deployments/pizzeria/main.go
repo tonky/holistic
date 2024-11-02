@@ -16,12 +16,12 @@ func main() {
 
 	logger := logger.Slog{}
 
-	por, err := app.NewPostgresOrdererRepository(logger, config.PostgresOrderer)
+	por, err := app.NewPostgresOrdererRepository(logger, config.App.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}
 
-	kpfo, err := app.NewKafkaFoodOrderProducer(logger, config.Kafka)
+	kpfo, err := app.NewKafkaFoodOrderProducer(logger, config.App.Kafka)
 	if err != nil {
 		panic(err)
 	}

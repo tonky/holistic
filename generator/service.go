@@ -22,6 +22,7 @@ func GenService(s services.Service) {
 	stn := "server_net_rpc.tpl"
 	ctn := "client.tpl"
 	service_config_tpl := "service_config.tpl"
+	app_config_tpl := "app_config.tpl"
 	app_tpl := "app.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
 	repo_generic_tpl := "repository_generic.tpl"
@@ -45,6 +46,7 @@ func GenService(s services.Service) {
 		service_config_tpl: fmt.Sprintf("services/%s/config.go", s.Name),
 		ctn:                fmt.Sprintf("clients/%s_client.go", s.Name),
 		app_tpl:            fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
+		app_config_tpl:     fmt.Sprintf("apps/%s/gen_config.go", s.Name),
 	}
 
 	fsys := scriggo.Files{
@@ -52,6 +54,7 @@ func GenService(s services.Service) {
 		ctn:                readContent(template_dir, ctn),
 		service_config_tpl: readContent(template_dir, service_config_tpl),
 		app_tpl:            readContent(template_dir, app_tpl),
+		app_config_tpl:     readContent(template_dir, app_config_tpl),
 		repo_pg_tpl:        readContent(template_dir, repo_pg_tpl),
 		repo_generic_tpl:   readContent(template_dir, repo_generic_tpl),
 		kafka_producer_tpl: readContent(template_dir, kafka_producer_tpl),
@@ -60,14 +63,15 @@ func GenService(s services.Service) {
 
 	opts := &scriggo.BuildOptions{
 		Globals: native.Declarations{
-			"mod":          "tonky/holistic",
-			"service":      &s,
-			"cap":          builtin.Capitalize,
-			"port":         (*int)(nil),
-			"handlers":     &s.Endpoints,
-			"service_name": &s.Name,
-			"config_items": &s.ConfigItems,
-			"infra":        &s.Infra,
+			"mod":              "tonky/holistic",
+			"service":          &s,
+			"cap":              builtin.Capitalize,
+			"port":             (*int)(nil),
+			"handlers":         &s.Endpoints,
+			"service_name":     &s.Name,
+			"config_items":     &s.ConfigItems,
+			"app_config_items": &s.AppConfigItems,
+			"infra":            &s.Infra,
 		},
 	}
 
@@ -119,6 +123,7 @@ func GenService(s services.Service) {
 	writeTemplate(fsys, ctn, opts, nil, tplGenPath[ctn])
 	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
 	writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
+	writeTemplate(fsys, app_config_tpl, opts, nil, tplGenPath[app_config_tpl])
 
 	fmt.Println("Generated Go files for service", s.Name)
 }
