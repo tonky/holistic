@@ -14,6 +14,7 @@ const (
 	GoNative RPC = "net_rpc"
 	Twirp    RPC = "twirp"
 	GRPC     RPC = "grpc"
+	HTTP     RPC = "http"
 )
 
 type ObjectType int
@@ -36,6 +37,10 @@ const (
 func (r RPC) String() string {
 	if r == GoNative {
 		return "net_rpc"
+	}
+
+	if r == HTTP {
+		return "http"
 	}
 
 	return "twirp"

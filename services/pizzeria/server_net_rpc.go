@@ -43,6 +43,17 @@ func (h Pizzeria) CreateOrder(arg NewOrder, reply *food.Order) error {
     return nil
 }
 
+func (h Pizzeria) UpdateOrder(arg UpdateOrder, reply *food.Order) error {
+    res, err := h.app.UpdateOrder(context.TODO(), arg.ToApp())
+    if err != nil {
+        return err
+    }
+
+    *reply = res
+
+    return nil
+}
+
 
 func NewPizzeria(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)

@@ -8,7 +8,7 @@ import (
 	"github.com/kelseyhightower/envconfig"
 )
 
-// app specific config - dependencies, runtime etc
+// app specific config - infra, flags etc
 type Config struct {
 	Environment   string `default:"dev"`
 

@@ -11,3 +11,11 @@ func NewOrderID(id string) (OrderID, error) {
 
 	return OrderID{ID: ui}, nil
 }
+
+func RandomOrderID() OrderID {
+	return OrderID{ID: uuid.New()}
+}
+
+func (o OrderID) String() string {
+	return o.ID.String()
+}

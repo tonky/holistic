@@ -3,25 +3,50 @@ package pizzeria
 import (
 	"context"
 	"tonky/holistic/domain/food"
+
+	"github.com/samber/do/v2"
 )
 
 func (app App) ReadOrder(ctx context.Context, in food.OrderID) (food.Order, error) {
 	app.logger.Info("App.ReadOrder", in)
 
-	return app.ordererRepo.ReadOrderByID(ctx, in)
+	or := do.MustInvokeAs[OrdererRepository](app.deps)
+
+	return or.ReadOrderByID(ctx, in)
 }
 
 func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error) {
 	app.logger.Info("App.CreateOrder", in)
 
-	newOrder, err := app.ordererRepo.SaveOrder(ctx, in)
+	or := do.MustInvokeAs[OrdererRepository](app.deps)
+	pr := do.MustInvokeAs[FoodOrderProducer](app.deps)
+
+	newOrder, err := or.SaveOrder(ctx, in)
 	if err != nil {
 		return food.Order{}, err
 	}
 
-	if err := app.foodOrderProducer.ProduceFoodOrder(ctx, newOrder); err != nil {
+	if err := pr.ProduceFoodOrder(ctx, newOrder); err != nil {
 		return food.Order{}, err
 	}
 
 	return newOrder, nil
+}
+
+func (app App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error) {
+	app.logger.Info("App.UpdateOrder", in)
+
+	// or := do.MustInvokeAs[OrdererRepository](app.deps)
+
+	return food.Order{}, nil
+}
+
+type NewOrder struct {
+	Content string
+}
+
+type UpdateOrder struct {
+	OrderID food.OrderID
+	Content string
+	IsFinal bool
 }

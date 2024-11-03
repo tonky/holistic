@@ -4,12 +4,12 @@ import (
 	"tonky/holistic/generator/services"
 )
 
-func PizzeriaService() services.Service {
+func LegacyService() services.Service {
 	// rpc: net/rpc, twirp, grpc with optional gateway
 	getOrder := services.Endpoint{
 		Name:   "order",
 		Method: services.Read,
-		In:     services.Inputs{Name: "food.OrderID"},
+		In:     services.Inputs{Name: "OrderID"},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK: "food.Order",
 		},
@@ -34,11 +34,9 @@ func PizzeriaService() services.Service {
 	}
 
 	return services.Service{
-		Name:           "pizzeria",
-		Rpc:            services.GoNative,
-		Endpoints:      []services.Endpoint{getOrder, createOrder, updateOrder},
-		ConfigItems:    []services.ConfigItem{{Name: "StartDelayMs", Typ: "int"}},
-		AppConfigItems: []services.ConfigItem{{Name: "EnabledInRegions", Typ: "[]string"}},
+		Name:      "legacy",
+		Rpc:       services.HTTP,
+		Endpoints: []services.Endpoint{getOrder, createOrder, updateOrder},
 		Postgres: []services.Postgres{{
 			Name: "orderer",
 			Methods: []services.InterfaceMethod{
@@ -52,11 +50,16 @@ func PizzeriaService() services.Service {
 					Arg:  services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
 					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
 				},
+				{
+					Name: "UpdateOrder",
+					Arg:  services.InfraObject{Name: "upateOrder", Typ: "UpdateOrder"},
+					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
+				},
 			},
 		}},
 		KafkaProducers: []services.KafkaProducer{{
 			Name:  "foodOrder",
-			Topic: "pizzeria.order",
+			Topic: "legacy.order",
 			Model: "food.Order",
 		}},
 	}

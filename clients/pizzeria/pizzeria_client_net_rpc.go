@@ -52,3 +52,19 @@ func (c PizzeriaClient) CreateOrder(ctx context.Context, req svc.NewOrder) (food
 	return reply, nil
 }
 
+func (c PizzeriaClient) UpdateOrder(ctx context.Context, req svc.UpdateOrder) (food.Order, error) {
+	client, err := rpc.Dial("tcp", c.config.ServerAddress())
+	if err != nil {
+		log.Fatal("dialing error:", err)
+	}
+
+	var reply food.Order
+
+	err = client.Call("Pizzeria.UpdateOrder", req, &reply)
+	if err != nil {
+		log.Fatal("server call error:", err)
+	}
+
+	return reply, nil
+}
+

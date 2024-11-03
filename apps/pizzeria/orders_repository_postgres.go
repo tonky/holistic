@@ -40,19 +40,5 @@ func (r PostgresOrderer) SaveOrder(ctx context.Context, req NewOrder) (food.Orde
 		return food.Order{}, fmt.Errorf("unable to insert row: %w", err)
 	}
 
-	return food.Order{ID: food.OrderID{id}, Content: req.Content}, nil
+	return food.Order{ID: food.OrderID{ID: id}, Content: req.Content}, nil
 }
-
-type NewOrder struct {
-	Content string
-}
-
-/*
-func NewPostgresOrdererRepository(deps do.Injector) (*PostgresOrderer, error) {
-	return &PostgresOrderer{
-		logger: *do.MustInvoke[*logger.SlogLogger](deps),
-		client: *do.MustInvoke[*postgres.Client](deps),
-	}, nil
-}
-
-*/

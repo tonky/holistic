@@ -169,6 +169,7 @@ var FoodOrder = Object{
 	Fields: []Field{
 		{Name: "ID", T: "food.OrderID"},
 		{Name: "Content", T: "string"},
+		{Name: "IsFinal", T: "bool"},
 	},
 }
 

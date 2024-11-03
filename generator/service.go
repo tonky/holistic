@@ -19,17 +19,20 @@ func GenService(s services.Service) {
 	fmt.Printf("Generating %s service Go files\n", s.Name)
 
 	template_dir := "templates"
-	stn := "server_net_rpc.tpl"
-	ctn := "client.tpl"
+	service_net_rpc_tpl := "server_net_rpc.tpl"
+	service_http_tpl := "server_http.tpl"
+	client_net_rpc := "client_net_rpc.tpl"
+	client_http_tpl := "client_http.tpl"
 	service_config_tpl := "service_config.tpl"
 	app_config_tpl := "app_config.tpl"
 	app_tpl := "app.tpl"
+	app_plain_tpl := "app_plain.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
 	repo_generic_tpl := "repository_generic.tpl"
 	kafka_producer_tpl := "kafka_producer.tpl"
 	kafka_consumer_tpl := "kafka_consumer.tpl"
 
-	if err := os.MkdirAll(filepath.Join(".", "clients"), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Join(".", "clients", s.Name), os.ModePerm); err != nil {
 		panic(err)
 	}
 
@@ -42,23 +45,29 @@ func GenService(s services.Service) {
 	}
 
 	tplGenPath := map[string]string{
-		stn:                fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
-		service_config_tpl: fmt.Sprintf("services/%s/config.go", s.Name),
-		ctn:                fmt.Sprintf("clients/%s_client.go", s.Name),
-		app_tpl:            fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
-		app_config_tpl:     fmt.Sprintf("apps/%s/gen_config.go", s.Name),
+		service_net_rpc_tpl: fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
+		service_http_tpl:    fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
+		service_config_tpl:  fmt.Sprintf("services/%s/config.go", s.Name),
+		client_net_rpc:      fmt.Sprintf("clients/%s/%s_client_%s.go", s.Name, s.Name, s.Rpc.String()),
+		client_http_tpl:     fmt.Sprintf("clients/%s/%s_client_%s.go", s.Name, s.Name, s.Rpc.String()),
+		app_tpl:             fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
+		app_plain_tpl:       fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
+		app_config_tpl:      fmt.Sprintf("apps/%s/gen_config.go", s.Name),
 	}
 
 	fsys := scriggo.Files{
-		stn:                readContent(template_dir, stn),
-		ctn:                readContent(template_dir, ctn),
-		service_config_tpl: readContent(template_dir, service_config_tpl),
-		app_tpl:            readContent(template_dir, app_tpl),
-		app_config_tpl:     readContent(template_dir, app_config_tpl),
-		repo_pg_tpl:        readContent(template_dir, repo_pg_tpl),
-		repo_generic_tpl:   readContent(template_dir, repo_generic_tpl),
-		kafka_producer_tpl: readContent(template_dir, kafka_producer_tpl),
-		kafka_consumer_tpl: readContent(template_dir, kafka_consumer_tpl),
+		service_net_rpc_tpl: readContent(template_dir, service_net_rpc_tpl),
+		service_http_tpl:    readContent(template_dir, service_http_tpl),
+		client_net_rpc:      readContent(template_dir, client_net_rpc),
+		client_http_tpl:     readContent(template_dir, client_http_tpl),
+		service_config_tpl:  readContent(template_dir, service_config_tpl),
+		app_tpl:             readContent(template_dir, app_tpl),
+		app_plain_tpl:       readContent(template_dir, app_plain_tpl),
+		app_config_tpl:      readContent(template_dir, app_config_tpl),
+		repo_pg_tpl:         readContent(template_dir, repo_pg_tpl),
+		repo_generic_tpl:    readContent(template_dir, repo_generic_tpl),
+		kafka_producer_tpl:  readContent(template_dir, kafka_producer_tpl),
+		kafka_consumer_tpl:  readContent(template_dir, kafka_consumer_tpl),
 	}
 
 	opts := &scriggo.BuildOptions{
@@ -119,10 +128,17 @@ func GenService(s services.Service) {
 		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFile)
 	}
 
-	writeTemplate(fsys, stn, opts, nil, tplGenPath[stn])
-	writeTemplate(fsys, ctn, opts, nil, tplGenPath[ctn])
+	if s.Rpc == services.GoNative {
+		writeTemplate(fsys, service_net_rpc_tpl, opts, nil, tplGenPath[service_net_rpc_tpl])
+		writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
+		writeTemplate(fsys, client_net_rpc, opts, nil, tplGenPath[client_net_rpc])
+	} else if s.Rpc == services.HTTP {
+		writeTemplate(fsys, service_http_tpl, opts, nil, tplGenPath[service_http_tpl])
+		writeTemplate(fsys, app_plain_tpl, opts, nil, tplGenPath[app_plain_tpl])
+		writeTemplate(fsys, client_http_tpl, opts, nil, tplGenPath[client_http_tpl])
+	}
+
 	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
-	writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
 	writeTemplate(fsys, app_config_tpl, opts, nil, tplGenPath[app_config_tpl])
 
 	fmt.Println("Generated Go files for service", s.Name)
