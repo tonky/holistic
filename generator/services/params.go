@@ -134,6 +134,7 @@ type Service struct {
 	Postgres       []Postgres
 	KafkaProducers []KafkaProducer
 	KafkaConsumers []KafkaConsumer
+	Clients        []Client
 	// specific infra
 	// generic escape hatches
 	// ACLs
@@ -315,4 +316,17 @@ func (i Infra) TopicName() string {
 	}
 
 	return i.InOut[0].Out.Name
+}
+
+type Client struct {
+	VarName string
+	IName   string
+}
+
+func (c Client) AppVarName() string {
+	return c.VarName
+}
+
+func (c Client) InterfaceName() string {
+	return c.IName
 }

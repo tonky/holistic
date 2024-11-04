@@ -6,8 +6,9 @@ import (
 	"time"
 	app_acc "tonky/holistic/apps/accounting"
 	app_piz "tonky/holistic/apps/pizzeria"
-	accClient "tonky/holistic/clients/accounting"
-	pizClient "tonky/holistic/clients/pizzeria"
+	"tonky/holistic/clients"
+	"tonky/holistic/clients/accountingClient"
+	"tonky/holistic/clients/pizzeriaClient"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
@@ -79,11 +80,11 @@ func TestOrderThroughKafka(t *testing.T) {
 	accountingConfig := do.MustInvoke[*svc_acc.Config](injector)
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
 
-	conf := pizClient.Config{Host: "localhost", Port: pizzeriaConfig.Port}
+	conf := clients.Config{Host: "localhost", Port: pizzeriaConfig.Port}
 
 	do.ProvideValue(injector, &conf)
 
-	pc := pizClient.NewPizzeria(conf)
+	pc := pizzeriaClient.New(conf)
 
 	newOrder := svc_piz.NewOrder{
 		Content: "new order",
@@ -100,7 +101,7 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	time.Sleep(50 * time.Millisecond)
 
-	ac := accClient.NewAccounting(accClient.Config{Host: "localhost", Port: accountingConfig.Port})
+	ac := accountingClient.New(clients.Config{Host: "localhost", Port: accountingConfig.Port})
 
 	accountingOrder, err := ac.ReadOrder(context.TODO(), createdOrder.ID)
 	require.NoError(t, err)

@@ -6,6 +6,9 @@ import (
 	{% if service.KafkaConsumers %}
 	"context"
 	{% end %}
+	{% for d in client_deps %}
+	"tonky/holistic/clients/{{ d.AppVarName() }}"
+	{% end %}
 	"tonky/holistic/infra/logger"
 )
 
@@ -17,12 +20,19 @@ type Deps struct {
 {% end %}
 }
 
-type App struct {
-	Deps       Deps
-	Logger     *logger.Slog
+type Clients struct {
+{% for d in client_deps %}
+    {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
+{% end %}
 }
 
-func NewApp(deps Deps) (App, error) {
+type App struct {
+	Deps		Deps
+	Clients		Clients
+	Logger		*logger.Slog
+}
+
+func NewApp(deps Deps, clients Clients) (App, error) {
 	{% if service.KafkaConsumers %}
 	ctx := context.Background()
 
@@ -30,6 +40,7 @@ func NewApp(deps Deps) (App, error) {
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
+		Clients: 	clients,
 	}
 
 	{% for consumer in service.KafkaConsumers %}

@@ -6,7 +6,8 @@ import (
 	"testing"
 	"time"
 	app "tonky/holistic/apps/pizzeria"
-	pizClient "tonky/holistic/clients/pizzeria"
+	"tonky/holistic/clients"
+	"tonky/holistic/clients/pizzeriaClient"
 	"tonky/holistic/infra/logger"
 	svc "tonky/holistic/services/pizzeria"
 
@@ -38,11 +39,11 @@ func TestPizzeriaCRD(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	conf := pizClient.Config{Host: "localhost", Port: do.MustInvoke[*svc.Config](deps).Port}
+	conf := clients.Config{Host: "localhost", Port: do.MustInvoke[*svc.Config](deps).Port}
 
 	do.ProvideValue(deps, &conf)
 
-	pc := pizClient.NewPizzeria(conf)
+	pc := pizzeriaClient.New(conf)
 
 	newOrder := svc.NewOrder{
 		Content: "new order",

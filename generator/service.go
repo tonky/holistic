@@ -32,7 +32,7 @@ func GenService(s services.Service) {
 	kafka_producer_tpl := "kafka_producer.tpl"
 	kafka_consumer_tpl := "kafka_consumer.tpl"
 
-	if err := os.MkdirAll(filepath.Join(".", "clients", s.Name), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Join(".", "clients", s.Name+"Client"), os.ModePerm); err != nil {
 		panic(err)
 	}
 
@@ -48,8 +48,8 @@ func GenService(s services.Service) {
 		service_net_rpc_tpl: fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
 		service_http_tpl:    fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
 		service_config_tpl:  fmt.Sprintf("services/%s/config.go", s.Name),
-		client_net_rpc:      fmt.Sprintf("clients/%s/%s_client_%s.go", s.Name, s.Name, s.Rpc.String()),
-		client_http_tpl:     fmt.Sprintf("clients/%s/%s_client_%s.go", s.Name, s.Name, s.Rpc.String()),
+		client_net_rpc:      fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
+		client_http_tpl:     fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
 		app_tpl:             fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
 		app_plain_tpl:       fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
 		app_config_tpl:      fmt.Sprintf("apps/%s/gen_config.go", s.Name),
@@ -86,10 +86,12 @@ func GenService(s services.Service) {
 
 	appDeps := []AppDep{}
 	infraDeps := []InfraDep{{Typ: "kafka", Name: ""}}
+	clientDeps := []AppDep{}
 	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
 	opts.Globals["infra_deps"] = &infraDeps
+	opts.Globals["client_deps"] = &clientDeps
 	opts.Globals["client_relative_imports"] = &configImports
 
 	for _, pg := range s.Postgres {
@@ -126,6 +128,10 @@ func GenService(s services.Service) {
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_consumer_kafka.go", s.Name, toSnakeCase(k.Name))
 		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFile)
+	}
+
+	for _, c := range s.Clients {
+		clientDeps = append(clientDeps, c)
 	}
 
 	if s.Rpc == services.GoNative {

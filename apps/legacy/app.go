@@ -2,7 +2,6 @@ package legacy
 
 import (
 	"context"
-	accClient "tonky/holistic/clients/accounting"
 	"tonky/holistic/domain/food"
 )
 
@@ -29,9 +28,7 @@ func (a App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error
 		return food.Order{}, err
 	}
 
-	accountingClient := accClient.NewAccounting(accClient.Config{Host: "localhost", Port: 1235})
-
-	_, errRO := accountingClient.ReadOrder(ctx, updatedOrder.ID)
+	_, errRO := a.Clients.AccountingClient.ReadOrder(ctx, updatedOrder.ID)
 	if errRO != nil {
 		a.Deps.Logger.Error("legacy.App.UpdateOrder accounting.Client.ReadOrder error", err, updatedOrder.ID)
 	}

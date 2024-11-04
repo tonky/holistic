@@ -3,6 +3,7 @@
 package legacy
 
 import (
+	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/infra/logger"
 )
 
@@ -13,15 +14,21 @@ type Deps struct {
     FoodOrderProducer FoodOrderProducer
 }
 
-type App struct {
-	Deps       Deps
-	Logger     *logger.Slog
+type Clients struct {
+    AccountingClient accountingClient.IAccountingClient
 }
 
-func NewApp(deps Deps) (App, error) {
+type App struct {
+	Deps		Deps
+	Clients		Clients
+	Logger		*logger.Slog
+}
+
+func NewApp(deps Deps, clients Clients) (App, error) {
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
+		Clients: 	clients,
 	}
 
 	return app, nil

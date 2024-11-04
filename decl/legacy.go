@@ -62,5 +62,11 @@ func LegacyService() services.Service {
 			Topic: "legacy.order",
 			Model: "food.Order",
 		}},
+		Clients: []services.Client{
+			{
+				VarName: "accountingClient",
+				IName:   "IAccountingClient",
+			},
+		},
 	}
 }
