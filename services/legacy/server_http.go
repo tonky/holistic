@@ -110,8 +110,8 @@ func (h handlers) UpdateOrder() http.HandlerFunc {
 }
 
 
-func NewLegacy(conf Config, appDeps app.Deps) (*chi.Mux, error) {
-	a, err := app.NewApp(appDeps)
+func NewLegacy(conf Config, deps app.Deps, clients app.Clients) (*chi.Mux, error) {
+	a, err := app.NewApp(deps, clients)
 	if err != nil {
 		panic(err)
 	}

@@ -33,6 +33,10 @@ type App struct {
 }
 
 func NewApp(deps Deps, clients Clients) (App, error) {
+	if deps.Logger == nil {
+		deps.Logger = &logger.Slog{}
+	}
+
 	{% if service.KafkaConsumers %}
 	ctx := context.Background()
 

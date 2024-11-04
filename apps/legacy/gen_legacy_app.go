@@ -25,6 +25,10 @@ type App struct {
 }
 
 func NewApp(deps Deps, clients Clients) (App, error) {
+	if deps.Logger == nil {
+		deps.Logger = &logger.Slog{}
+	}
+
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,

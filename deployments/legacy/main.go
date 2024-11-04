@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 	app "tonky/holistic/apps/legacy"
+	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/infra/logger"
 	svc "tonky/holistic/services/legacy"
 )
@@ -25,7 +26,11 @@ func main() {
 
 	deps.OrdererRepo = pg
 
-	routes, err := svc.NewLegacy(conf, deps)
+	clients := app.Clients{
+		AccountingClient: accountingClient.NewMock(),
+	}
+
+	routes, err := svc.NewLegacy(conf, deps, clients)
 	if err != nil {
 		panic(err)
 	}

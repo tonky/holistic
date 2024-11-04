@@ -50,8 +50,8 @@ func (h handlers) {{h.FuncName()}}() http.HandlerFunc {
 
 {% end %}
 
-func New{{ cap(service_name) }}(conf Config, appDeps app.Deps) (*chi.Mux, error) {
-	a, err := app.NewApp(appDeps)
+func New{{ cap(service_name) }}(conf Config, deps app.Deps, clients app.Clients) (*chi.Mux, error) {
+	a, err := app.NewApp(deps, clients)
 	if err != nil {
 		panic(err)
 	}

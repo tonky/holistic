@@ -28,15 +28,19 @@ func (a App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error
 		return food.Order{}, err
 	}
 
-	_, errRO := a.Clients.AccountingClient.ReadOrder(ctx, updatedOrder.ID)
+	accOrder, errRO := a.Clients.AccountingClient.ReadOrder(ctx, updatedOrder.ID)
 	if errRO != nil {
 		a.Deps.Logger.Error("legacy.App.UpdateOrder accounting.Client.ReadOrder error", err, updatedOrder.ID)
 	}
+
+	a.Deps.Logger.Debug("legacy.App.UpdateOrder accounting.Client.ReadOrder ok", accOrder)
 
 	if updatedOrder.IsFinal {
 		if err := a.Deps.FoodOrderProducer.ProduceFoodOrder(ctx, updatedOrder); err != nil {
 			return food.Order{}, err
 		}
+
+		a.Deps.Logger.Debug("legacy.App.UpdateOrder published final order ok")
 	}
 
 	return updatedOrder, nil
