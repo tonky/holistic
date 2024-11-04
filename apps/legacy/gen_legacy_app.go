@@ -3,6 +3,7 @@
 package legacy
 
 import (
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/infra/logger"
 )
@@ -11,7 +12,8 @@ type Deps struct {
 	Config Config
 	Logger *logger.Slog
     OrdererRepo OrdererRepository
-    FoodOrderProducer FoodOrderProducer
+    FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
+    FoodOrderUpdatedProducer kafkaProducer.IFoodOrderUpdated
 }
 
 type Clients struct {

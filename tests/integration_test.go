@@ -10,6 +10,7 @@ import (
 	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/clients/pizzeriaClient"
 	"tonky/holistic/infra/kafka"
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
 	svc_acc "tonky/holistic/services/accounting"
@@ -47,9 +48,14 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, po)
-	do.Provide(injector, app_piz.NewDOKafkaFoodOrderProducer)
+
+	kp, err := kafkaProducer.NewFoodOrderCreated(l, kc)
+	if err != nil {
+		panic(err)
+	}
 
 	do.ProvideValue(injector, kfc)
+	do.ProvideValue(injector, kp)
 
 	pizzeria, err := svc_piz.NewPizzeria(injector)
 	if err != nil {

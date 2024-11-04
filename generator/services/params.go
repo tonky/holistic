@@ -132,8 +132,8 @@ type Service struct {
 	Infra          []Infra
 	Interfaces     []JustInterface
 	Postgres       []Postgres
-	KafkaProducers []KafkaProducer
-	KafkaConsumers []KafkaConsumer
+	KafkaProducers []TopicDesc
+	KafkaConsumers []TopicDesc
 	Clients        []Client
 	// specific infra
 	// generic escape hatches

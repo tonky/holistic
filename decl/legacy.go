@@ -57,11 +57,7 @@ func LegacyService() services.Service {
 				},
 			},
 		}},
-		KafkaProducers: []services.KafkaProducer{{
-			Name:  "foodOrder",
-			Topic: "legacy.order",
-			Model: "food.Order",
-		}},
+		KafkaProducers: []services.TopicDesc{services.TopicFoodOrderCreated, services.TopicFoodOrderUpdated},
 		Clients: []services.Client{
 			{
 				VarName: "accountingClient",

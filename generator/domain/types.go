@@ -44,11 +44,21 @@ func (ft FieldType) StructType(domain string) string {
 }
 
 type Object struct {
+	Domain string
 	Name   string
 	Fields []Field
 }
 
-func (o Object) GoImports(domainName string) []string {
+func (o Object) GoImport() string {
+	dimp, err := resolveDomainImport(o.Domain)
+	if err != nil {
+		panic(err)
+	}
+
+	return dimp
+}
+
+func (o Object) GoImports() []string {
 	res := []string{}
 
 	for _, t := range o.Fields {
@@ -60,7 +70,7 @@ func (o Object) GoImports(domainName string) []string {
 
 		typeDomain := tdn[0]
 
-		if domainName == typeDomain {
+		if o.Domain == typeDomain {
 			continue
 		}
 
@@ -115,7 +125,7 @@ func Generate() {
 
 	for domain, models := range domainObjects {
 		for _, model := range models {
-			imports := model.GoImports(domain)
+			imports := model.GoImports()
 
 			opts := &scriggo.BuildOptions{
 				Globals: native.Declarations{
@@ -158,14 +168,16 @@ type Field struct {
 }
 
 var FoodOrderID = Object{
-	Name: "OrderID",
+	Domain: "food",
+	Name:   "OrderID",
 	Fields: []Field{
 		{Name: "ID", T: "uuid.UUID"},
 	},
 }
 
 var FoodOrder = Object{
-	Name: "Order",
+	Domain: "food",
+	Name:   "Order",
 	Fields: []Field{
 		{Name: "ID", T: "food.OrderID"},
 		{Name: "Content", T: "string"},
@@ -174,7 +186,8 @@ var FoodOrder = Object{
 }
 
 var AccountingOrder = Object{
-	Name: "Order",
+	Domain: "accounting",
+	Name:   "Order",
 	Fields: []Field{
 		{Name: "ID", T: "food.OrderID"},
 		{Name: "Content", T: "string"},

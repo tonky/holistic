@@ -36,7 +36,7 @@ func (a App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error
 	a.Deps.Logger.Debug("legacy.App.UpdateOrder accounting.Client.ReadOrder ok", accOrder)
 
 	if updatedOrder.IsFinal {
-		if err := a.Deps.FoodOrderProducer.ProduceFoodOrder(ctx, updatedOrder); err != nil {
+		if err := a.Deps.FoodOrderCreatedProducer.ProduceFoodOrderCreated(ctx, updatedOrder); err != nil {
 			return food.Order{}, err
 		}
 

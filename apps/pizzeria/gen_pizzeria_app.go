@@ -3,6 +3,7 @@
 package pizzeria
 
 import (
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/logger"
 
 	"github.com/samber/do/v2"
@@ -13,7 +14,7 @@ type App struct {
 	logger     *logger.Slog
 
     ordererRepo OrdererRepository
-    foodOrderProducer FoodOrderProducer
+    FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
 }
 
 func NewApp(deps do.Injector) (*App, error) {
@@ -21,7 +22,7 @@ func NewApp(deps do.Injector) (*App, error) {
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
         ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
-        foodOrderProducer: do.MustInvokeAs[FoodOrderProducer](deps),
+        FoodOrderCreatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](deps),
 	}
 
 	return &app, nil

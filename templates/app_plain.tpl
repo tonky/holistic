@@ -6,6 +6,9 @@ import (
 	{% if service.KafkaConsumers %}
 	"context"
 	{% end %}
+	{% if service.KafkaProducers %}
+	"tonky/holistic/infra/kafkaProducer"
+	{% end %}
 	{% for d in client_deps %}
 	"tonky/holistic/clients/{{ d.AppVarName() }}"
 	{% end %}

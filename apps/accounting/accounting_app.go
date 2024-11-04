@@ -13,7 +13,7 @@ func (a *App) ReadOrder(ctx context.Context, arg food.OrderID) (accounting.Order
 	return do.MustInvokeAs[AccountOrdersRepoReader](a.deps).ReadOrderByFoodID(ctx, arg)
 }
 
-func (a *App) FoodOrderProcessor(ctx context.Context, in food.Order) error {
+func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) error {
 	a.logger.Info("AccountingApp.FoodOrderProcessor got: ", in)
 
 	repo := do.MustInvokeAs[AccountOrdersRepoReader](a.deps)

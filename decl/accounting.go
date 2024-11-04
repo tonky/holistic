@@ -13,15 +13,11 @@ func BackofficeService() services.Service {
 	}
 
 	return services.Service{
-		Name:        "accounting",
-		Rpc:         services.GoNative,
-		ConfigItems: []services.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
-		Endpoints:   []services.Endpoint{getOrder},
-		KafkaConsumers: []services.KafkaConsumer{{
-			Name:  "foodOrder",
-			Topic: "pizzeria.order",
-			Model: "food.Order",
-		}},
+		Name:           "accounting",
+		Rpc:            services.GoNative,
+		ConfigItems:    []services.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
+		Endpoints:      []services.Endpoint{getOrder},
+		KafkaConsumers: []services.TopicDesc{services.TopicFoodOrderUpdated},
 		Interfaces: []services.JustInterface{{
 			Name:   "AccountOrdersRepoReader",
 			Struct: "OrdersRepository",

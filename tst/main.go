@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"tonky/holistic/clients"
+	"tonky/holistic/clients/pizzeriaClient"
 	svc "tonky/holistic/services/pizzeria"
 )
 
@@ -14,7 +15,7 @@ func main() {
 		Port: 1234,
 	}
 
-	pc := clients.NewPizzeria(conf)
+	pc := pizzeriaClient.New(conf)
 
 	newOrder := svc.NewOrder{
 		Content: "new order",

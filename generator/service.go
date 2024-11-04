@@ -85,11 +85,13 @@ func GenService(s services.Service) {
 	}
 
 	appDeps := []AppDep{}
+	kafkaDeps := []AppDep{}
 	infraDeps := []InfraDep{{Typ: "kafka", Name: ""}}
 	clientDeps := []AppDep{}
 	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
+	opts.Globals["kafka_deps"] = &kafkaDeps
 	opts.Globals["infra_deps"] = &infraDeps
 	opts.Globals["client_deps"] = &clientDeps
 	opts.Globals["client_relative_imports"] = &configImports
@@ -113,21 +115,11 @@ func GenService(s services.Service) {
 	}
 
 	for _, kp := range s.KafkaProducers {
-		appDeps = append(appDeps, kp)
-
-		opts.Globals["kp"] = &kp
-
-		outFile := fmt.Sprintf("apps/%s/gen_%s_producer_kafka.go", s.Name, toSnakeCase(kp.Name))
-		writeTemplate(fsys, kafka_producer_tpl, opts, nil, outFile)
+		appDeps = append(appDeps, KafkaDep{Name: kp.Name, Kind: "producer"})
 	}
 
-	for _, k := range s.KafkaConsumers {
-		appDeps = append(appDeps, k)
-
-		opts.Globals["k"] = &k
-
-		outFile := fmt.Sprintf("apps/%s/gen_%s_consumer_kafka.go", s.Name, toSnakeCase(k.Name))
-		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFile)
+	for _, kc := range s.KafkaConsumers {
+		appDeps = append(appDeps, KafkaDep{Name: kc.Name, Kind: "consumer"})
 	}
 
 	for _, c := range s.Clients {

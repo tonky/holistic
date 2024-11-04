@@ -54,10 +54,6 @@ func PizzeriaService() services.Service {
 				},
 			},
 		}},
-		KafkaProducers: []services.KafkaProducer{{
-			Name:  "foodOrder",
-			Topic: "pizzeria.order",
-			Model: "food.Order",
-		}},
+		KafkaProducers: []services.TopicDesc{services.TopicFoodOrderCreated},
 	}
 }

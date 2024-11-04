@@ -7,6 +7,11 @@ import (
 	"tonky/holistic/domain/food"
 )
 
+type IFoodOrderUpdated interface {
+	ConsumeFoodOrderUpdated(context.Context, func(context.Context, food.Order) error) error
+	Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error
+}
+
 type FoodOrderConsumer interface {
 	Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error
 }
@@ -15,7 +20,7 @@ func ConsumeFoodOrder(consumer IConsumer) (chan food.Order, chan error) {
 	resModels := make(chan food.Order)
 	resErrors := make(chan error)
 
-	if consumer.Topic() != "pizzeria.order" {
+	if consumer.Topic() != "food.order.created" {
 		resErrors <- fmt.Errorf("expected pizzeria.food topic, got '%s'", consumer.Topic())
 	}
 

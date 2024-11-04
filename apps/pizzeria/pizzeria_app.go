@@ -3,6 +3,7 @@ package pizzeria
 import (
 	"context"
 	"tonky/holistic/domain/food"
+	"tonky/holistic/infra/kafkaProducer"
 
 	"github.com/samber/do/v2"
 )
@@ -19,14 +20,14 @@ func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error)
 	app.logger.Info("App.CreateOrder", in)
 
 	or := do.MustInvokeAs[OrdererRepository](app.deps)
-	pr := do.MustInvokeAs[FoodOrderProducer](app.deps)
+	pr := do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](app.deps)
 
 	newOrder, err := or.SaveOrder(ctx, in)
 	if err != nil {
 		return food.Order{}, err
 	}
 
-	if err := pr.ProduceFoodOrder(ctx, newOrder); err != nil {
+	if err := pr.ProduceFoodOrderCreated(ctx, newOrder); err != nil {
 		return food.Order{}, err
 	}
 

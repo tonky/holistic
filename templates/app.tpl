@@ -3,7 +3,11 @@
 package {{ service.Name }}
 
 import (
+	{% if service.KafkaProducers %}
+	"tonky/holistic/infra/kafkaProducer"
+	{% end %}
 	{% if service.KafkaConsumers %}
+	"tonky/holistic/infra/kafkaConsumer"
 	"context"
 	{% end %}
 	"tonky/holistic/infra/logger"
@@ -35,7 +39,7 @@ func NewApp(deps do.Injector) (*App, error) {
 
 	{% for consumer in service.KafkaConsumers %}
 	go func() {
-		for err := range app.{{ consumer.Name }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
+		for err := range app.{{ cap(consumer.Name) }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
 			app.logger.Warn(err.Error())
 		}
 	}()

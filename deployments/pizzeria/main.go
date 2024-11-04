@@ -2,6 +2,7 @@ package main
 
 import (
 	app "tonky/holistic/apps/pizzeria"
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/logger"
 	svc "tonky/holistic/services/pizzeria"
 
@@ -21,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	kpfo, err := app.NewKafkaFoodOrderProducer(logger, config.App.Kafka)
+	kpfo, err := kafkaProducer.NewFoodOrderCreated(logger, config.App.Kafka)
 	if err != nil {
 		panic(err)
 	}
