@@ -11,6 +11,20 @@ type InterfaceMethod struct {
 	Ret  InfraObject
 }
 
+func (im InterfaceMethod) Imports(s Service) []ClientImport {
+	var all []ClientImport
+
+	if argImport, err := im.Arg.Import(s); err == nil {
+		all = append(all, *argImport)
+	}
+
+	if retImport, err := im.Ret.Import(s); err == nil {
+		all = append(all, *retImport)
+	}
+
+	return all
+}
+
 type JustInterface struct {
 	Name    string
 	Struct  string
@@ -24,6 +38,40 @@ func (ji JustInterface) InterfaceName() string {
 	}
 
 	return "I" + ji.Struct
+}
+
+func (ji JustInterface) StructName() string {
+	return ji.Struct
+}
+
+func (ji JustInterface) StructArgs() []InfraObject {
+	out := []InfraObject{}
+
+	for _, m := range ji.Methods {
+		out = append(out, m.Arg)
+	}
+
+	return out
+}
+
+func (ji JustInterface) AppVarName() string {
+	return ji.Name
+}
+
+func (ji JustInterface) AppImportPackageName() string {
+	return ji.Name
+}
+
+func (ji JustInterface) ConfigVarName() string {
+	return ji.Name
+}
+
+func (ji JustInterface) ConfigVarType() string {
+	return ji.Name
+}
+
+func (ji JustInterface) PackageName() string {
+	return "local"
 }
 
 func (ji JustInterface) Imports(s Service) []ClientImport {

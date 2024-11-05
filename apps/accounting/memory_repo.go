@@ -26,10 +26,8 @@ func (a OrdersMemoryRepository) ReadOrderByFoodID(ctx context.Context, in food.O
 
 func (a OrdersMemoryRepository) SaveOrder(ctx context.Context, in NewOrder) (accounting.Order, error) {
 	out := accounting.Order{
-		ID:      in.Order.ID,
-		Content: in.Content,
-		Cost:    5,
-		IsPaid:  true,
+		ID:   in.Order.ID,
+		Cost: in.Cost,
 	}
 
 	a.orders[in.Order.ID] = out

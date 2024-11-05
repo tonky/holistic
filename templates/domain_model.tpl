@@ -9,5 +9,4 @@ type {{ model }} struct {
     {% for field in fields %}
         {{ field.Name }} {{ field.T.StructType(domain) }}
     {% end %}
-
 }

@@ -236,7 +236,7 @@ func (io InfraObject) Import(s Service) (*ClientImport, error) {
 
 	// app model, no need to import
 	if len(split) <= 1 {
-		err := fmt.Errorf("InfraObject.Import: %s not enough data in %s", s, io.Typ)
+		err := fmt.Errorf("InfraObject.Import: %+v not enough data in %s", s, io.Typ)
 
 		fmt.Println(err)
 

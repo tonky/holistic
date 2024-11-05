@@ -37,8 +37,6 @@ func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error)
 func (app App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error) {
 	app.logger.Info("App.UpdateOrder", in)
 
-	// or := do.MustInvokeAs[OrdererRepository](app.deps)
-
 	return food.Order{}, nil
 }
 

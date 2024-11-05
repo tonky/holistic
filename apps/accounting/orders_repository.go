@@ -7,11 +7,9 @@ import (
 )
 
 func (a OrdersRepository) ReadOrderByFoodID(ctx context.Context, in food.OrderID) (accounting.Order, error) {
-	var out accounting.Order
-
 	a.logger.Info("AccountingOrdersRepository.ReadOrderByID", in)
 
-	return out, nil
+	return accounting.Order{ID: in, Cost: 5}, nil
 }
 
 func (a OrdersRepository) SaveOrder(ctx context.Context, in NewOrder) (accounting.Order, error) {

@@ -11,6 +11,7 @@ import (
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/kafkaConsumer"
 
 	"tonky/holistic/domain/food"
@@ -90,26 +91,24 @@ func NewFromEnv() (ServiceStarter, error) {
     l := logger.Slog{}
 	do.ProvideValue(deps, &l)
 
+	AccountOrdersRepoReader := app.NewOrdersRepository(l)
+
+	do.ProvideValue(deps, AccountOrdersRepoReader)
+
+	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(l, cfg.App.Kafka)
+    if err != nil {
+        return nil, err
+    }
+
+	do.ProvideValue(deps, AccountingOrderPaidProducer)
+
 	FoodOrderUpdatedConsumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(l, cfg.App.Kafka)
     if err != nil {
         return nil, err
     }
 
 	do.ProvideValue(deps, FoodOrderUpdatedConsumer)
-/*
-	ocp, err := kafkaProducer.NewFoodOrderCreatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
 
-	oup, err := kafkaProducer.NewFoodOrderUpdatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
-
-	do.ProvideValue(deps, ocp)
-	do.ProvideValue(deps, oup)
-*/
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

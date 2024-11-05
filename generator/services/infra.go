@@ -35,6 +35,28 @@ func (p Postgres) ConfigVarType() string {
 	return "postgres.Config"
 }
 
+func (p Postgres) Imports(s Service) []ClientImport {
+	all := []ClientImport{}
+	for _, m := range p.Methods {
+		all = append(all, m.Imports(s)...)
+	}
+
+	var out []ClientImport
+	seen := map[string]bool{}
+
+	for _, dep := range all {
+		if seen[dep.RelPath] {
+			continue
+		}
+
+		seen[dep.RelPath] = true
+
+		out = append(out, dep)
+	}
+
+	return out
+}
+
 type KafkaProducer struct {
 	Name  string
 	Topic string

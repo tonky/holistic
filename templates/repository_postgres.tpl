@@ -3,9 +3,11 @@ package {{ service.Name }}
 
 import (
 	"context"
-	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
+    {% for ci in repo.Imports(service) %}
+	{{ ci.Alias }}"tonky/holistic/{{ ci.RelPath }}"
+    {% end %}
 )
 
 type {{ repo.InterfaceName() }} interface {
@@ -16,7 +18,7 @@ type {{ repo.InterfaceName() }} interface {
 
 type {{ repo.StructName() }} struct {
 	logger logger.Slog
-	client {{ kind }}.Client
+	client postgres.Client
 }
 
 func New{{ repo.StructName() }}(logger logger.Slog, conf postgres.Config) (*{{ repo.StructName() }}, error) {

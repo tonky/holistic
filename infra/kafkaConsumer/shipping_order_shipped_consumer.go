@@ -7,39 +7,39 @@ import (
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
-	"tonky/holistic/domain/accounting"
+	"tonky/holistic/domain/shipping"
 )
 
 // compile-time check to make sure app-level interface is implemented
-var _ IFoodOrderPaid = new(FoodOrderPaid) 
+var _ IShippingOrderShipped = new(ShippingOrderShipped) 
 
-type IFoodOrderPaid interface {
-	Run(context.Context, func(context.Context, accounting.OrderPrice) error) chan error
+type IShippingOrderShipped interface {
+	Run(context.Context, func(context.Context, shipping.Order) error) chan error
 }
 
-type FoodOrderPaid struct {
+type ShippingOrderShipped struct {
 	logger logger.Slog
 	client IConsumer
 }
 
-func NewFoodOrderPaidConsumer(logger logger.Slog, config kafka.Config) (*FoodOrderPaid, error) {
-	client := NewConsumer(config, "food.order.paid")
+func NewShippingOrderShippedConsumer(logger logger.Slog, config kafka.Config) (*ShippingOrderShipped, error) {
+	client := NewConsumer(config, "shipping.order.shipped")
 
-	return &FoodOrderPaid{
+	return &ShippingOrderShipped{
 		logger: logger,
 		client: client,
 	}, nil
 }
 
-func (c FoodOrderPaid) Run(ctx context.Context, processor func(context.Context, accounting.OrderPrice) error) chan error {
+func (c ShippingOrderShipped) Run(ctx context.Context, processor func(context.Context, shipping.Order) error) chan error {
 	res := make(chan error)
-	models, errors := ConsumeFoodOrderPaid(ctx, c.client)
+	models, errors := ConsumeShippingOrderShipped(ctx, c.client)
 
 	go func() {
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("kafkaConsumer.FoodOrderPaid got model", model)
+				c.logger.Info("kafkaConsumer.ShippingOrderShipped got model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -55,8 +55,8 @@ func (c FoodOrderPaid) Run(ctx context.Context, processor func(context.Context, 
 	return res
 }
 
-func ConsumeFoodOrderPaid(ctx context.Context, client IConsumer) (chan accounting.OrderPrice, chan error) {
-	models := make(chan accounting.OrderPrice)
+func ConsumeShippingOrderShipped(ctx context.Context, client IConsumer) (chan shipping.Order, chan error) {
+	models := make(chan shipping.Order)
 	errors := make(chan error)
 
 	kafkaMessages, kafkaErrors := client.Consume(context.Background())
@@ -70,7 +70,7 @@ func ConsumeFoodOrderPaid(ctx context.Context, client IConsumer) (chan accountin
 				close(models)
 				return
 			case msg := <-kafkaMessages:
-				var model accounting.OrderPrice
+				var model shipping.Order
 				if err := json.Unmarshal(msg.Value, &model); err != nil {
 					errors <- err
 					continue

@@ -15,7 +15,7 @@ func main() {
 
 	// do.Provide(injector, app.NewPostgresOrdererRepository)
 
-	svc, err := pizzeria.NewPizzeria(injector)
+	svc, err := pizzeria.New(injector)
 	if err != nil {
 		panic(err)
 	}

@@ -18,7 +18,7 @@ import (
 func initPizzeriaServer() do.Injector {
 	injector := do.New()
 
-	do.ProvideValue(injector, &svc.Config{Port: 1234})
+	do.ProvideValue(injector, &svc.Config{Port: 1238})
 	do.ProvideValue(injector, &logger.Slog{})
 
 	do.Provide(injector, app.NewMemoryOrdererRepository)

@@ -55,7 +55,7 @@ func TestUpdateOrder(t *testing.T) {
 	require.Len(t, memProducer.Orders, 0)
 
 	// setup accounting mock for client call response
-	acm.Orders[createdOrder.ID] = accounting.Order{ID: createdOrder.ID, Content: "legacy_content", Cost: 4, IsPaid: true}
+	acm.Orders[createdOrder.ID] = accounting.Order{ID: createdOrder.ID, Cost: 4}
 
 	_, errC := c.UpdateOrder(context.TODO(), svc.UpdateOrder{ID: createdOrder.ID.String(), Content: "legacy_content update", IsFinal: true})
 	require.NoError(t, errC)

@@ -3,6 +3,7 @@
 package accounting
 
 import (
+	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/kafkaConsumer"
 	"context"
 	"tonky/holistic/infra/logger"
@@ -14,6 +15,8 @@ type App struct {
 	deps       do.Injector
 	logger     *logger.Slog
 
+    AccountOrdersRepoReader AccountOrdersRepoReader
+    AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
 }
 
@@ -23,6 +26,8 @@ func NewApp(deps do.Injector) (*App, error) {
 	app := App{
 		deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
+        AccountOrdersRepoReader: do.MustInvokeAs[AccountOrdersRepoReader](deps),
+        AccountingOrderPaidProducer: do.MustInvokeAs[kafkaProducer.IAccountingOrderPaid](deps),
         FoodOrderUpdatedConsumer: do.MustInvokeAs[kafkaConsumer.IFoodOrderUpdated](deps),
 	}
 

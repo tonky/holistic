@@ -117,26 +117,14 @@ func NewFromEnv() (ServiceStarter, error) {
     }
 
 	do.ProvideValue(deps, ordererRepo)
+
 	FoodOrderCreatedProducer, err := kafkaProducer.NewFoodOrderCreatedProducer(l, cfg.App.Kafka)
     if err != nil {
         return nil, err
     }
 
 	do.ProvideValue(deps, FoodOrderCreatedProducer)
-/*
-	ocp, err := kafkaProducer.NewFoodOrderCreatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
 
-	oup, err := kafkaProducer.NewFoodOrderUpdatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
-
-	do.ProvideValue(deps, ocp)
-	do.ProvideValue(deps, oup)
-*/
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

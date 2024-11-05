@@ -22,10 +22,11 @@ func main() {
 
 	generator.GenKafka(topics)
 
-	pizzeriaDecl := decl.PizzeriaService()
-	generator.GenService(pizzeriaDecl)
-	generator.GenService(decl.BackofficeService())
-	generator.GenService(decl.LegacyService())
+	generator.GenService(decl.PizzeriaService())
+	generator.GenService(decl.AccountingService())
+	generator.GenService(decl.PricingService())
+	generator.GenService(decl.ShippingService())
+
 	// pizzeria.Generate()
 	// pizzeria.GenScrig()
 }

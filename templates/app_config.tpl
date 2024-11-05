@@ -5,6 +5,7 @@ import (
     {% for id in app_deps.Dedup() %}
     {% if id.ConfigVarName() == "Kafka" %}
 	"tonky/holistic/infra/kafka"
+    {% else if  id.PackageName() == "local" %}
     {% else %}
 	"tonky/holistic/infra/{{ id.PackageName() }}"
     {% end %}

@@ -84,14 +84,14 @@ func GenService(s services.Service) {
 	}
 
 	appDeps := AppDeps{}
-	// kafkaDeps := []AppDep{}
-	infraDeps := []AppDep{}
-	clientDeps := []AppDep{}
+	infraDeps := AppDeps{}
+	interfaces := AppDeps{}
+	clientDeps := AppDeps{}
 	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
-	// opts.Globals["kafka_deps"] = &kafkaDeps
 	opts.Globals["infra_deps"] = &infraDeps
+	opts.Globals["interfaces"] = &interfaces
 	opts.Globals["client_deps"] = &clientDeps
 	opts.Globals["client_relative_imports"] = &configImports
 
@@ -100,7 +100,7 @@ func GenService(s services.Service) {
 		infraDeps = append(infraDeps, pg)
 
 		opts.Globals["repo"] = &pg
-		opts.Globals["kind"] = "postgres"
+		// opts.Globals["kind"] = "postgres"
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_repository_postgres.go", s.Name, pg.Name)
 		writeTemplate(fsys, repo_pg_tpl, opts, nil, outFile)
@@ -108,6 +108,7 @@ func GenService(s services.Service) {
 
 	for _, i := range s.Interfaces {
 		opts.Globals["repo"] = &i
+		appDeps = append(appDeps, &i)
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s.go", s.Name, toSnakeCase(i.Struct))
 		writeTemplate(fsys, repo_generic_tpl, opts, nil, outFile)
@@ -184,8 +185,8 @@ func (ads AppDeps) Dedup() []AppDep {
 	list := []AppDep{}
 
 	for _, entry := range ads {
-		if _, value := keys[entry.PackageName()]; !value {
-			keys[entry.PackageName()] = true
+		if _, value := keys[entry.ConfigVarName()]; !value {
+			keys[entry.ConfigVarName()] = true
 			list = append(list, entry)
 		}
 	}

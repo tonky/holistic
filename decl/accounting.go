@@ -2,7 +2,7 @@ package decl
 
 import "tonky/holistic/generator/services"
 
-func BackofficeService() services.Service {
+func AccountingService() services.Service {
 	getOrder := services.Endpoint{
 		Name:   "order",
 		Method: services.Read,
@@ -18,6 +18,7 @@ func BackofficeService() services.Service {
 		ConfigItems:    []services.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
 		Endpoints:      []services.Endpoint{getOrder},
 		KafkaConsumers: []services.TopicDesc{services.TopicFoodOrderUpdated},
+		KafkaProducers: []services.TopicDesc{services.TopicAccountingOrderPaid},
 		Interfaces: []services.JustInterface{{
 			Name:   "AccountOrdersRepoReader",
 			Struct: "OrdersRepository",
@@ -40,5 +41,11 @@ func BackofficeService() services.Service {
 				},
 			},
 		}},
+		Clients: []services.Client{
+			{
+				VarName: "pricingClient",
+				IName:   "IPricingClient",
+			},
+		},
 	}
 }

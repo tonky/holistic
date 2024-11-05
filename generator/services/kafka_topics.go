@@ -35,10 +35,15 @@ func (td TopicDesc) AppVarName() string {
 
 var TopicFoodOrderCreated = TopicDesc{Name: "foodOrderCreated", TopicName: "food.order.created", DomainObject: domain.FoodOrder}
 var TopicFoodOrderUpdated = TopicDesc{Name: "foodOrderUpdated", TopicName: "food.order.updated", DomainObject: domain.FoodOrder}
-var TopicFoodOrderPaid = TopicDesc{Name: "foodOrderPaid", TopicName: "food.order.paid", DomainObject: domain.AccountingOrder}
-var TopicFoodOrderShipped = TopicDesc{Name: "foodOrderShipped", TopicName: "food.order.shipped", DomainObject: domain.AccountingOrder}
+var TopicAccountingOrderPaid = TopicDesc{Name: "accountingOrderPaid", TopicName: "accounting.order.paid", DomainObject: domain.AccountingOrder}
+var TopicShippingOrderShipped = TopicDesc{Name: "shippingOrderShipped", TopicName: "shipping.order.shipped", DomainObject: domain.ShippedOrder}
 
-var kafkaTopics = []TopicDesc{TopicFoodOrderCreated, TopicFoodOrderUpdated, TopicFoodOrderPaid, TopicFoodOrderShipped}
+var kafkaTopics = []TopicDesc{
+	TopicFoodOrderCreated,
+	TopicFoodOrderUpdated,
+	TopicAccountingOrderPaid,
+	TopicShippingOrderShipped,
+}
 
 func KafkaTopics() []TopicDesc {
 	return kafkaTopics

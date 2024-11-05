@@ -92,19 +92,22 @@ func resolveDomainImport(d string) (string, error) {
 		return "tonky/holistic/domain/food", nil
 	case "accounting":
 		return "tonky/holistic/domain/accounting", nil
+	case "shipping":
+		return "tonky/holistic/domain/shipping", nil
+	case "pricing":
+		return "tonky/holistic/domain/pricing", nil
 	case "uuid":
 		return "github.com/google/uuid", nil
+	case "time":
+		return "time", nil
 	}
 
 	return "undefined", fmt.Errorf("domain import unresolved: %s", d)
 }
 
 func Generate() {
-	// domainName := "food"
-	domainObjects := map[string][]Object{"food": foods, "accounting": accounting}
-
-	for domain := range domainObjects {
-		newpath := filepath.Join(".", "domain", domain)
+	for _, model := range models {
+		newpath := filepath.Join(".", "domain", model.Domain)
 
 		err := os.MkdirAll(newpath, os.ModePerm)
 		if err != nil {
@@ -123,35 +126,33 @@ func Generate() {
 
 	fsys := scriggo.Files{st: contents}
 
-	for domain, models := range domainObjects {
-		for _, model := range models {
-			imports := model.GoImports()
+	for _, model := range models {
+		imports := model.GoImports()
 
-			opts := &scriggo.BuildOptions{
-				Globals: native.Declarations{
-					"imports": &imports,
-					"fields":  &model.Fields,
-					"domain":  &domain,
-					"model":   &model.Name,
-				},
-			}
+		opts := &scriggo.BuildOptions{
+			Globals: native.Declarations{
+				"imports": &imports,
+				"fields":  &model.Fields,
+				"domain":  &model.Domain,
+				"model":   &model.Name,
+			},
+		}
 
-			// Build the program.
-			temp, err := scriggo.BuildTemplate(fsys, st, opts)
-			if err != nil {
-				log.Fatal(err)
-			}
+		// Build the program.
+		temp, err := scriggo.BuildTemplate(fsys, st, opts)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-			// open a file and get a writer
-			fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", domain, builtin.ToLower(model.Name)))
-			if err != nil {
-				log.Fatal(err)
-			}
+		// open a file and get a writer
+		fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", model.Domain, builtin.ToLower(model.Name)))
+		if err != nil {
+			log.Fatal(err)
+		}
 
-			err = temp.Run(fm, nil, nil)
-			if err != nil {
-				log.Fatal(err)
-			}
+		err = temp.Run(fm, nil, nil)
+		if err != nil {
+			log.Fatal(err)
 		}
 	}
 }
@@ -190,11 +191,26 @@ var AccountingOrder = Object{
 	Name:   "Order",
 	Fields: []Field{
 		{Name: "ID", T: "food.OrderID"},
-		{Name: "Content", T: "string"},
 		{Name: "Cost", T: "int"},
-		{Name: "IsPaid", T: "bool"},
 	},
 }
 
-var foods = []Object{FoodOrderID, FoodOrder}
-var accounting = []Object{AccountingOrder}
+var ShippedOrder = Object{
+	Domain: "shipping",
+	Name:   "Order",
+	Fields: []Field{
+		{Name: "ID", T: "food.OrderID"},
+		{Name: "ShippedAt", T: "time.Time"},
+	},
+}
+
+var OrderPrice = Object{
+	Domain: "pricing",
+	Name:   "OrderPrice",
+	Fields: []Field{
+		{Name: "ID", T: "food.OrderID"},
+		{Name: "Cost", T: "int"},
+	},
+}
+
+var models = []Object{FoodOrderID, FoodOrder, AccountingOrder, ShippedOrder, OrderPrice}

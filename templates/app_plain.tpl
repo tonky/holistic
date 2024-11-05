@@ -24,7 +24,7 @@ type Deps struct {
 }
 
 type Clients struct {
-{% for d in client_deps %}
+{% for d in client_deps.Dedup() %}
     {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
 {% end %}
 }

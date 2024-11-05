@@ -12,9 +12,11 @@ import (
     "github.com/samber/do/v2"
 
     {% for id in app_deps %}
-    {% if id.AppImportPackageName() != "app" %}
+        {% if id.AppImportPackageName() == "app" %}
+        {% else if id.PackageName() == "local" %} 
+        {% else %}
 	"tonky/holistic/infra/{{ id.PackageName() }}"
-    {% end %}
+        {% end %}
     {% end %}
 
 	{% for imp in service.ClientImports() %}
@@ -68,7 +70,7 @@ func (h {{ cap(service.Name) }}) Start() error {
 	server := rpc.NewServer()
 	server.Register(h)
 
-	fmt.Println(">> starging server on port ", port)
+	fmt.Println(">> starting server on port ", port)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if err != nil {
@@ -101,27 +103,18 @@ func NewFromEnv() (ServiceStarter, error) {
 	do.ProvideValue(deps, &l)
 
 {% for ad in app_deps %}
-	{{ ad.AppVarName() }}, err := {{ ad.AppImportPackageName() }}.New{{ ad.StructName() }}(l, cfg.App.{{ ad.ConfigVarName() }})
+    {% if ad.PackageName() == "local" %}
+	{{ ad.AppVarName() }} := app.New{{ ad.StructName() }}(l)
+    {% else %}
+	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(l, cfg.App.{{ ad.ConfigVarName() }})
     if err != nil {
         return nil, err
     }
+    {% end %}
 
 	do.ProvideValue(deps, {{ ad.AppVarName() }})
+
 {% end %}
-/*
-	ocp, err := kafkaProducer.NewFoodOrderCreatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
-
-	oup, err := kafkaProducer.NewFoodOrderUpdatedProducer(l, cfg.App.Kafka)
-    if err != nil {
-        return nil, err
-    }
-
-	do.ProvideValue(deps, ocp)
-	do.ProvideValue(deps, oup)
-*/
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

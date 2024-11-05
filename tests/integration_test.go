@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 	"time"
-	app_acc "tonky/holistic/apps/accounting"
 	app_piz "tonky/holistic/apps/pizzeria"
 	"tonky/holistic/clients"
 	"tonky/holistic/clients/accountingClient"
@@ -33,7 +32,6 @@ func startServices() do.Injector {
 
 	do.ProvideValue(injector, &kc)
 	do.ProvideValue(injector, &svc_piz.Config{Port: 1236})
-	do.ProvideValue(injector, &svc_acc.Config{Port: 1235})
 
 	do.ProvideValue(injector, &l)
 
@@ -65,13 +63,19 @@ func startServices() do.Injector {
 
 	go pizzeria.Start()
 
-	do.Provide(injector, app_acc.NewOrdersMemoryRepository)
-
-	accounting, err := svc_acc.New(injector)
+	kaop, err := kafkaProducer.NewAccountingOrderPaidProducer(l, kc)
 	if err != nil {
 		panic(err)
 	}
 
+	do.ProvideValue(injector, kaop)
+
+	accounting, err := svc_acc.NewFromEnv()
+	if err != nil {
+		panic(err)
+	}
+
+	do.ProvideValue(injector, accounting.Config())
 	go accounting.Start()
 
 	logger.Slog{}.Info("Test init() - done! Services started")
@@ -84,7 +88,8 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	time.Sleep(100 * time.Millisecond)
 
-	accountingConfig := do.MustInvoke[*svc_acc.Config](injector)
+	accountingConfig := do.MustInvoke[svc_acc.Config](injector)
+
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
 
 	conf := clients.Config{Host: "localhost", Port: pizzeriaConfig.Port}
@@ -114,8 +119,6 @@ func TestOrderThroughKafka(t *testing.T) {
 	require.NoError(t, err)
 
 	require.Equal(t, createdOrder.ID, accountingOrder.ID)
-
-	require.Equal(t, accountingOrder.IsPaid, true)
 	require.Equal(t, accountingOrder.Cost, 5)
 
 }

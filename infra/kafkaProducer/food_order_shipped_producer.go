@@ -14,8 +14,8 @@ import (
 var _ IFoodOrderShipped = new(FoodOrderShipped) 
 
 type IFoodOrderShipped interface {
-	ProduceFoodOrderShipped(context.Context, accounting.Order) error
-	ProduceFoodOrderShippedBatch(context.Context, []accounting.Order) error
+	ProduceFoodOrderShipped(context.Context, accounting.OrderPrice) error
+	ProduceFoodOrderShippedBatch(context.Context, []accounting.OrderPrice) error
 }
 
 type FoodOrderShipped struct {
@@ -32,7 +32,7 @@ func NewFoodOrderShippedProducer(logger logger.Slog, config kafka.Config) (*Food
 	}, nil
 }
 
-func (r FoodOrderShipped) ProduceFoodOrderShipped(ctx context.Context, in accounting.Order) error {
+func (r FoodOrderShipped) ProduceFoodOrderShipped(ctx context.Context, in accounting.OrderPrice) error {
 	r.logger.Info("FoodOrderShipped.ProduceFoodOrderShipped", in)
 
 	inBytes, err := json.Marshal(in)
@@ -43,7 +43,7 @@ func (r FoodOrderShipped) ProduceFoodOrderShipped(ctx context.Context, in accoun
 	return r.client.Produce(ctx, inBytes)
 }
 
-func (r FoodOrderShipped) ProduceFoodOrderShippedBatch(ctx context.Context, ins []accounting.Order) error {
+func (r FoodOrderShipped) ProduceFoodOrderShippedBatch(ctx context.Context, ins []accounting.OrderPrice) error {
 	r.logger.Info("FoodOrderShipped.ProduceFoodOrderShippedBatch", ins)
 
 	var data [][]byte

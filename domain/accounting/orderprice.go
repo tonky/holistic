@@ -3,7 +3,8 @@ package accounting
 
 import "tonky/holistic/domain/food"
 
-type Order struct {
+type OrderPrice struct {
         ID food.OrderID
         Cost int
+
 }

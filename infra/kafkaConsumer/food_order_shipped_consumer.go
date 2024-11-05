@@ -14,7 +14,7 @@ import (
 var _ IFoodOrderShipped = new(FoodOrderShipped) 
 
 type IFoodOrderShipped interface {
-	Run(context.Context, func(context.Context, accounting.Order) error) chan error
+	Run(context.Context, func(context.Context, accounting.OrderPrice) error) chan error
 }
 
 type FoodOrderShipped struct {
@@ -31,7 +31,7 @@ func NewFoodOrderShippedConsumer(logger logger.Slog, config kafka.Config) (*Food
 	}, nil
 }
 
-func (c FoodOrderShipped) Run(ctx context.Context, processor func(context.Context, accounting.Order) error) chan error {
+func (c FoodOrderShipped) Run(ctx context.Context, processor func(context.Context, accounting.OrderPrice) error) chan error {
 	res := make(chan error)
 	models, errors := ConsumeFoodOrderShipped(ctx, c.client)
 
@@ -55,8 +55,8 @@ func (c FoodOrderShipped) Run(ctx context.Context, processor func(context.Contex
 	return res
 }
 
-func ConsumeFoodOrderShipped(ctx context.Context, client IConsumer) (chan accounting.Order, chan error) {
-	models := make(chan accounting.Order)
+func ConsumeFoodOrderShipped(ctx context.Context, client IConsumer) (chan accounting.OrderPrice, chan error) {
+	models := make(chan accounting.OrderPrice)
 	errors := make(chan error)
 
 	kafkaMessages, kafkaErrors := client.Consume(context.Background())
@@ -70,7 +70,7 @@ func ConsumeFoodOrderShipped(ctx context.Context, client IConsumer) (chan accoun
 				close(models)
 				return
 			case msg := <-kafkaMessages:
-				var model accounting.Order
+				var model accounting.OrderPrice
 				if err := json.Unmarshal(msg.Value, &model); err != nil {
 					errors <- err
 					continue
