@@ -31,7 +31,7 @@ func TestUpdateOrder(t *testing.T) {
 
 	kConf := kafka.Config{Brokers: []string{"localhost:19092"}}
 
-	kpou, err := kafkaProducer.NewFoodOrderUpdated(logger.Slog{}, kConf)
+	kpou, err := kafkaProducer.NewFoodOrderUpdatedProducer(logger.Slog{}, kConf)
 	require.NoError(t, err)
 
 	appDeps.FoodOrderUpdatedProducer = kpou

@@ -7,39 +7,39 @@ import (
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
-	"{{ k.DomainObject.GoImport() }}"
+	"tonky/holistic/domain/food"
 )
 
 // compile-time check to make sure app-level interface is implemented
-var _ {{ k.InterfaceName() }} = new({{ k.StructName() }}) 
+var _ IFoodOrderCreated = new(FoodOrderCreated) 
 
-type {{ k.InterfaceName() }} interface {
-	Run(context.Context, func(context.Context, {{ k.ModelName() }}) error) chan error
+type IFoodOrderCreated interface {
+	Run(context.Context, func(context.Context, food.Order) error) chan error
 }
 
-type {{ k.StructName() }} struct {
+type FoodOrderCreated struct {
 	logger logger.Slog
 	client IConsumer
 }
 
-func New{{ k.StructName() }}Consumer(logger logger.Slog, config kafka.Config) (*{{ k.StructName() }}, error) {
-	client := NewConsumer(config, "{{ k.TopicName }}")
+func NewFoodOrderCreatedConsumer(logger logger.Slog, config kafka.Config) (*FoodOrderCreated, error) {
+	client := NewConsumer(config, "food.order.created")
 
-	return &{{ k.StructName() }}{
+	return &FoodOrderCreated{
 		logger: logger,
 		client: client,
 	}, nil
 }
 
-func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Context, {{ k.ModelName() }}) error) chan error {
+func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error {
 	res := make(chan error)
-	models, errors := Consume{{ cap(k.Name) }}(ctx, c.client)
+	models, errors := ConsumeFoodOrderCreated(ctx, c.client)
 
 	go func() {
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("kafkaConsumer.{{ k.StructName() }} got model", model)
+				c.logger.Info("kafkaConsumer.FoodOrderCreated got model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -55,8 +55,8 @@ func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Co
 	return res
 }
 
-func Consume{{ cap(k.Name) }}(ctx context.Context, client IConsumer) (chan {{ k.ModelName() }}, chan error) {
-	models := make(chan {{ k.ModelName() }})
+func ConsumeFoodOrderCreated(ctx context.Context, client IConsumer) (chan food.Order, chan error) {
+	models := make(chan food.Order)
 	errors := make(chan error)
 
 	kafkaMessages, kafkaErrors := client.Consume(context.Background())
@@ -70,7 +70,7 @@ func Consume{{ cap(k.Name) }}(ctx context.Context, client IConsumer) (chan {{ k.
 				close(models)
 				return
 			case msg := <-kafkaMessages:
-				var model {{ k.ModelName() }}
+				var model food.Order
 				if err := json.Unmarshal(msg.Value, &model); err != nil {
 					errors <- err
 					continue

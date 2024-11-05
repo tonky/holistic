@@ -23,7 +23,7 @@ type FoodOrderPaid struct {
 	client IProducer
 }
 
-func NewFoodOrderPaid(logger logger.Slog, config kafka.Config) (*FoodOrderPaid, error) {
+func NewFoodOrderPaidProducer(logger logger.Slog, config kafka.Config) (*FoodOrderPaid, error) {
 	client := NewProducer(config, "food.order.paid")
 
 	return &FoodOrderPaid{

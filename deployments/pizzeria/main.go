@@ -22,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	kpfo, err := kafkaProducer.NewFoodOrderCreated(logger, config.App.Kafka)
+	kpfo, err := kafkaProducer.NewFoodOrderCreatedProducer(logger, config.App.Kafka)
 	if err != nil {
 		panic(err)
 	}

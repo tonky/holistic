@@ -23,7 +23,7 @@ type {{ kp.StructName() }} struct {
 	client IProducer
 }
 
-func New{{ kp.StructName() }}(logger logger.Slog, config kafka.Config) (*{{ kp.StructName() }}, error) {
+func New{{ kp.StructName() }}Producer(logger logger.Slog, config kafka.Config) (*{{ kp.StructName() }}, error) {
 	client := NewProducer(config, "{{ kp.TopicName }}")
 
 	return &{{ kp.StructName() }}{

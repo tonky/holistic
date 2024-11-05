@@ -2,6 +2,7 @@ package main
 
 import (
 	app "tonky/holistic/apps/accounting"
+	"tonky/holistic/infra/kafkaConsumer"
 	"tonky/holistic/infra/logger"
 	svc "tonky/holistic/services/accounting"
 
@@ -16,7 +17,7 @@ func main() {
 
 	logger := logger.Slog{}
 
-	consumer, err := app.NewKafkaFoodOrderConsumer(logger, config.App.Kafka)
+	consumer, err := kafkaConsumer.NewFoodOrderCreatedConsumer(logger, config.App.Kafka)
 	if err != nil {
 		panic(err)
 	}

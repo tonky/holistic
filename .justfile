@@ -2,7 +2,7 @@ r:
   go run main.go
 
 rr:
-  fd -E apps -E services -E clients -E domain '(.go|.tpl)' | entr -cr go run main.go 
+  fd -E apps -E services -E clients -E domain -E infra '(.go|.tpl)' | entr -cr go run main.go 
 
 t:
   PIZZERIA_PORT=1246 go test tests/*
