@@ -8,11 +8,12 @@ import (
 	"net"
 	"net/rpc"
 
+	"tonky/holistic/infra/kafkaProducer"
+	"tonky/holistic/infra/kafkaConsumer"
+
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
-	"tonky/holistic/infra/kafkaProducer"
-	"tonky/holistic/infra/kafkaConsumer"
 
 	"tonky/holistic/domain/food"
 	"tonky/holistic/domain/accounting"
@@ -59,7 +60,7 @@ func (h Accounting) Start() error {
 	server := rpc.NewServer()
 	server.Register(h)
 
-	fmt.Println(">> starging server on port ", port)
+	fmt.Println(">> starting server on port ", port)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if err != nil {

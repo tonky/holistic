@@ -42,3 +42,18 @@ func (r PostgresOrderer) SaveOrder(ctx context.Context, req NewOrder) (food.Orde
 
 	return food.Order{ID: food.OrderID{ID: id}, Content: req.Content}, nil
 }
+
+func (r PostgresOrderer) UpdateOrder(ctx context.Context, req UpdateOrder) (food.Order, error) {
+	r.logger.Info("PostgresOrderer | UpdateOrder", "pg conn", r.client, req)
+
+	query := `UPDATE orders SET content = @content, is_final = @is_final WHERE id = @id`
+	args := pgx.NamedArgs{"id": req.OrderID.String(), "content": req.Content, "is_final": req.IsFinal}
+
+	_, err := r.client.PgxConn.Exec(ctx, query, args)
+
+	if err != nil {
+		return food.Order{}, fmt.Errorf("unable to insert row: %w", err)
+	}
+
+	return food.Order{ID: req.OrderID, Content: req.Content, IsFinal: req.IsFinal}, nil
+}

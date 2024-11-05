@@ -52,8 +52,13 @@ func PizzeriaService() services.Service {
 					Arg:  services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
 					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
 				},
+				{
+					Name: "UpdateOrder",
+					Arg:  services.InfraObject{Name: "newOrder", Typ: "UpdateOrder"},
+					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
+				},
 			},
 		}},
-		KafkaProducers: []services.TopicDesc{services.TopicFoodOrderCreated},
+		KafkaProducers: []services.TopicDesc{services.TopicFoodOrderCreated, services.TopicFoodOrderUpdated},
 	}
 }

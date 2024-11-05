@@ -8,12 +8,21 @@ import (
 	"net"
 	"net/rpc"
 
+	{% if service.KafkaProducers %}
+	"tonky/holistic/infra/kafkaProducer"
+	{% end %}
+	{% if service.KafkaConsumers %}
+	"tonky/holistic/infra/kafkaConsumer"
+	{% end %}
+
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
     {% for id in app_deps %}
         {% if id.AppImportPackageName() == "app" %}
         {% else if id.PackageName() == "local" %} 
+        {% else if id.PackageName() == "kafkaProducer" %} 
+        {% else if id.PackageName() == "kafkaConsumer" %} 
         {% else %}
 	"tonky/holistic/infra/{{ id.PackageName() }}"
         {% end %}

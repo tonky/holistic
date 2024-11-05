@@ -17,7 +17,7 @@ func (app App) ReadOrder(ctx context.Context, in food.OrderID) (food.Order, erro
 }
 
 func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error) {
-	app.logger.Info("App.CreateOrder", in)
+	app.logger.Info("Pizzeria.CreateOrder", in)
 
 	or := do.MustInvokeAs[OrdererRepository](app.deps)
 	pr := do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](app.deps)
@@ -35,9 +35,21 @@ func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error)
 }
 
 func (app App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error) {
-	app.logger.Info("App.UpdateOrder", in)
+	app.logger.Info("Pizzeria.UpdateOrder", in)
 
-	return food.Order{}, nil
+	// or := do.MustInvokeAs[OrdererRepository](app.deps)
+	// pr := do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](app.deps)
+
+	updatedOrder, err := app.ordererRepo.UpdateOrder(ctx, in)
+	if err != nil {
+		return food.Order{}, err
+	}
+
+	if err := app.FoodOrderUpdatedProducer.ProduceFoodOrderUpdated(ctx, updatedOrder); err != nil {
+		return food.Order{}, err
+	}
+
+	return updatedOrder, nil
 }
 
 type NewOrder struct {

@@ -15,6 +15,7 @@ type App struct {
 
     ordererRepo OrdererRepository
     FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
+    FoodOrderUpdatedProducer kafkaProducer.IFoodOrderUpdated
 }
 
 func NewApp(deps do.Injector) (*App, error) {
@@ -23,6 +24,7 @@ func NewApp(deps do.Injector) (*App, error) {
 		logger:     do.MustInvoke[*logger.Slog](deps),
         ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
         FoodOrderCreatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](deps),
+        FoodOrderUpdatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](deps),
 	}
 
 	return &app, nil

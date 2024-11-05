@@ -8,10 +8,11 @@ import (
 	"net"
 	"net/rpc"
 
+	"tonky/holistic/infra/kafkaProducer"
+
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
-	"tonky/holistic/infra/kafkaProducer"
 
 	"tonky/holistic/domain/food"
 	app "tonky/holistic/apps/pizzeria"
@@ -79,7 +80,7 @@ func (h Pizzeria) Start() error {
 	server := rpc.NewServer()
 	server.Register(h)
 
-	fmt.Println(">> starging server on port ", port)
+	fmt.Println(">> starting server on port ", port)
 
 	l, err := net.Listen("tcp", fmt.Sprintf(":%d", port))
     if err != nil {
@@ -124,6 +125,13 @@ func NewFromEnv() (ServiceStarter, error) {
     }
 
 	do.ProvideValue(deps, FoodOrderCreatedProducer)
+
+	FoodOrderUpdatedProducer, err := kafkaProducer.NewFoodOrderUpdatedProducer(l, cfg.App.Kafka)
+    if err != nil {
+        return nil, err
+    }
+
+	do.ProvideValue(deps, FoodOrderUpdatedProducer)
 
     application, appErr := app.NewApp(deps)
     if appErr != nil {

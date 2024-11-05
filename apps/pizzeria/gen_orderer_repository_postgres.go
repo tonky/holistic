@@ -11,6 +11,7 @@ import (
 type OrdererRepository interface {
     ReadOrderByID(context.Context, food.OrderID) (food.Order, error)
     SaveOrder(context.Context, NewOrder) (food.Order, error)
+    UpdateOrder(context.Context, UpdateOrder) (food.Order, error)
 }
 
 type PostgresOrderer struct {
