@@ -18,18 +18,18 @@ type I{{ cap(service.Name) }}Client interface {
 {% end %}
 }
 
-func New(config clients.Config) {{ cap(service_name) }}Client {
-	return {{ cap(service_name) }}Client{
+func New(config clients.Config) {{ cap(service.Name) }}Client {
+	return {{ cap(service.Name) }}Client{
 		config: config,
 	}
 }
 
-type {{ cap(service_name) }}Client struct {
+type {{ cap(service.Name) }}Client struct {
 	config clients.Config
 }
 
 {% for h in handlers %}
-func (c {{ cap(service_name) }}Client) {{ h.FuncName() }}(ctx context.Context, req {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error) {
+func (c {{ cap(service.Name) }}Client) {{ h.FuncName() }}(ctx context.Context, req {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error) {
 	client, err := rpc.Dial("tcp", c.config.ServerAddress())
 	if err != nil {
 		log.Fatal("dialing error:", err)
@@ -37,7 +37,7 @@ func (c {{ cap(service_name) }}Client) {{ h.FuncName() }}(ctx context.Context, r
 
 	var reply {{ h.Out.ok }}
 
-	err = client.Call("{{ cap(service_name) }}.{{ h.FuncName() }}", req, &reply)
+	err = client.Call("{{ cap(service.Name) }}.{{ h.FuncName() }}", req, &reply)
 	if err != nil {
 		log.Fatal("server call error:", err)
 	}

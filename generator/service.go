@@ -77,28 +77,27 @@ func GenService(s services.Service) {
 			"cap":              builtin.Capitalize,
 			"port":             (*int)(nil),
 			"handlers":         &s.Endpoints,
-			"service_name":     &s.Name,
 			"config_items":     &s.ConfigItems,
 			"app_config_items": &s.AppConfigItems,
 			"infra":            &s.Infra,
 		},
 	}
 
-	appDeps := []AppDep{}
-	kafkaDeps := []AppDep{}
-	infraDeps := []InfraDep{{Typ: "kafka", Name: ""}}
+	appDeps := AppDeps{}
+	// kafkaDeps := []AppDep{}
+	infraDeps := []AppDep{}
 	clientDeps := []AppDep{}
 	configImports := s.ClientImports()
 
 	opts.Globals["app_deps"] = &appDeps
-	opts.Globals["kafka_deps"] = &kafkaDeps
+	// opts.Globals["kafka_deps"] = &kafkaDeps
 	opts.Globals["infra_deps"] = &infraDeps
 	opts.Globals["client_deps"] = &clientDeps
 	opts.Globals["client_relative_imports"] = &configImports
 
 	for _, pg := range s.Postgres {
 		appDeps = append(appDeps, pg)
-		infraDeps = append(infraDeps, InfraDep{Typ: "postgres", Name: pg.Name})
+		infraDeps = append(infraDeps, pg)
 
 		opts.Globals["repo"] = &pg
 		opts.Globals["kind"] = "postgres"
@@ -171,6 +170,27 @@ func readContent(dir string, file string) []byte {
 type AppDep interface {
 	AppVarName() string
 	InterfaceName() string
+	StructName() string
+	PackageName() string
+	AppImportPackageName() string
+	ConfigVarName() string
+	ConfigVarType() string
+}
+
+type AppDeps []AppDep
+
+func (ads AppDeps) Dedup() []AppDep {
+	keys := make(map[string]bool)
+	list := []AppDep{}
+
+	for _, entry := range ads {
+		if _, value := keys[entry.PackageName()]; !value {
+			keys[entry.PackageName()] = true
+			list = append(list, entry)
+		}
+	}
+
+	return list
 }
 
 type InfraDep struct {

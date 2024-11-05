@@ -19,6 +19,22 @@ func (p Postgres) InterfaceName() string {
 	return strings.ToUpper(p.Name[0:1]) + p.Name[1:] + "Repository"
 }
 
+func (p Postgres) PackageName() string {
+	return "postgres"
+}
+
+func (p Postgres) AppImportPackageName() string {
+	return "app"
+}
+
+func (p Postgres) ConfigVarName() string {
+	return p.StructName()
+}
+
+func (p Postgres) ConfigVarType() string {
+	return "postgres.Config"
+}
+
 type KafkaProducer struct {
 	Name  string
 	Topic string

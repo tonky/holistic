@@ -14,24 +14,24 @@ import (
 	{% end %}
 )
 
-type I{{ cap(service_name) }}Client interface {
+type I{{ cap(service.Name) }}Client interface {
 {% for h in handlers %}
 	{{ h.FuncName() }}(context.Context, {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error)
 {% end %}
 }
 
-func New(config clients.Config) {{ cap(service_name) }}Client {
-	return {{ cap(service_name) }}Client{
+func New(config clients.Config) {{ cap(service.Name) }}Client {
+	return {{ cap(service.Name) }}Client{
 		config: config,
 	}
 }
 
-type {{ cap(service_name) }}Client struct {
+type {{ cap(service.Name) }}Client struct {
 	config clients.Config
 }
 
 {% for h in handlers %}
-func (c {{ cap(service_name) }}Client) {{ h.FuncName() }}(ctx context.Context, arg {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error) {
+func (c {{ cap(service.Name) }}Client) {{ h.FuncName() }}(ctx context.Context, arg {{ h.In.ServiceModel() }}) ({{ h.Out.ok }}, error) {
 	var reply {{ h.Out.ok }}
 
 	jsonBody, err := json.Marshal(arg)

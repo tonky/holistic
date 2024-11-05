@@ -17,7 +17,7 @@ func main() {
 
 	logger := logger.Slog{}
 
-	por, err := app.NewPostgresOrdererRepository(logger, config.App.PostgresOrderer)
+	por, err := app.NewPostgresOrderer(logger, config.App.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 	do.ProvideValue(injector, kpfo)
 	do.ProvideValue(injector, por)
 
-	svc, err := svc.NewPizzeria(injector)
+	svc, err := svc.New(injector)
 	if err != nil {
 		panic(err)
 	}

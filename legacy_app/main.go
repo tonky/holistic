@@ -28,7 +28,7 @@ func main() {
 		panic(err)
 	}
 
-	po, err := pizzeria.NewPostgresOrdererRepository(l, conf.PostgresOrderer)
+	po, err := pizzeria.NewPostgresOrderer(l, conf.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}

@@ -19,7 +19,7 @@ type PostgresOrderer struct {
 	client postgres.Client
 }
 
-func NewPostgresOrdererRepository(logger logger.Slog, conf postgres.Config) (*PostgresOrderer, error) {
+func NewPostgresOrderer(logger logger.Slog, conf postgres.Config) (*PostgresOrderer, error) {
 	client, err := postgres.NewClient(conf)
 	if err != nil {
 		return nil, err

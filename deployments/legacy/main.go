@@ -19,7 +19,7 @@ func main() {
 
 	deps := app.NewDeps(conf.App)
 
-	pg, err := app.NewPostgresOrdererRepository(l, conf.App.PostgresOrderer)
+	pg, err := app.NewPostgresOrderer(l, conf.App.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}

@@ -30,7 +30,7 @@ func main() {
 	do.ProvideValue(injector, consumer)
 	do.Provide(injector, app.NewOrdersMemoryRepository)
 
-	svc, err := svc.NewAccounting(injector)
+	svc, err := svc.New(injector)
 	if err != nil {
 		panic(err)
 	}

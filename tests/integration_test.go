@@ -43,7 +43,7 @@ func startServices() do.Injector {
 		User:     "postgres",
 		Password: "postgres",
 	}
-	po, err := app_piz.NewPostgresOrdererRepository(l, pgConf)
+	po, err := app_piz.NewPostgresOrderer(l, pgConf)
 	if err != nil {
 		panic(err)
 	}
@@ -58,7 +58,7 @@ func startServices() do.Injector {
 	do.ProvideValue(injector, kp)
 	do.ProvideValue(injector, kfc)
 
-	pizzeria, err := svc_piz.NewPizzeria(injector)
+	pizzeria, err := svc_piz.New(injector)
 	if err != nil {
 		panic(err)
 	}
@@ -67,7 +67,7 @@ func startServices() do.Injector {
 
 	do.Provide(injector, app_acc.NewOrdersMemoryRepository)
 
-	accounting, err := svc_acc.NewAccounting(injector)
+	accounting, err := svc_acc.New(injector)
 	if err != nil {
 		panic(err)
 	}

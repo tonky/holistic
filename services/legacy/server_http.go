@@ -56,6 +56,11 @@ func (h handlers) CreateOrder() http.HandlerFunc {
             return
         }
 
+        if err := in.Validate(); err != nil {
+            http.Error(w, err.Error(), http.StatusBadRequest)
+            return
+        }
+
         appArg, err := in.ToApp()
         if err != nil {
             http.Error(w, err.Error(), http.StatusInternalServerError)

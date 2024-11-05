@@ -11,9 +11,12 @@ import (
     // "github.com/go-playground/validator/v10"
     "github.com/samber/do/v2"
 
+	"tonky/holistic/infra/kafkaConsumer"
+
 	"tonky/holistic/domain/food"
 	"tonky/holistic/domain/accounting"
 	app "tonky/holistic/apps/accounting"
+	"tonky/holistic/infra/logger"
 )
 
 type Accounting struct {
@@ -34,7 +37,7 @@ func (h Accounting) ReadOrder(arg food.OrderID, reply *accounting.Order) error {
 }
 
 
-func NewAccounting(dependencies do.Injector) (ServiceStarter, error) {
+func New(dependencies do.Injector) (ServiceStarter, error) {
 	cfg := do.MustInvoke[*Config](dependencies)
 
     application, appErr := app.NewApp(dependencies)
@@ -74,6 +77,60 @@ func (h Accounting) Start() error {
 	}
 }
 
+func NewFromEnv() (ServiceStarter, error) {
+	cfg, err := NewEnvConfig()
+    if err != nil {
+        return nil, err
+    }
+
+    deps := do.New()
+
+	do.ProvideValue(deps, cfg)
+
+    l := logger.Slog{}
+	do.ProvideValue(deps, &l)
+
+	FoodOrderUpdatedConsumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(l, cfg.App.Kafka)
+    if err != nil {
+        return nil, err
+    }
+
+	do.ProvideValue(deps, FoodOrderUpdatedConsumer)
+/*
+	ocp, err := kafkaProducer.NewFoodOrderCreatedProducer(l, cfg.App.Kafka)
+    if err != nil {
+        return nil, err
+    }
+
+	oup, err := kafkaProducer.NewFoodOrderUpdatedProducer(l, cfg.App.Kafka)
+    if err != nil {
+        return nil, err
+    }
+
+	do.ProvideValue(deps, ocp)
+	do.ProvideValue(deps, oup)
+*/
+    application, appErr := app.NewApp(deps)
+    if appErr != nil {
+        return nil, appErr
+    }
+
+    handlers := Accounting{deps: deps, config: cfg, app: *application}
+
+    return handlers, nil
+}
+
+func (h Accounting) Config() Config {
+    return h.config
+}
+
+func (h Accounting) Deps() do.Injector {
+    return h.deps
+}
+
+
 type ServiceStarter interface {
     Start() error
+    Config() Config
+    Deps() do.Injector
 }

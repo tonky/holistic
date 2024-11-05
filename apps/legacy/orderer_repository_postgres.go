@@ -10,7 +10,7 @@ func (p PostgresOrderer) ReadOrderByID(ctx context.Context, id food.OrderID) (fo
 }
 
 func (p PostgresOrderer) SaveOrder(ctx context.Context, in NewOrder) (food.Order, error) {
-	return food.Order{}, nil
+	return food.Order{ID: food.RandomOrderID(), Content: in.Content}, nil
 }
 
 func (p PostgresOrderer) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error) {

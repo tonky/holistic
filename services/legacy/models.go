@@ -1,6 +1,7 @@
 package legacy
 
 import (
+	"fmt"
 	app "tonky/holistic/apps/legacy"
 	"tonky/holistic/domain/food"
 )
@@ -34,4 +35,14 @@ func (uo UpdateOrder) ToApp() (app.UpdateOrder, error) {
 	}
 
 	return app.UpdateOrder{ID: oid, Content: uo.Content, IsFinal: uo.IsFinal}, nil
+}
+
+var ErrEmptyContent = fmt.Errorf("empty content")
+
+func (no NewOrder) Validate() error {
+	if no.Content == "" {
+		return ErrEmptyContent
+	}
+
+	return nil
 }

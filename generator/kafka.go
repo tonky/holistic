@@ -49,14 +49,34 @@ type KafkaDep struct {
 }
 
 func (kd KafkaDep) InterfaceName() string {
+	return kd.PackageName() + "." + "I" + builtin.Capitalize(kd.Name)
+}
+
+func (kd KafkaDep) AppVarName() string {
+	return builtin.Capitalize(kd.Name) + builtin.Capitalize(kd.Kind)
+}
+
+func (kd KafkaDep) ConfigVarName() string {
+	return "Kafka"
+}
+
+func (kd KafkaDep) ConfigVarType() string {
+	return "kafka.Config"
+}
+
+func (kd KafkaDep) StructName() string {
+	return builtin.Capitalize(kd.Name) + builtin.Capitalize(kd.Kind)
+}
+
+func (kd KafkaDep) PackageName() string {
 	packageName := "kafkaConsumer"
 	if kd.Kind == "producer" {
 		packageName = "kafkaProducer"
 	}
 
-	return packageName + "." + "I" + builtin.Capitalize(kd.Name)
+	return packageName
 }
 
-func (kd KafkaDep) AppVarName() string {
-	return builtin.Capitalize(kd.Name) + builtin.Capitalize(kd.Kind)
+func (kd KafkaDep) AppImportPackageName() string {
+	return kd.PackageName()
 }

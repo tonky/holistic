@@ -279,7 +279,11 @@ func (i Infra) AppVarName() string {
 }
 
 func (i Infra) InterfaceName() string {
-	return i.Name + "Repository"
+	return "I" + i.Name
+}
+
+func (i Infra) StructName() string {
+	return i.AppVarName()
 }
 
 func (i Infra) ImplName() string {
@@ -329,4 +333,24 @@ func (c Client) AppVarName() string {
 
 func (c Client) InterfaceName() string {
 	return c.IName
+}
+
+func (c Client) StructName() string {
+	return c.VarName
+}
+
+func (c Client) PackageName() string {
+	return "clients"
+}
+
+func (c Client) AppImportPackageName() string {
+	return c.PackageName()
+}
+
+func (c Client) ConfigVarName() string {
+	return c.StructName()
+}
+
+func (c Client) ConfigVarType() string {
+	return "clients.Config"
 }

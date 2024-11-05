@@ -2,8 +2,12 @@
 package {{ service.Name }}
 
 import (
-    {% for id in infra_deps %}
-	"tonky/holistic/infra/{{ id.Typ }}"
+    {% for id in app_deps.Dedup() %}
+    {% if id.ConfigVarName() == "Kafka" %}
+	"tonky/holistic/infra/kafka"
+    {% else %}
+	"tonky/holistic/infra/{{ id.PackageName() }}"
+    {% end %}
     {% end %}
 
 	"github.com/kelseyhightower/envconfig"
@@ -13,8 +17,8 @@ import (
 type Config struct {
 	Environment   string `default:"dev"`
 
-    {% for id in infra_deps %}
-    {{ cap(id.Typ) }}{{ cap(id.Name) }} {{ id.Typ }}.Config
+    {% for id in app_deps.Dedup() %}
+    {{ id.ConfigVarName() }} {{ id.ConfigVarType() }}
     {% end %}
 
     {% for configItem in app_config_items %}

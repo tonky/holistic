@@ -24,7 +24,7 @@ func initPizzeriaServer() do.Injector {
 	do.Provide(injector, app.NewMemoryOrdererRepository)
 	do.Provide(injector, app.NewMemoryOrderProducerRepository)
 
-	pizzeria, err := svc.NewPizzeria(injector)
+	pizzeria, err := svc.New(injector)
 	if err != nil {
 		panic(err)
 	}

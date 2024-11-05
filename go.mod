@@ -11,6 +11,7 @@ require (
 	github.com/samber/do/v2 v2.0.0-beta.7
 	github.com/segmentio/kafka-go v0.4.47
 	github.com/stretchr/testify v1.8.4
+	golang.org/x/tools v0.22.0
 )
 
 require (

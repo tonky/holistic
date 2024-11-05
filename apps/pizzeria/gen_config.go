@@ -2,8 +2,8 @@
 package pizzeria
 
 import (
-	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/postgres"
+	"tonky/holistic/infra/kafka"
 
 	"github.com/kelseyhightower/envconfig"
 )
@@ -12,8 +12,8 @@ import (
 type Config struct {
 	Environment   string `default:"dev"`
 
-    Kafka kafka.Config
     PostgresOrderer postgres.Config
+    Kafka kafka.Config
 
     EnabledInRegions []string `split_words:"true"`
 }
