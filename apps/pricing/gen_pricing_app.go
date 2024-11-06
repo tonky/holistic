@@ -12,16 +12,13 @@ type Deps struct {
     OrdererRepo OrdererRepository
 }
 
-type Clients struct {
-}
 
 type App struct {
 	Deps		Deps
-	Clients		Clients
 	Logger		*logger.Slog
 }
 
-func NewApp(deps Deps, clients Clients) (App, error) {
+func NewApp(deps Deps) (App, error) {
 	if deps.Logger == nil {
 		deps.Logger = &logger.Slog{}
 	}
@@ -29,7 +26,6 @@ func NewApp(deps Deps, clients Clients) (App, error) {
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
-		Clients: 	clients,
 	}
 
 	return app, nil

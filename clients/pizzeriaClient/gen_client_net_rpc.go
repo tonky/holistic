@@ -23,6 +23,14 @@ func New(config clients.Config) PizzeriaClient {
 	}
 }
 
+func NewFromEnv(env string) PizzeriaClient {
+	envConf := clients.ConfigForEnv("pizzeria", env)
+
+	return PizzeriaClient{
+		config: envConf,
+	}
+}
+
 type PizzeriaClient struct {
 	config clients.Config
 }

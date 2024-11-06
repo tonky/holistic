@@ -19,6 +19,7 @@ import (
 	"tonky/holistic/domain/accounting"
 	app "tonky/holistic/apps/accounting"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/clients/pricingClient"
 )
 
 type Accounting struct {
@@ -92,9 +93,12 @@ func NewFromEnv() (ServiceStarter, error) {
     l := logger.Slog{}
 	do.ProvideValue(deps, &l)
 
-	AccountOrdersRepoReader := app.NewOrdersRepository(l)
+	ordererRepo, err := app.NewPostgresOrderer(l, cfg.App.PostgresOrderer)
+    if err != nil {
+        return nil, err
+    }
 
-	do.ProvideValue(deps, AccountOrdersRepoReader)
+	do.ProvideValue(deps, ordererRepo)
 
 	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(l, cfg.App.Kafka)
     if err != nil {
@@ -110,6 +114,7 @@ func NewFromEnv() (ServiceStarter, error) {
 
 	do.ProvideValue(deps, FoodOrderUpdatedConsumer)
 
+	do.ProvideValue(deps, pricingClient.NewFromEnv(cfg.Environment))
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

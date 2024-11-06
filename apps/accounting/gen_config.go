@@ -2,6 +2,7 @@
 package accounting
 
 import (
+	"tonky/holistic/infra/postgres"
 	"tonky/holistic/infra/kafka"
 
 	"github.com/kelseyhightower/envconfig"
@@ -11,7 +12,7 @@ import (
 type Config struct {
 	Environment   string `default:"dev"`
 
-    AccountOrdersRepoReader AccountOrdersRepoReader
+    PostgresOrderer postgres.Config
     Kafka kafka.Config
 
 }

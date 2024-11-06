@@ -8,6 +8,8 @@ import (
 	"tonky/holistic/domain/food"
 )
 
+var _ OrdererRepository = new(PostgresOrderer)
+
 type OrdererRepository interface {
     ReadOrderByID(context.Context, food.OrderID) (food.Order, error)
     SaveOrder(context.Context, NewOrder) (food.Order, error)

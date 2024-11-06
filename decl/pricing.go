@@ -8,7 +8,7 @@ func PricingService() services.Service {
 	getOrderPrice := services.Endpoint{
 		Name:   "order",
 		Method: services.Read,
-		In:     services.Inputs{Name: "OrderID"},
+		In:     services.Inputs{Name: "food.OrderID"},
 		Out: map[services.ResponseType]services.ResponseObject{
 			services.ResponseOK: "pricing.OrderPrice",
 		},

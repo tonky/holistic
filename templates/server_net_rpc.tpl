@@ -36,6 +36,9 @@ import (
 	{% end %}
 	app "tonky/holistic/apps/{{ service.Name }}"
 	"tonky/holistic/infra/logger"
+    {% for d in client_deps.Dedup() %}
+	"tonky/holistic/clients/{{ d.AppVarName() }}"
+    {% end %}
 )
 
 type {{ cap(service.Name) }} struct {
@@ -123,6 +126,9 @@ func NewFromEnv() (ServiceStarter, error) {
 
 	do.ProvideValue(deps, {{ ad.AppVarName() }})
 
+{% end %}
+{% for d in client_deps.Dedup() %}
+	do.ProvideValue(deps, {{ d.AppVarName() }}.NewFromEnv(cfg.Environment))
 {% end %}
     application, appErr := app.NewApp(deps)
     if appErr != nil {

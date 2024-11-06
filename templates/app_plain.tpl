@@ -23,19 +23,27 @@ type Deps struct {
 {% end %}
 }
 
+{% if client_deps %}
 type Clients struct {
 {% for d in client_deps.Dedup() %}
     {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
 {% end %}
 }
+{% end %}
 
 type App struct {
 	Deps		Deps
+{% if client_deps %}
 	Clients		Clients
+{% end %}
 	Logger		*logger.Slog
 }
 
+{% if client_deps %}
 func NewApp(deps Deps, clients Clients) (App, error) {
+{% else %}
+func NewApp(deps Deps) (App, error) {
+{% end %}
 	if deps.Logger == nil {
 		deps.Logger = &logger.Slog{}
 	}
@@ -47,7 +55,9 @@ func NewApp(deps Deps, clients Clients) (App, error) {
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
+{% if client_deps %}
 		Clients: 	clients,
+{% end %}
 	}
 
 	{% for consumer in service.KafkaConsumers %}

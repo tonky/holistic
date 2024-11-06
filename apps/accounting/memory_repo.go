@@ -8,7 +8,7 @@ import (
 	"github.com/samber/do/v2"
 )
 
-var _ AccountOrdersRepoReader = new(OrdersMemoryRepository)
+var _ OrdererRepository = new(OrdersMemoryRepository)
 
 func NewOrdersMemoryRepository(do.Injector) (*OrdersMemoryRepository, error) {
 	return &OrdersMemoryRepository{
@@ -24,13 +24,8 @@ func (a OrdersMemoryRepository) ReadOrderByFoodID(ctx context.Context, in food.O
 	return a.orders[in], nil
 }
 
-func (a OrdersMemoryRepository) SaveOrder(ctx context.Context, in NewOrder) (accounting.Order, error) {
-	out := accounting.Order{
-		ID:   in.Order.ID,
-		Cost: in.Cost,
-	}
+func (a OrdersMemoryRepository) SaveFinishedOrder(ctx context.Context, in accounting.Order) (accounting.Order, error) {
+	a.orders[in.ID] = in
 
-	a.orders[in.Order.ID] = out
-
-	return out, nil
+	return in, nil
 }

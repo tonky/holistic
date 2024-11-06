@@ -21,6 +21,14 @@ func New(config clients.Config) AccountingClient {
 	}
 }
 
+func NewFromEnv(env string) AccountingClient {
+	envConf := clients.ConfigForEnv("accounting", env)
+
+	return AccountingClient{
+		config: envConf,
+	}
+}
+
 type AccountingClient struct {
 	config clients.Config
 }

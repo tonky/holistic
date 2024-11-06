@@ -5,7 +5,7 @@ rr:
   fd -E apps -E services -E clients -E domain -E infra '(.go|.tpl)' | entr -cr go run main.go 
 
 t:
-  PIZZERIA_PORT=1246 go test tests/*
+  PIZZERIA_PORT=1246 go test ./tests
 
 ts:
   ls services/pizzeria/*.go | entr -cr go run tst/server/pizzeria.go

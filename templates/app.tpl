@@ -10,17 +10,23 @@ import (
 	"tonky/holistic/infra/kafkaConsumer"
 	"context"
 	{% end %}
+	{% for d in client_deps %}
+	"tonky/holistic/clients/{{ d.AppVarName() }}"
+	{% end %}
 	"tonky/holistic/infra/logger"
 
 	"github.com/samber/do/v2"
 )
 
 type App struct {
-	deps       do.Injector
+	Deps       do.Injector
 	logger     *logger.Slog
 
 {% for ad in app_deps %}
-    {{ ad.AppVarName() }} {{ ad.InterfaceName() }}
+    {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
+{% end %}
+{% for d in client_deps.Dedup() %}
+    {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
 {% end %}
 }
 
@@ -30,11 +36,15 @@ func NewApp(deps do.Injector) (*App, error) {
 
 	{% end %}
 	app := App{
-		deps:       deps,
+		Deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
 {% for ad in app_deps %}
-        {{ ad.AppVarName() }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
+        {{ cap(ad.AppVarName()) }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
 {% end %}
+{% for d in client_deps.Dedup() %}
+        {{ cap(d.AppVarName()) }}: do.MustInvokeAs[{{ d.AppVarName() }}.{{ d.InterfaceName() }}](deps),
+{% end %}
+
 	}
 
 	{% for consumer in service.KafkaConsumers %}

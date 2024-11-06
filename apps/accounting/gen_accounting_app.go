@@ -6,29 +6,33 @@ import (
 	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/kafkaConsumer"
 	"context"
+	"tonky/holistic/clients/pricingClient"
 	"tonky/holistic/infra/logger"
 
 	"github.com/samber/do/v2"
 )
 
 type App struct {
-	deps       do.Injector
+	Deps       do.Injector
 	logger     *logger.Slog
 
-    AccountOrdersRepoReader AccountOrdersRepoReader
+    OrdererRepo OrdererRepository
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
+    PricingClient pricingClient.IPricingClient
 }
 
 func NewApp(deps do.Injector) (*App, error) {
 	ctx := context.Background()
 
 	app := App{
-		deps:       deps,
+		Deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
-        AccountOrdersRepoReader: do.MustInvokeAs[AccountOrdersRepoReader](deps),
+        OrdererRepo: do.MustInvokeAs[OrdererRepository](deps),
         AccountingOrderPaidProducer: do.MustInvokeAs[kafkaProducer.IAccountingOrderPaid](deps),
         FoodOrderUpdatedConsumer: do.MustInvokeAs[kafkaConsumer.IFoodOrderUpdated](deps),
+        PricingClient: do.MustInvokeAs[pricingClient.IPricingClient](deps),
+
 	}
 
 	go func() {

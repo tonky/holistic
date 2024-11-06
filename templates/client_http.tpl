@@ -26,6 +26,14 @@ func New(config clients.Config) {{ cap(service.Name) }}Client {
 	}
 }
 
+func NewFromEnv(env string) {{ cap(service.Name) }}Client {
+	envConf := clients.ConfigForEnv("{{ service.Name }}", env)
+
+	return {{ cap(service.Name) }}Client{
+		config: envConf,
+	}
+}
+
 type {{ cap(service.Name) }}Client struct {
 	config clients.Config
 }

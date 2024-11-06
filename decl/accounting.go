@@ -19,24 +19,17 @@ func AccountingService() services.Service {
 		Endpoints:      []services.Endpoint{getOrder},
 		KafkaConsumers: []services.TopicDesc{services.TopicFoodOrderUpdated},
 		KafkaProducers: []services.TopicDesc{services.TopicAccountingOrderPaid},
-		Interfaces: []services.JustInterface{{
-			Name:   "AccountOrdersRepoReader",
-			Struct: "OrdersRepository",
-			Deps: map[string]services.FQImport{
-				"logger": {
-					RelPath: "infra/logger",
-					Model:   "Slog",
-				},
-			},
+		Postgres: []services.Postgres{{
+			Name: "orderer",
 			Methods: []services.InterfaceMethod{
 				{
-					Name: "SaveOrder",
-					Arg:  services.InfraObject{Name: "order", Typ: "NewOrder"},
+					Name: "SaveFinishedOrder",
+					Arg:  services.InfraObject{Name: "orderID", Typ: "accounting.Order"},
 					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
 				},
 				{
 					Name: "ReadOrderByFoodID",
-					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Arg:  services.InfraObject{Name: "newOrder", Typ: "food.OrderID"},
 					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
 				},
 			},

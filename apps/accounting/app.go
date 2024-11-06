@@ -10,22 +10,32 @@ import (
 )
 
 func (a *App) ReadOrder(ctx context.Context, arg food.OrderID) (accounting.Order, error) {
-	return do.MustInvokeAs[AccountOrdersRepoReader](a.deps).ReadOrderByFoodID(ctx, arg)
+	return do.MustInvokeAs[OrdererRepository](a.Deps).ReadOrderByFoodID(ctx, arg)
 }
 
 func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) error {
-	a.logger.Info("AccountingApp.FoodOrderProcessor got: ", in)
+	a.logger.Info("AccountingApp.FoodOrderUpdatedProcessor got: ", in)
 
-	repo := do.MustInvokeAs[AccountOrdersRepoReader](a.deps)
+	if !in.IsFinal {
+		return nil
+	}
 
-	_, err := repo.SaveOrder(ctx, NewOrder{
-		Order:   in,
-		Content: in.Content,
-		Cost:    10,
-		IsPaid:  true,
-	})
+	orderPrice, err := a.PricingClient.ReadOrder(ctx, in.ID)
+	if err != nil {
+		return err
+	}
 
-	return err
+	paidOrder := accounting.Order{
+		ID:   in.ID,
+		Cost: orderPrice.Cost,
+	}
+
+	_, errSave := a.OrdererRepo.SaveFinishedOrder(ctx, paidOrder)
+	if errSave != nil {
+		return errSave
+	}
+
+	return a.AccountingOrderPaidProducer.ProduceAccountingOrderPaid(ctx, paidOrder)
 }
 
 func (a *App) FoodOrderProcessorErrHandler(errs chan error) {

@@ -9,12 +9,12 @@ import (
 	"net/http"
 	"io"
 	"tonky/holistic/clients"
-	svc "tonky/holistic/services/pricing"
+	 "tonky/holistic/domain/food"
 	 "tonky/holistic/domain/pricing"
 )
 
 type IPricingClient interface {
-	ReadOrder(context.Context, svc.OrderID) (pricing.OrderPrice, error)
+	ReadOrder(context.Context, food.OrderID) (pricing.OrderPrice, error)
 }
 
 func New(config clients.Config) PricingClient {
@@ -23,11 +23,19 @@ func New(config clients.Config) PricingClient {
 	}
 }
 
+func NewFromEnv(env string) PricingClient {
+	envConf := clients.ConfigForEnv("pricing", env)
+
+	return PricingClient{
+		config: envConf,
+	}
+}
+
 type PricingClient struct {
 	config clients.Config
 }
 
-func (c PricingClient) ReadOrder(ctx context.Context, arg svc.OrderID) (pricing.OrderPrice, error) {
+func (c PricingClient) ReadOrder(ctx context.Context, arg food.OrderID) (pricing.OrderPrice, error) {
 	var reply pricing.OrderPrice
 
 	jsonBody, err := json.Marshal(arg)

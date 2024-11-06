@@ -27,6 +27,9 @@ func TestE2E(t *testing.T) {
 	svcAcc, err := accounting.NewFromEnv()
 	require.NoError(t, err)
 
+	// svcAcc, err := accounting.NewFromEnv()
+	// require.NoError(t, err)
+
 	go svcPiz.Start()
 	go svcAcc.Start()
 

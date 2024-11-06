@@ -10,21 +10,22 @@ import (
 )
 
 type App struct {
-	deps       do.Injector
+	Deps       do.Injector
 	logger     *logger.Slog
 
-    ordererRepo OrdererRepository
+    OrdererRepo OrdererRepository
     FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
     FoodOrderUpdatedProducer kafkaProducer.IFoodOrderUpdated
 }
 
 func NewApp(deps do.Injector) (*App, error) {
 	app := App{
-		deps:       deps,
+		Deps:       deps,
 		logger:     do.MustInvoke[*logger.Slog](deps),
-        ordererRepo: do.MustInvokeAs[OrdererRepository](deps),
+        OrdererRepo: do.MustInvokeAs[OrdererRepository](deps),
         FoodOrderCreatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](deps),
         FoodOrderUpdatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](deps),
+
 	}
 
 	return &app, nil
