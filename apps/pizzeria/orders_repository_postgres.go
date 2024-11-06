@@ -14,7 +14,7 @@ func (r PostgresOrderer) ReadOrderByID(ctx context.Context, req food.OrderID) (f
 
 	var id, content string
 
-	err := r.client.PgxConn.QueryRow(context.Background(), "select id, content from orders where id=$1", req.ID).Scan(&id, &content)
+	err := r.client.Pool.QueryRow(context.Background(), "select id, content from orders where id=$1", req.ID).Scan(&id, &content)
 	if err != nil {
 		return food.Order{}, fmt.Errorf("order query for id %s failed: %v", req.ID.String(), err)
 	}
@@ -34,7 +34,7 @@ func (r PostgresOrderer) SaveOrder(ctx context.Context, req NewOrder) (food.Orde
 	query := `INSERT INTO orders (id, content) VALUES (@id, @content)`
 	args := pgx.NamedArgs{"id": id.String(), "content": req.Content}
 
-	_, err := r.client.PgxConn.Exec(ctx, query, args)
+	_, err := r.client.Pool.Exec(ctx, query, args)
 
 	if err != nil {
 		return food.Order{}, fmt.Errorf("unable to insert row: %w", err)
@@ -49,7 +49,7 @@ func (r PostgresOrderer) UpdateOrder(ctx context.Context, req UpdateOrder) (food
 	query := `UPDATE orders SET content = @content, is_final = @is_final WHERE id = @id`
 	args := pgx.NamedArgs{"id": req.OrderID.String(), "content": req.Content, "is_final": req.IsFinal}
 
-	_, err := r.client.PgxConn.Exec(ctx, query, args)
+	_, err := r.client.Pool.Exec(ctx, query, args)
 
 	if err != nil {
 		return food.Order{}, fmt.Errorf("unable to insert row: %w", err)

@@ -11,12 +11,15 @@ import (
 )
 
 func (a PostgresOrderer) ReadOrderByFoodID(ctx context.Context, in food.OrderID) (accounting.Order, error) {
-	a.logger.Info("accounting.PostgresOrderer.ReadOrderByID", in)
+	a.logger.Info("accounting.PostgresOrderer.ReadOrderByFoodID", in)
 
 	var cost int
 	var paid_at time.Time
 
-	err := a.client.PgxConn.QueryRow(context.Background(), "select price, paid_at from accounting_orders where order_id=$1", in).Scan(&cost, &paid_at)
+	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+
+	err := a.client.Pool.QueryRow(ctx, "select price, paid_at from accounting_orders where order_id=$1", in).Scan(&cost, &paid_at)
 	if err != nil {
 		return accounting.Order{}, fmt.Errorf("order query for id %s failed: %v", in.ID.String(), err)
 	}
@@ -32,7 +35,7 @@ func (a PostgresOrderer) SaveFinishedOrder(ctx context.Context, in accounting.Or
 	query := `INSERT INTO accounting_orders (order_id, price, paid_at) VALUES (@id, @price, @time)`
 	args := pgx.NamedArgs{"id": in.ID.String(), "price": in.Cost, "time": time.Now()}
 
-	_, err := a.client.PgxConn.Exec(ctx, query, args)
+	_, err := a.client.Pool.Exec(ctx, query, args)
 
 	if err != nil {
 		return accounting.Order{}, fmt.Errorf("unable to insert row: %w", err)

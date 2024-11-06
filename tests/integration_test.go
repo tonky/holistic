@@ -2,10 +2,12 @@ package tests
 
 import (
 	"context"
+	"os"
 	"testing"
 	"time"
 	appAcc "tonky/holistic/apps/accounting"
 	app_piz "tonky/holistic/apps/pizzeria"
+	appShipping "tonky/holistic/apps/shipping"
 	"tonky/holistic/clients"
 	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/clients/pizzeriaClient"
@@ -13,17 +15,42 @@ import (
 	"tonky/holistic/infra/kafkaConsumer"
 	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/logger"
-	"tonky/holistic/infra/postgres"
 	svc_acc "tonky/holistic/services/accounting"
 	svc_piz "tonky/holistic/services/pizzeria"
 	svcPricing "tonky/holistic/services/pricing"
+	svcShipping "tonky/holistic/services/shipping"
 
 	"github.com/samber/do/v2"
 	"github.com/stretchr/testify/require"
 )
 
 func startServices() do.Injector {
+	os.Setenv("PIZZERIA_PORT", "1234")
+	os.Setenv("PIZZERIA_APP_POSTGRESORDERER_PORT", "5432")
+
+	os.Setenv("PRICING_PORT", "1235")
+	os.Setenv("PRICING_APP_POSTGRESORDERER_PORT", "5433")
+
+	os.Setenv("ACCOUNTING_PORT", "1236")
+	os.Setenv("ACCOUNTING_APP_POSTGRESORDERER_PORT", "5434")
+
+	os.Setenv("SHIPPING_PORT", "1237")
+	os.Setenv("SHIPPING_APP_POSTGRESORDERER_PORT", "5435")
+
+	injector := do.New()
+
 	l := logger.Slog{}
+
+	shipping, err := svcShipping.NewFromEnv()
+	if err != nil {
+		panic(err)
+	}
+
+	go shipping.Start()
+
+	// sdb := do.MustInvokeAs[*appShipping.PostgresOrderer](shipping.Deps())
+	// do.ProvideValue(injector, sdb)
+	do.ProvideValue(injector, shipping.Deps().OrdererRepo)
 
 	pricing, err := svcPricing.NewFromEnv()
 	if err != nil {
@@ -34,7 +61,6 @@ func startServices() do.Injector {
 
 	time.Sleep(50 * time.Millisecond)
 
-	injector := do.New()
 	kc := kafka.Config{Brokers: []string{"localhost:19092"}}
 	kfc, err := kafkaConsumer.NewFoodOrderCreatedConsumer(l, kc)
 	if err != nil {
@@ -42,19 +68,21 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, &kc)
-	do.ProvideValue(injector, &svc_piz.Config{Port: 1236})
-	do.ProvideValue(injector, &svc_acc.Config{Port: 1235})
+	// do.ProvideValue(injector, &svc_piz.Config{Port: 1234})
+	// do.ProvideValue(injector, &svc_acc.Config{Port: 1236})
 
 	do.ProvideValue(injector, &l)
 
-	pgConf := postgres.Config{
-		Host:     "localhost",
-		Port:     5432,
-		User:     "postgres",
-		Password: "postgres",
+	pizConf, err := svc_piz.NewEnvConfig()
+	if err != nil {
+		panic(err)
 	}
 
-	po, err := app_piz.NewPostgresOrderer(l, pgConf)
+	do.ProvideValue(injector, &pizConf)
+	// pizConf := postgres.Config{Host: "localhost", Port: 5432, User: "postgres", Password: "postgres"}
+
+	// po, err := app_piz.NewMemoryOrdererRepository(injector)
+	po, err := app_piz.NewPostgresOrderer(l, pizConf.App.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}
@@ -108,7 +136,7 @@ func startServices() do.Injector {
 func TestOrderThroughKafka(t *testing.T) {
 	injector := startServices()
 
-	time.Sleep(100 * time.Millisecond)
+	time.Sleep(500 * time.Millisecond)
 
 	accountingConfig := do.MustInvoke[svc_acc.Config](injector)
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
@@ -152,8 +180,10 @@ func TestOrderThroughKafka(t *testing.T) {
 	require.Equal(t, createdOrder.ID, accountingOrder.ID)
 	require.Equal(t, accountingOrder.Cost, 5)
 
-	accDB := do.MustInvokeAs[appAcc.OrdererRepository](injector)
-	ao, err := accDB.ReadOrderByFoodID(context.TODO(), createdOrder.ID)
+	time.Sleep(50 * time.Millisecond)
+
+	shippingDB := do.MustInvoke[appShipping.OrdererRepository](injector)
+	so, err := shippingDB.ReadOrderShippingByID(context.TODO(), createdOrder.ID)
 	require.NoError(t, err)
-	require.Equal(t, ao.Cost, 5)
+	require.NotEmpty(t, so.ShippedAt)
 }

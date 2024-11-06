@@ -63,7 +63,7 @@ services:
     depends_on:
       - redpanda-0
 
-  db:
+  db1:
     image: postgres
     restart: always
     shm_size: 128mb
@@ -74,6 +74,37 @@ services:
     ports:
       - 5432:5432
 
+  db2:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes: 
+      - ./helpers/db_pg_init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    ports:
+      - 5433:5432
+
+  db3:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes: 
+      - ./helpers/db_pg_init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    ports:
+      - 5434:5432
+  db4:
+    image: postgres
+    restart: always
+    shm_size: 128mb
+    environment:
+      POSTGRES_PASSWORD: postgres
+    volumes: 
+      - ./helpers/db_pg_init.sql:/docker-entrypoint-initdb.d/create_tables.sql
+    ports:
+      - 5435:5432
 #  adminer:
 #    image: adminer
 #    restart: always

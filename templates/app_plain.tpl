@@ -9,6 +9,9 @@ import (
 	{% if service.KafkaProducers %}
 	"tonky/holistic/infra/kafkaProducer"
 	{% end %}
+	{% if service.KafkaConsumers %}
+	"tonky/holistic/infra/kafkaConsumer"
+	{% end %}
 	{% for d in client_deps %}
 	"tonky/holistic/clients/{{ d.AppVarName() }}"
 	{% end %}
@@ -62,8 +65,8 @@ func NewApp(deps Deps) (App, error) {
 
 	{% for consumer in service.KafkaConsumers %}
 	go func() {
-		for err := range app.{{ consumer.Name }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
-			app.logger.Warn(err.Error())
+		for err := range app.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
+			app.Deps.Logger.Warn(err.Error())
 		}
 	}()
 	
