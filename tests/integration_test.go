@@ -71,8 +71,6 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, &kc)
-	// do.ProvideValue(injector, &svc_piz.Config{Port: 1234})
-	// do.ProvideValue(injector, &svc_acc.Config{Port: 1236})
 
 	do.ProvideValue(injector, &l)
 
@@ -82,9 +80,7 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, &pizConf)
-	// pizConf := postgres.Config{Host: "localhost", Port: 5432, User: "postgres", Password: "postgres"}
 
-	// po, err := app_piz.NewMemoryOrdererRepository(injector)
 	po, err := app_piz.NewPostgresOrderer(l, pizConf.App.PostgresOrderer)
 	if err != nil {
 		panic(err)
@@ -139,7 +135,7 @@ func startServices() do.Injector {
 func TestOrderThroughKafka(t *testing.T) {
 	injector := startServices()
 
-	time.Sleep(200 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 
 	accountingConfig := do.MustInvoke[svc_acc.Config](injector)
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
@@ -173,7 +169,7 @@ func TestOrderThroughKafka(t *testing.T) {
 	require.Equal(t, uo.Content, updatedOrder.Content)
 	require.Equal(t, uo.IsFinal, updatedOrder.IsFinal)
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(20 * time.Millisecond)
 
 	ac := accountingClient.New(clients.Config{Host: "localhost", Port: accountingConfig.Port})
 
@@ -182,8 +178,6 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	require.Equal(t, createdOrder.ID, accountingOrder.ID)
 	require.Equal(t, accountingOrder.Cost, 5)
-
-	time.Sleep(50 * time.Millisecond)
 
 	shippingDB := do.MustInvoke[appShipping.OrdererRepository](injector)
 	so, err := shippingDB.ReadOrderShippingByID(context.TODO(), createdOrder.ID)

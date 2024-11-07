@@ -2,7 +2,6 @@ package accounting
 
 import (
 	"context"
-	"fmt"
 	"tonky/holistic/domain/accounting"
 	"tonky/holistic/domain/food"
 
@@ -36,12 +35,6 @@ func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) erro
 	}
 
 	return a.AccountingOrderPaidProducer.ProduceAccountingOrderPaid(ctx, paidOrder)
-}
-
-func (a *App) FoodOrderProcessorErrHandler(errs chan error) {
-	for err := range errs {
-		fmt.Println("AccountingApp.foodOrderProcessorErrHandler got error: ", err)
-	}
 }
 
 type NewOrder struct {

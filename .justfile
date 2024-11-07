@@ -26,5 +26,6 @@ rpw:
   docker exec -it redpanda-0 rpk topic consume food.order.created -o -1
 
 stats:
-  wc -l apps/pizzeria/order* apps/pizzeria/pizzeria_app.go
-  wc -l apps/pizzeria/gen* services/pizzeria/*.go clients/pizzeriaClient/*.go
+  wc -l apps/accounting/gen*.go services/accounting/* infra/postgres/* infra/kafkaConsumer/consumer.go infra/kafkaConsumer/food_order_shipped_consumer.go infra/kafkaProducer/producer.go infra/kafkaProducer/accounting_order_paid_producer.go clients/config.go clients/pricingClient/gen_client_http.go 
+
+  wc -l apps/accounting/{app,orders_repository}.go
