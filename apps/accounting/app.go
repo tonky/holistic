@@ -14,7 +14,7 @@ func (a *App) ReadOrder(ctx context.Context, arg food.OrderID) (accounting.Order
 }
 
 func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) error {
-	a.logger.Info("AccountingApp.FoodOrderUpdatedProcessor got: ", in)
+	a.Logger.Info("AccountingApp.FoodOrderUpdatedProcessor got: ", in)
 
 	if !in.IsFinal {
 		return nil

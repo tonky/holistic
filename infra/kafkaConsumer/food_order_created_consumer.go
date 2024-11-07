@@ -4,6 +4,7 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -23,6 +24,8 @@ type FoodOrderCreated struct {
 }
 
 func NewFoodOrderCreatedConsumer(logger logger.Slog, config kafka.Config) (*FoodOrderCreated, error) {
+	logger.Info(">> NewFoodOrderCreatedConsumer()", "food.order.created", config.GroupID)
+
 	client := NewConsumer(config, "food.order.created")
 
 	return &FoodOrderCreated{
@@ -32,6 +35,8 @@ func NewFoodOrderCreatedConsumer(logger logger.Slog, config kafka.Config) (*Food
 }
 
 func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error {
+	c.logger.Info(">> FoodOrderCreated.Run()", c.client.Topic())
+
 	res := make(chan error)
 	models, errors := ConsumeFoodOrderCreated(ctx, c.client)
 
@@ -56,6 +61,8 @@ func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Contex
 }
 
 func ConsumeFoodOrderCreated(ctx context.Context, client IConsumer) (chan food.Order, chan error) {
+	fmt.Println(">> ConsumeFoodOrderCreated", client.Topic())
+
 	models := make(chan food.Order)
 	errors := make(chan error)
 

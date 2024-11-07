@@ -103,7 +103,7 @@ func (h handlers) Config() Config {
 
 func (h handlers) Start() error {
     fmt.Printf(">> pricing.Start() config: %+v\n", h.config)
-    
+
     return http.ListenAndServe(fmt.Sprintf(":%d", h.config.Port), h.mux)
 }
 

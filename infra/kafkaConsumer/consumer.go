@@ -2,7 +2,6 @@ package kafkaConsumer
 
 import (
 	"context"
-	"strings"
 
 	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
@@ -39,21 +38,20 @@ func (c Consumer) Logger() logger.Slog {
 }
 
 func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) {
-	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", c.topic)
+	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", c.topic, c.config.GroupID)
 
 	resMessages := make(chan kafka.Message)
 	resErrors := make(chan error)
 
-	reader := getKafkaReader(c.config.Brokers[0], c.topic, "accounting")
-
-	c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | start consuming from %+v\n", reader.Config())
+	reader := getKafkaReader(c.config.Brokers, c.topic, c.config.GroupID)
+	reader.SetOffset(kafka.LastOffset)
 
 	go func() {
 		for {
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | reading messages...")
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop from", c.topic, c.config.GroupID)
 			m, err := reader.ReadMessage(ctx)
 
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | got message!")
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop got message from", c.topic, c.config.GroupID)
 
 			if err != nil {
 				c.logger.Error("infra.kafkaConsumer.Consumer.Consume | consumer error, exiting: %v\n", err)
@@ -67,7 +65,7 @@ func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) 
 				return
 			}
 
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | message at topic:%v partition:%v offset:%v	%s = %s\n", m.Topic, m.Partition, m.Offset, string(m.Key), string(m.Value))
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | consumed ", m.Topic, c.config.GroupID, m.Partition, m.Offset, string(m.Key))
 
 			resMessages <- m
 		}
@@ -76,13 +74,16 @@ func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) 
 	return resMessages, resErrors
 }
 
-func getKafkaReader(kafkaURL, topic, _ string) *kafka.Reader {
-	brokers := strings.Split(kafkaURL, ",")
+func getKafkaReader(brokers []string, topic, groupID string) *kafka.Reader {
 	return kafka.NewReader(kafka.ReaderConfig{
 		Brokers: brokers,
-		// GroupID: groupID,
-		Topic: topic,
-		// MinBytes: 10e3, // 10KB
-		MaxBytes: 10e6, // 10MB
+		// GroupID:     groupID,
+		Topic:       topic,
+		GroupTopics: []string{topic},
+		StartOffset: kafka.FirstOffset,
+		// ReadBackoffMin:        10 * time.Millisecond,
+		// WatchPartitionChanges: true,
+		// MinBytes: 1, // 10KB
+		// MaxBytes: 10e6, // 10MB
 	})
 }

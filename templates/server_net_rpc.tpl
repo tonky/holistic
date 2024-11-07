@@ -78,6 +78,9 @@ func (h {{ cap(service.Name) }}) Start() error {
 	port := h.config.Port
 
     fmt.Printf(">> {{ service.Name }}.Start() config: %+v\n", h.config)
+	{% if service.KafkaConsumers %}
+    h.app.RunConsumers()
+    {% end %}
 
 	server := rpc.NewServer()
 	server.Register(h)

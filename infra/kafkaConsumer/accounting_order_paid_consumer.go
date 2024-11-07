@@ -4,6 +4,7 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -23,6 +24,8 @@ type AccountingOrderPaid struct {
 }
 
 func NewAccountingOrderPaidConsumer(logger logger.Slog, config kafka.Config) (*AccountingOrderPaid, error) {
+	logger.Info(">> NewAccountingOrderPaidConsumer()", "accounting.order.paid", config.GroupID)
+
 	client := NewConsumer(config, "accounting.order.paid")
 
 	return &AccountingOrderPaid{
@@ -32,6 +35,8 @@ func NewAccountingOrderPaidConsumer(logger logger.Slog, config kafka.Config) (*A
 }
 
 func (c AccountingOrderPaid) Run(ctx context.Context, processor func(context.Context, accounting.Order) error) chan error {
+	c.logger.Info(">> AccountingOrderPaid.Run()", c.client.Topic())
+
 	res := make(chan error)
 	models, errors := ConsumeAccountingOrderPaid(ctx, c.client)
 
@@ -56,6 +61,8 @@ func (c AccountingOrderPaid) Run(ctx context.Context, processor func(context.Con
 }
 
 func ConsumeAccountingOrderPaid(ctx context.Context, client IConsumer) (chan accounting.Order, chan error) {
+	fmt.Println(">> ConsumeAccountingOrderPaid", client.Topic())
+
 	models := make(chan accounting.Order)
 	errors := make(chan error)
 

@@ -51,10 +51,6 @@ func NewApp(deps Deps) (App, error) {
 		deps.Logger = &logger.Slog{}
 	}
 
-	{% if service.KafkaConsumers %}
-	ctx := context.Background()
-
-	{% end %}
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
@@ -63,13 +59,21 @@ func NewApp(deps Deps) (App, error) {
 {% end %}
 	}
 
-	{% for consumer in service.KafkaConsumers %}
-	go func() {
-		for err := range app.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
-			app.Deps.Logger.Warn(err.Error())
-		}
-	}()
-	
-	{% end %}
 	return app, nil
 }
+
+{% if service.KafkaConsumers %}
+func (a App) RunConsumers() {
+	a.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
+
+	ctx := context.Background()
+	{% for consumer in service.KafkaConsumers %}
+
+	go func() {
+		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
+			a.Logger.Warn(err.Error())
+		}
+	}()
+	{% end %}
+}
+{% end %}

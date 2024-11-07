@@ -30,3 +30,4 @@ func NewApp(deps Deps) (App, error) {
 
 	return app, nil
 }
+

@@ -27,15 +27,18 @@ import (
 func startServices() do.Injector {
 	os.Setenv("PIZZERIA_PORT", "1234")
 	os.Setenv("PIZZERIA_APP_POSTGRESORDERER_PORT", "5432")
+	os.Setenv("PIZZERIA_APP_KAFKA_GROUP_ID", "test-order-through-kafka-pizzeria")
 
 	os.Setenv("PRICING_PORT", "1235")
 	os.Setenv("PRICING_APP_POSTGRESORDERER_PORT", "5433")
 
 	os.Setenv("ACCOUNTING_PORT", "1236")
 	os.Setenv("ACCOUNTING_APP_POSTGRESORDERER_PORT", "5434")
+	os.Setenv("ACCOUNTING_APP_KAFKA_GROUP_ID", "test-order-through-kafka-accounting")
 
 	os.Setenv("SHIPPING_PORT", "1237")
 	os.Setenv("SHIPPING_APP_POSTGRESORDERER_PORT", "5435")
+	os.Setenv("SHIPPING_APP_KAFKA_GROUP_ID", "test-order-through-kafka-shipping")
 
 	injector := do.New()
 
@@ -136,7 +139,7 @@ func startServices() do.Injector {
 func TestOrderThroughKafka(t *testing.T) {
 	injector := startServices()
 
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(200 * time.Millisecond)
 
 	accountingConfig := do.MustInvoke[svc_acc.Config](injector)
 	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)

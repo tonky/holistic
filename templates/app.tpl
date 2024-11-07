@@ -20,7 +20,7 @@ import (
 
 type App struct {
 	Deps       do.Injector
-	logger     *logger.Slog
+	Logger     *logger.Slog
 
 {% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
@@ -31,13 +31,9 @@ type App struct {
 }
 
 func NewApp(deps do.Injector) (*App, error) {
-	{% if service.KafkaConsumers %}
-	ctx := context.Background()
-
-	{% end %}
 	app := App{
 		Deps:       deps,
-		logger:     do.MustInvoke[*logger.Slog](deps),
+		Logger:     do.MustInvoke[*logger.Slog](deps),
 {% for ad in app_deps %}
         {{ cap(ad.AppVarName()) }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
 {% end %}
@@ -47,13 +43,21 @@ func NewApp(deps do.Injector) (*App, error) {
 
 	}
 
-	{% for consumer in service.KafkaConsumers %}
-	go func() {
-		for err := range app.{{ cap(consumer.Name) }}Consumer.Run(ctx, app.{{ cap(consumer.Name) }}Processor) {
-			app.logger.Warn(err.Error())
-		}
-	}()
-	
-	{% end %}
 	return &app, nil
 }
+
+{% if service.KafkaConsumers %}
+func (a App) RunConsumers() {
+	a.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
+
+	ctx := context.Background()
+	{% for consumer in service.KafkaConsumers %}
+
+	go func() {
+		for err := range a.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
+			a.Logger.Warn(err.Error())
+		}
+	}()
+	{% end %}
+}
+{% end %}

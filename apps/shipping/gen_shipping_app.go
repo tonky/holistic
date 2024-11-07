@@ -28,18 +28,22 @@ func NewApp(deps Deps) (App, error) {
 		deps.Logger = &logger.Slog{}
 	}
 
-	ctx := context.Background()
-
 	app := App{
 		Deps:       deps,
 		Logger:     deps.Logger,
 	}
 
+	return app, nil
+}
+
+func (a App) RunConsumers() {
+	a.Logger.Info(">> shipping.App.RunConsumers()")
+
+	ctx := context.Background()
+
 	go func() {
-		for err := range app.Deps.AccountingOrderPaidConsumer.Run(ctx, app.AccountingOrderPaidProcessor) {
-			app.Deps.Logger.Warn(err.Error())
+		for err := range a.Deps.AccountingOrderPaidConsumer.Run(ctx, a.AccountingOrderPaidProcessor) {
+			a.Logger.Warn(err.Error())
 		}
 	}()
-	
-	return app, nil
 }

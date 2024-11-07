@@ -44,7 +44,7 @@ func (r PostgresOrderer) SaveOrder(ctx context.Context, req NewOrder) (food.Orde
 }
 
 func (r PostgresOrderer) UpdateOrder(ctx context.Context, req UpdateOrder) (food.Order, error) {
-	r.logger.Info("PostgresOrderer | UpdateOrder", "pg conn", r.client, req)
+	r.logger.Info("PostgresOrderer | UpdateOrder", req)
 
 	query := `UPDATE orders SET content = @content, is_final = @is_final WHERE id = @id`
 	args := pgx.NamedArgs{"id": req.OrderID.String(), "content": req.Content, "is_final": req.IsFinal}

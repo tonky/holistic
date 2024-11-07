@@ -9,7 +9,7 @@ import (
 )
 
 func (app App) ReadOrder(ctx context.Context, in food.OrderID) (food.Order, error) {
-	app.logger.Info("App.ReadOrder", in)
+	app.Logger.Info("App.ReadOrder", in)
 
 	or := do.MustInvokeAs[OrdererRepository](app.Deps)
 
@@ -17,7 +17,7 @@ func (app App) ReadOrder(ctx context.Context, in food.OrderID) (food.Order, erro
 }
 
 func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error) {
-	app.logger.Info("Pizzeria.CreateOrder", in)
+	app.Logger.Info("Pizzeria.CreateOrder", in)
 
 	or := do.MustInvokeAs[OrdererRepository](app.Deps)
 	pr := do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](app.Deps)
@@ -35,7 +35,7 @@ func (app App) CreateOrder(ctx context.Context, in NewOrder) (food.Order, error)
 }
 
 func (app App) UpdateOrder(ctx context.Context, in UpdateOrder) (food.Order, error) {
-	app.logger.Info("Pizzeria.UpdateOrder", in)
+	app.Logger.Info("Pizzeria.UpdateOrder", in)
 
 	// or := do.MustInvokeAs[OrdererRepository](app.deps)
 	// pr := do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](app.deps)

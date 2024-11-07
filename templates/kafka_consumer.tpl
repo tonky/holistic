@@ -4,6 +4,7 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -23,6 +24,8 @@ type {{ k.StructName() }} struct {
 }
 
 func New{{ k.StructName() }}Consumer(logger logger.Slog, config kafka.Config) (*{{ k.StructName() }}, error) {
+	logger.Info(">> New{{ k.StructName() }}Consumer()", "{{ k.TopicName }}", config.GroupID)
+
 	client := NewConsumer(config, "{{ k.TopicName }}")
 
 	return &{{ k.StructName() }}{
@@ -32,6 +35,8 @@ func New{{ k.StructName() }}Consumer(logger logger.Slog, config kafka.Config) (*
 }
 
 func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Context, {{ k.ModelName() }}) error) chan error {
+	c.logger.Info(">> {{ k.StructName() }}.Run()", c.client.Topic())
+
 	res := make(chan error)
 	models, errors := Consume{{ cap(k.Name) }}(ctx, c.client)
 
@@ -56,6 +61,8 @@ func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Co
 }
 
 func Consume{{ cap(k.Name) }}(ctx context.Context, client IConsumer) (chan {{ k.ModelName() }}, chan error) {
+	fmt.Println(">> Consume{{ cap(k.Name) }}", client.Topic())
+
 	models := make(chan {{ k.ModelName() }})
 	errors := make(chan error)
 

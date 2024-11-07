@@ -18,8 +18,9 @@ import (
 // created -> finalized -> paid -> shipped -> delivered
 
 func TestE2E(t *testing.T) {
-	os.Setenv("PIZZERIA_PORT", "1237")
-	os.Setenv("ACCOUNTING_PORT", "1238")
+	os.Setenv("PIZZERIA_PORT", "1238")
+	os.Setenv("ACCOUNTING_PORT", "1239")
+	os.Setenv("ACCOUNTING_APP_KAFKA_GROUP_ID", "test-e2e-accounting")
 
 	svcPiz, err := pizzeria.NewFromEnv()
 	require.NoError(t, err)

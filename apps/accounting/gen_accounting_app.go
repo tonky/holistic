@@ -14,7 +14,7 @@ import (
 
 type App struct {
 	Deps       do.Injector
-	logger     *logger.Slog
+	Logger     *logger.Slog
 
     OrdererRepo OrdererRepository
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
@@ -23,11 +23,9 @@ type App struct {
 }
 
 func NewApp(deps do.Injector) (*App, error) {
-	ctx := context.Background()
-
 	app := App{
 		Deps:       deps,
-		logger:     do.MustInvoke[*logger.Slog](deps),
+		Logger:     do.MustInvoke[*logger.Slog](deps),
         OrdererRepo: do.MustInvokeAs[OrdererRepository](deps),
         AccountingOrderPaidProducer: do.MustInvokeAs[kafkaProducer.IAccountingOrderPaid](deps),
         FoodOrderUpdatedConsumer: do.MustInvokeAs[kafkaConsumer.IFoodOrderUpdated](deps),
@@ -35,11 +33,17 @@ func NewApp(deps do.Injector) (*App, error) {
 
 	}
 
+	return &app, nil
+}
+
+func (a App) RunConsumers() {
+	a.Logger.Info(">> accounting.App.RunConsumers()")
+
+	ctx := context.Background()
+
 	go func() {
-		for err := range app.FoodOrderUpdatedConsumer.Run(ctx, app.FoodOrderUpdatedProcessor) {
-			app.logger.Warn(err.Error())
+		for err := range a.FoodOrderUpdatedConsumer.Run(ctx, a.FoodOrderUpdatedProcessor) {
+			a.Logger.Warn(err.Error())
 		}
 	}()
-	
-	return &app, nil
 }

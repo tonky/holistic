@@ -16,8 +16,6 @@ func (a App) ReadOrder(ctx context.Context, in food.OrderID) (shipping.Order, er
 func (a App) AccountingOrderPaidProcessor(ctx context.Context, in accounting.Order) error {
 	a.Logger.Info("shipping.App.AccountingOrderPaidProcessor", in)
 
-	a.Logger.Debug(">>> app config", a.Deps.Config)
-
 	order, err := a.Deps.OrdererRepo.SaveShipping(ctx, shipping.Order{ID: in.ID})
 	if err != nil {
 		return err

@@ -2,6 +2,7 @@ package kafka
 
 type Config struct {
 	Brokers []string `required:"true" split_words:"true" default:"localhost:19092"`
+	GroupID string   `required:"true" split_words:"true" default:"test-group"`
 }
 
 var liveKafkaBrokers = []string{"cloud-server-1:19092", "cloud-server-2:19092"}
