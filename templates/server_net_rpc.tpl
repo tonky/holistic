@@ -62,14 +62,17 @@ func (h {{ cap(service.Name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
 {% end %}
 
 func New(dependencies do.Injector) (ServiceStarter, error) {
-	cfg := do.MustInvoke[*Config](dependencies)
+	cfg, err := NewEnvConfig()
+    if err != nil {
+        return nil, err
+    }
 
     application, appErr := app.NewApp(dependencies)
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := {{ cap(service.Name) }}{deps: dependencies, config: *cfg, app: *application}
+    handlers := {{ cap(service.Name) }}{deps: dependencies, config: cfg, app: *application}
 
     return handlers, nil
 }

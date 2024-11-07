@@ -22,6 +22,13 @@ func NewEnvConfig() (Config, error) {
 	return c, envconfig.Process("shipping", &c)
 }
 
+func MustEnvConfig() Config {
+	conf, err := NewEnvConfig()
+	if err != nil { panic(err) }
+
+	return conf
+}
+
 func NewConfig(i do.Injector) (*Config, error) {
 	config, err := NewEnvConfig()
 	if err != nil {

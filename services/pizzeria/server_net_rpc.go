@@ -60,14 +60,17 @@ func (h Pizzeria) UpdateOrder(arg UpdateOrder, reply *food.Order) error {
 
 
 func New(dependencies do.Injector) (ServiceStarter, error) {
-	cfg := do.MustInvoke[*Config](dependencies)
+	cfg, err := NewEnvConfig()
+    if err != nil {
+        return nil, err
+    }
 
     application, appErr := app.NewApp(dependencies)
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := Pizzeria{deps: dependencies, config: *cfg, app: *application}
+    handlers := Pizzeria{deps: dependencies, config: cfg, app: *application}
 
     return handlers, nil
 }

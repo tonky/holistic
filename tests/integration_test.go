@@ -71,17 +71,9 @@ func startServices() do.Injector {
 	}
 
 	do.ProvideValue(injector, &kc)
-
 	do.ProvideValue(injector, &l)
 
-	pizConf, err := svc_piz.NewEnvConfig()
-	if err != nil {
-		panic(err)
-	}
-
-	do.ProvideValue(injector, &pizConf)
-
-	po, err := app_piz.NewPostgresOrderer(l, pizConf.App.PostgresOrderer)
+	po, err := app_piz.NewPostgresOrderer(l, svc_piz.MustEnvConfig().App.PostgresOrderer)
 	if err != nil {
 		panic(err)
 	}
@@ -109,13 +101,6 @@ func startServices() do.Injector {
 
 	go pizzeria.Start()
 
-	kaop, err := kafkaProducer.NewAccountingOrderPaidProducer(l, kc)
-	if err != nil {
-		panic(err)
-	}
-
-	do.ProvideValue(injector, kaop)
-
 	accounting, err := svc_acc.NewFromEnv()
 	if err != nil {
 		panic(err)
@@ -124,7 +109,7 @@ func startServices() do.Injector {
 	apgo := do.MustInvoke[*appAcc.PostgresOrderer](accounting.Deps())
 	do.ProvideValue(injector, apgo)
 
-	do.ProvideValue(injector, accounting.Config())
+	// do.ProvideValue(injector, accounting.Config())
 	go accounting.Start()
 
 	logger.Slog{}.Info("Test init() - done! Services started")
@@ -137,10 +122,7 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	time.Sleep(20 * time.Millisecond)
 
-	accountingConfig := do.MustInvoke[svc_acc.Config](injector)
-	pizzeriaConfig := do.MustInvoke[*svc_piz.Config](injector)
-
-	pizClientConf := clients.Config{Host: "localhost", Port: pizzeriaConfig.Port}
+	pizClientConf := clients.Config{Host: "localhost", Port: svc_piz.MustEnvConfig().Port}
 	do.ProvideValue(injector, &pizClientConf)
 
 	pc := pizzeriaClient.New(pizClientConf)
@@ -171,7 +153,7 @@ func TestOrderThroughKafka(t *testing.T) {
 
 	time.Sleep(20 * time.Millisecond)
 
-	ac := accountingClient.New(clients.Config{Host: "localhost", Port: accountingConfig.Port})
+	ac := accountingClient.New(clients.Config{Host: "localhost", Port: svc_acc.MustEnvConfig().Port})
 
 	accountingOrder, err := ac.ReadOrder(context.TODO(), createdOrder.ID)
 	require.NoError(t, err)
