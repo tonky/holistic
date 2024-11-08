@@ -17,6 +17,13 @@ const (
 	HTTP     RPC = "http"
 )
 
+type Deps string
+
+const (
+	Struct   Deps = "plain_struct"
+	SamberDO Deps = "sampber_do"
+)
+
 type ObjectType int
 
 const (
@@ -123,6 +130,7 @@ func (e Endpoint) FuncName() string {
 type Service struct {
 	Name           string
 	Rpc            RPC
+	Dependencies   Deps
 	Endpoints      []Endpoint
 	Secrets        map[string]string
 	Publishes      []Topic

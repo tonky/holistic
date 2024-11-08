@@ -15,9 +15,10 @@ func PricingService() services.Service {
 	}
 
 	return services.Service{
-		Name:      "pricing",
-		Rpc:       services.HTTP,
-		Endpoints: []services.Endpoint{getOrderPrice},
+		Name:         "pricing",
+		Rpc:          services.HTTP,
+		Dependencies: services.Struct,
+		Endpoints:    []services.Endpoint{getOrderPrice},
 		Postgres: []services.Postgres{{
 			Name: "orderer",
 			Methods: []services.InterfaceMethod{

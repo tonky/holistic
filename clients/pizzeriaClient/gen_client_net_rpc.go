@@ -9,6 +9,7 @@ import (
 	"tonky/holistic/clients"
 	 "tonky/holistic/domain/food"
 	svc "tonky/holistic/services/pizzeria"
+	svcPizzeria "tonky/holistic/services/pizzeria"
 )
 
 type IPizzeriaClient interface {
@@ -24,7 +25,10 @@ func New(config clients.Config) PizzeriaClient {
 }
 
 func NewFromEnv(env string) PizzeriaClient {
+	svcConf := svcPizzeria.MustEnvConfig()
+
 	envConf := clients.ConfigForEnv("pizzeria", env)
+	envConf.Port = svcConf.Port
 
 	return PizzeriaClient{
 		config: envConf,

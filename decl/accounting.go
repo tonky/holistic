@@ -15,6 +15,7 @@ func AccountingService() services.Service {
 	return services.Service{
 		Name:           "accounting",
 		Rpc:            services.GoNative,
+		Dependencies:   services.SamberDO,
 		ConfigItems:    []services.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
 		Endpoints:      []services.Endpoint{getOrder},
 		KafkaConsumers: []services.TopicDesc{services.TopicFoodOrderUpdated},

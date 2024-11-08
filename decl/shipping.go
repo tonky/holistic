@@ -17,6 +17,7 @@ func ShippingService() services.Service {
 	return services.Service{
 		Name:           "shipping",
 		Rpc:            services.HTTP,
+		Dependencies:   services.Struct,
 		Endpoints:      []services.Endpoint{getShipment},
 		KafkaProducers: []services.TopicDesc{services.TopicShippingOrderShipped},
 		KafkaConsumers: []services.TopicDesc{services.TopicAccountingOrderPaid},

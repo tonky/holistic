@@ -36,6 +36,7 @@ func PizzeriaService() services.Service {
 	return services.Service{
 		Name:           "pizzeria",
 		Rpc:            services.GoNative,
+		Dependencies:   services.SamberDO,
 		Endpoints:      []services.Endpoint{getOrder, createOrder, updateOrder},
 		ConfigItems:    []services.ConfigItem{{Name: "StartDelayMs", Typ: "int"}},
 		AppConfigItems: []services.ConfigItem{{Name: "EnabledInRegions", Typ: "[]string"}},

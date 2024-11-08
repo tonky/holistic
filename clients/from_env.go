@@ -3,7 +3,7 @@ package clients
 func ConfigForEnv(service_name, env string) Config {
 	host := "localhost"
 
-	if service_name == "pricing" {
+	if service_name == "pricing" || service_name == "shipping" {
 		host = "http://localhost"
 	}
 

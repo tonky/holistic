@@ -12,6 +12,7 @@ import (
 	{% for imp in client_relative_imports %}
 	{{ imp.Alias}} "tonky/holistic/{{ imp.RelPath }}"
 	{% end %}
+	svc{{ cap(service.Name ) }} "tonky/holistic/services/{{ service.Name }}"
 )
 
 type I{{ cap(service.Name) }}Client interface {
@@ -27,7 +28,10 @@ func New(config clients.Config) {{ cap(service.Name) }}Client {
 }
 
 func NewFromEnv(env string) {{ cap(service.Name) }}Client {
+	svcConf := svc{{ cap(service.Name ) }}.MustEnvConfig()
+
 	envConf := clients.ConfigForEnv("{{ service.Name }}", env)
+	envConf.Port = svcConf.Port
 
 	return {{ cap(service.Name) }}Client{
 		config: envConf,

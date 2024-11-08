@@ -11,6 +11,7 @@ import (
 	"tonky/holistic/clients"
 	 "tonky/holistic/domain/food"
 	 "tonky/holistic/domain/shipping"
+	svcShipping "tonky/holistic/services/shipping"
 )
 
 type IShippingClient interface {
@@ -24,7 +25,10 @@ func New(config clients.Config) ShippingClient {
 }
 
 func NewFromEnv(env string) ShippingClient {
+	svcConf := svcShipping.MustEnvConfig()
+
 	envConf := clients.ConfigForEnv("shipping", env)
+	envConf.Port = svcConf.Port
 
 	return ShippingClient{
 		config: envConf,

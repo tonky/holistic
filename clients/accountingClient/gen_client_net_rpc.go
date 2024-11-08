@@ -9,6 +9,7 @@ import (
 	"tonky/holistic/clients"
 	 "tonky/holistic/domain/food"
 	 "tonky/holistic/domain/accounting"
+	svcAccounting "tonky/holistic/services/accounting"
 )
 
 type IAccountingClient interface {
@@ -22,7 +23,10 @@ func New(config clients.Config) AccountingClient {
 }
 
 func NewFromEnv(env string) AccountingClient {
+	svcConf := svcAccounting.MustEnvConfig()
+
 	envConf := clients.ConfigForEnv("accounting", env)
+	envConf.Port = svcConf.Port
 
 	return AccountingClient{
 		config: envConf,

@@ -11,6 +11,7 @@ import (
 	"tonky/holistic/clients"
 	 "tonky/holistic/domain/food"
 	 "tonky/holistic/domain/pricing"
+	svcPricing "tonky/holistic/services/pricing"
 )
 
 type IPricingClient interface {
@@ -24,7 +25,10 @@ func New(config clients.Config) PricingClient {
 }
 
 func NewFromEnv(env string) PricingClient {
+	svcConf := svcPricing.MustEnvConfig()
+
 	envConf := clients.ConfigForEnv("pricing", env)
+	envConf.Port = svcConf.Port
 
 	return PricingClient{
 		config: envConf,

@@ -7,10 +7,10 @@ import (
 	"time"
 	appAcc "tonky/holistic/apps/accounting"
 	app_piz "tonky/holistic/apps/pizzeria"
-	appShipping "tonky/holistic/apps/shipping"
 	"tonky/holistic/clients"
 	"tonky/holistic/clients/accountingClient"
 	"tonky/holistic/clients/pizzeriaClient"
+	"tonky/holistic/clients/shippingClient"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaConsumer"
 	"tonky/holistic/infra/kafkaProducer"
@@ -50,10 +50,6 @@ func startServices() do.Injector {
 	}
 
 	go shipping.Start()
-
-	// sdb := do.MustInvokeAs[*appShipping.PostgresOrderer](shipping.Deps())
-	// do.ProvideValue(injector, sdb)
-	do.ProvideValue(injector, shipping.Deps().OrdererRepo)
 
 	pricing, err := svcPricing.NewFromEnv()
 	if err != nil {
@@ -118,12 +114,12 @@ func startServices() do.Injector {
 }
 
 func TestOrderThroughKafka(t *testing.T) {
-	injector := startServices()
+	startServices()
 
 	time.Sleep(20 * time.Millisecond)
 
 	pizClientConf := clients.Config{Host: "localhost", Port: svc_piz.MustEnvConfig().Port}
-	do.ProvideValue(injector, &pizClientConf)
+	// do.ProvideValue(injector, &pizClientConf)
 
 	pc := pizzeriaClient.New(pizClientConf)
 
@@ -161,8 +157,9 @@ func TestOrderThroughKafka(t *testing.T) {
 	require.Equal(t, createdOrder.ID, accountingOrder.ID)
 	require.Equal(t, accountingOrder.Cost, 5)
 
-	shippingDB := do.MustInvoke[appShipping.OrdererRepository](injector)
-	so, err := shippingDB.ReadOrderShippingByID(context.TODO(), createdOrder.ID)
+	sc := shippingClient.NewFromEnv("local")
+	so, err := sc.ReadOrder(context.TODO(), updatedOrder.ID)
+
 	require.NoError(t, err)
 	require.NotEmpty(t, so.ShippedAt)
 }
