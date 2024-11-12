@@ -83,7 +83,6 @@ func NewFromEnv() (ServiceStarter, error) {
     }
 	deps.OrdererRepo = ordererRepo
 
-
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

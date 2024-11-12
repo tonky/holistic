@@ -5,7 +5,6 @@ import (
 	"os"
 	"testing"
 	"time"
-	appAcc "tonky/holistic/apps/accounting"
 	app_piz "tonky/holistic/apps/pizzeria"
 	"tonky/holistic/clients"
 	"tonky/holistic/clients/accountingClient"
@@ -102,8 +101,7 @@ func startServices() do.Injector {
 		panic(err)
 	}
 
-	apgo := do.MustInvoke[*appAcc.PostgresOrderer](accounting.Deps())
-	do.ProvideValue(injector, apgo)
+	do.ProvideValue(injector, accounting.Deps().OrdererRepo)
 
 	// do.ProvideValue(injector, accounting.Config())
 	go accounting.Start()

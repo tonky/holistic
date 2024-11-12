@@ -9,23 +9,23 @@ import (
 	"github.com/samber/do/v2"
 )
 
-type App struct {
-	Deps       do.Injector
-	Logger     *logger.Slog
+type Deps do.Injector
 
+type App struct {
+	Deps       Deps
+	Logger     *logger.Slog
     OrdererRepo OrdererRepository
     FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
     FoodOrderUpdatedProducer kafkaProducer.IFoodOrderUpdated
 }
 
-func NewApp(deps do.Injector) (*App, error) {
+func NewApp(deps Deps) (*App, error) {
 	app := App{
 		Deps:       deps,
 		Logger:     do.MustInvoke[*logger.Slog](deps),
         OrdererRepo: do.MustInvokeAs[OrdererRepository](deps),
         FoodOrderCreatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](deps),
         FoodOrderUpdatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](deps),
-
 	}
 
 	return &app, nil

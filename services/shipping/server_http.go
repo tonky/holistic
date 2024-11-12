@@ -95,7 +95,6 @@ func NewFromEnv() (ServiceStarter, error) {
     }
 	deps.AccountingOrderPaidConsumer = AccountingOrderPaidConsumer
 
-
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr

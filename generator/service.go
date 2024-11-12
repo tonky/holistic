@@ -29,7 +29,6 @@ func GenService(s services.Service) {
 	app_plain_tpl := "app_plain.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
 	repo_generic_tpl := "repository_generic.tpl"
-	// kafka_producer_tpl := "kafka_producer.tpl"
 	// kafka_consumer_tpl := "kafka_consumer.tpl"
 
 	if err := os.MkdirAll(filepath.Join(".", "clients", s.Name+"Client"), os.ModePerm); err != nil {
@@ -65,7 +64,6 @@ func GenService(s services.Service) {
 		app_plain_tpl:       readContent(template_dir, app_plain_tpl),
 		app_config_tpl:      readContent(template_dir, app_config_tpl),
 		repo_pg_tpl:         readContent(template_dir, repo_pg_tpl),
-		repo_generic_tpl:    readContent(template_dir, repo_generic_tpl),
 		// kafka_producer_tpl:  readContent(template_dir, kafka_producer_tpl),
 		// kafka_consumer_tpl:  readContent(template_dir, kafka_consumer_tpl),
 	}

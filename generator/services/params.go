@@ -21,7 +21,7 @@ type Deps string
 
 const (
 	Struct   Deps = "plain_struct"
-	SamberDO Deps = "sampber_do"
+	SamberDO Deps = "samber_do"
 )
 
 type ObjectType int

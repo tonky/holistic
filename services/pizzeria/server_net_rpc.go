@@ -59,18 +59,18 @@ func (h Pizzeria) UpdateOrder(arg UpdateOrder, reply *food.Order) error {
 }
 
 
-func New(dependencies do.Injector) (ServiceStarter, error) {
+func New(deps app.Deps) (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
     if err != nil {
         return nil, err
     }
 
-    application, appErr := app.NewApp(dependencies)
+    application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := Pizzeria{deps: dependencies, config: cfg, app: *application}
+    handlers := Pizzeria{deps: deps, config: cfg, app: *application}
 
     return handlers, nil
 }
@@ -101,6 +101,7 @@ func (h Pizzeria) Start() error {
 		}()
 	}
 }
+// TODO: REMOVE
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
@@ -136,6 +137,7 @@ func NewFromEnv() (ServiceStarter, error) {
 
 	do.ProvideValue(deps, FoodOrderUpdatedProducer)
 
+
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr
@@ -150,7 +152,7 @@ func (h Pizzeria) Config() Config {
     return h.config
 }
 
-func (h Pizzeria) Deps() do.Injector {
+func (h Pizzeria) Deps() app.Deps {
     return h.deps
 }
 
@@ -158,5 +160,5 @@ func (h Pizzeria) Deps() do.Injector {
 type ServiceStarter interface {
     Start() error
     Config() Config
-    Deps() do.Injector
+    Deps() app.Deps
 }

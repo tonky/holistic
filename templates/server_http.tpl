@@ -101,26 +101,28 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, err
     }
 
+{% if service.Dependencies == "plain_struct" %}
     deps := app.Deps{
         Logger: &logger.Slog{},
     }
 
-{% for ad in app_deps %}
-    {% if ad.PackageName() == "local" %}
+    {% for ad in app_deps %}
+        {% if ad.PackageName() == "local" %}
 	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
-    {% else %}
+        {% else %}
 	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(*deps.Logger, cfg.App.{{ ad.ConfigVarName() }})
     if err != nil {
         return nil, err
     }
 	deps.{{ cap(ad.AppVarName()) }} = {{ ad.AppVarName() }}
-    {% end %}
-{% end %}
-
+        {% end %}
+    {% end for %}
+{% else if service.Dependencies == "samber_do" %}
+    deps := app.Deps{}
+{% end if %}
 {% if client_deps %}
-    clients := app.Clients{}
     {% for d in client_deps.Dedup() %}
-    clients.{{ cap(d.AppVarName()) }} = clients.New{{ cap(d.AppVarName()) }}(cfg.Environment)
+    app.{{ cap(d.AppVarName()) }} = clients.New{{ cap(d.AppVarName()) }}(cfg.Environment)
     {% end %}
 {% end %}
 

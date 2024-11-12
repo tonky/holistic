@@ -16,7 +16,9 @@ import (
 	{% end %}
 
     // "github.com/go-playground/validator/v10"
+    {% if service.Dependencies == "samber_do" %}
     "github.com/samber/do/v2"
+    {% end %}
 
     {% for id in app_deps %}
         {% if id.AppImportPackageName() == "app" %}
@@ -43,7 +45,11 @@ import (
 
 type {{ cap(service.Name) }} struct {
     config Config
+    {% if service.Dependencies == "samber_do" %}
     deps do.Injector
+    {% else if service.Dependencies == "plain_struct" %}
+    deps app.Deps
+    {% end %}
     app app.App
 }
 
@@ -61,18 +67,34 @@ func (h {{ cap(service.Name) }}) {{h.FuncName()}}(arg {{ h.In }}, reply *{{ h.Ou
 
 {% end %}
 
-func New(dependencies do.Injector) (ServiceStarter, error) {
+{% if service.Dependencies == "plain_struct" %}
+    {% if client_deps %}
+func New(deps app.Deps, clients app.Clients) (ServiceStarter, error) {
+    {% else %}
+func New(deps app.Deps) (ServiceStarter, error) {
+    {% end %}
+{% else if service.Dependencies == "samber_do" %}
+func New(deps app.Deps) (ServiceStarter, error) {
+{% end %}
 	cfg, err := NewEnvConfig()
     if err != nil {
         return nil, err
     }
 
-    application, appErr := app.NewApp(dependencies)
+{% if service.Dependencies == "plain_struct" %}
+    {% if client_deps %}
+    application, appErr := app.NewApp(deps, clients)
+    {% else %}
+    application, appErr := app.NewApp(deps)
+    {% end %}
+{% else if service.Dependencies == "samber_do" %}
+    application, appErr := app.NewApp(deps)
+{% end %}
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := {{ cap(service.Name) }}{deps: dependencies, config: cfg, app: *application}
+    handlers := {{ cap(service.Name) }}{deps: deps, config: cfg, app: *application}
 
     return handlers, nil
 }
@@ -106,6 +128,10 @@ func (h {{ cap(service.Name) }}) Start() error {
 		}()
 	}
 }
+// TODO: REMOVE
+{% if service.Dependencies == "samber_do" %}
+{% else if service.Dependencies == "plain_struct" %}
+{% end %}
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
@@ -113,6 +139,7 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, err
     }
 
+{% if service.Dependencies == "samber_do" %}
     deps := do.New()
 
 	do.ProvideValue(deps, cfg)
@@ -120,7 +147,7 @@ func NewFromEnv() (ServiceStarter, error) {
     l := logger.Slog{}
 	do.ProvideValue(deps, &l)
 
-{% for ad in app_deps %}
+    {% for ad in app_deps %}
     {% if ad.PackageName() == "local" %}
 	{{ ad.AppVarName() }} := app.New{{ ad.StructName() }}(l)
     {% else %}
@@ -132,11 +159,43 @@ func NewFromEnv() (ServiceStarter, error) {
 
 	do.ProvideValue(deps, {{ ad.AppVarName() }})
 
-{% end %}
-{% for d in client_deps.Dedup() %}
+    {% end %}
+    {% for d in client_deps.Dedup() %}
 	do.ProvideValue(deps, {{ d.AppVarName() }}.NewFromEnv(cfg.Environment))
+    {% end %}
+{% else if service.Dependencies == "plain_struct" %}
+    // plain deps code here
+    deps := app.Deps{
+        Logger: &logger.Slog{},
+    }
+
+    {% for ad in app_deps %}
+        {% if ad.PackageName() == "local" %}
+	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
+        {% else %}
+	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(*deps.Logger, cfg.App.{{ ad.ConfigVarName() }})
+    if err != nil {
+        return nil, err
+    }
+
+	deps.{{ cap(ad.AppVarName()) }} = {{ ad.AppVarName() }}
+        {% end %}
+
+    {% end for %}
+    {% if client_deps %}
+    clients := app.Clients {
+        {% for d in client_deps.Dedup() %}
+        {{ cap(d.AppVarName()) }}: {{ d.AppVarName() }}.NewFromEnv(cfg.Environment),
+        {% end %}
+    }
+    {% end %}
 {% end %}
+
+    {% if client_deps %}
+    application, appErr := app.NewApp(deps, clients)
+    {% else %}
     application, appErr := app.NewApp(deps)
+    {% end %}
     if appErr != nil {
         return nil, appErr
     }
@@ -150,7 +209,7 @@ func (h {{ cap(service.Name) }}) Config() Config {
     return h.config
 }
 
-func (h {{ cap(service.Name) }}) Deps() do.Injector {
+func (h {{ cap(service.Name) }}) Deps() app.Deps {
     return h.deps
 }
 
@@ -158,5 +217,5 @@ func (h {{ cap(service.Name) }}) Deps() do.Injector {
 type ServiceStarter interface {
     Start() error
     Config() Config
-    Deps() do.Injector
+    Deps() app.Deps
 }

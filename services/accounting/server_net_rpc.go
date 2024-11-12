@@ -12,7 +12,6 @@ import (
 	"tonky/holistic/infra/kafkaConsumer"
 
     // "github.com/go-playground/validator/v10"
-    "github.com/samber/do/v2"
 
 
 	"tonky/holistic/domain/food"
@@ -24,7 +23,7 @@ import (
 
 type Accounting struct {
     config Config
-    deps do.Injector
+    deps app.Deps
     app app.App
 }
 
@@ -40,18 +39,18 @@ func (h Accounting) ReadOrder(arg food.OrderID, reply *accounting.Order) error {
 }
 
 
-func New(dependencies do.Injector) (ServiceStarter, error) {
+func New(deps app.Deps, clients app.Clients) (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
     if err != nil {
         return nil, err
     }
 
-    application, appErr := app.NewApp(dependencies)
+    application, appErr := app.NewApp(deps, clients)
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := Accounting{deps: dependencies, config: cfg, app: *application}
+    handlers := Accounting{deps: deps, config: cfg, app: *application}
 
     return handlers, nil
 }
@@ -83,6 +82,7 @@ func (h Accounting) Start() error {
 		}()
 	}
 }
+// TODO: REMOVE
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
@@ -90,36 +90,37 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, err
     }
 
-    deps := do.New()
+    // plain deps code here
+    deps := app.Deps{
+        Logger: &logger.Slog{},
+    }
 
-	do.ProvideValue(deps, cfg)
-
-    l := logger.Slog{}
-	do.ProvideValue(deps, &l)
-
-	ordererRepo, err := app.NewPostgresOrderer(l, cfg.App.PostgresOrderer)
+	ordererRepo, err := app.NewPostgresOrderer(*deps.Logger, cfg.App.PostgresOrderer)
     if err != nil {
         return nil, err
     }
 
-	do.ProvideValue(deps, ordererRepo)
+	deps.OrdererRepo = ordererRepo
 
-	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(l, cfg.App.Kafka)
+	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(*deps.Logger, cfg.App.Kafka)
     if err != nil {
         return nil, err
     }
 
-	do.ProvideValue(deps, AccountingOrderPaidProducer)
+	deps.AccountingOrderPaidProducer = AccountingOrderPaidProducer
 
-	FoodOrderUpdatedConsumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(l, cfg.App.Kafka)
+	FoodOrderUpdatedConsumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(*deps.Logger, cfg.App.Kafka)
     if err != nil {
         return nil, err
     }
 
-	do.ProvideValue(deps, FoodOrderUpdatedConsumer)
+	deps.FoodOrderUpdatedConsumer = FoodOrderUpdatedConsumer
 
-	do.ProvideValue(deps, pricingClient.NewFromEnv(cfg.Environment))
-    application, appErr := app.NewApp(deps)
+    clients := app.Clients {
+        PricingClient: pricingClient.NewFromEnv(cfg.Environment),
+    }
+
+    application, appErr := app.NewApp(deps, clients)
     if appErr != nil {
         return nil, appErr
     }
@@ -133,7 +134,7 @@ func (h Accounting) Config() Config {
     return h.config
 }
 
-func (h Accounting) Deps() do.Injector {
+func (h Accounting) Deps() app.Deps {
     return h.deps
 }
 
@@ -141,5 +142,5 @@ func (h Accounting) Deps() do.Injector {
 type ServiceStarter interface {
     Start() error
     Config() Config
-    Deps() do.Injector
+    Deps() app.Deps
 }

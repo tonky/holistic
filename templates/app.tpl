@@ -15,24 +15,52 @@ import (
 	{% end %}
 	"tonky/holistic/infra/logger"
 
+	{% if service.Dependencies == "samber_do" %}
 	"github.com/samber/do/v2"
+	{% end %}
 )
 
-type App struct {
-	Deps       do.Injector
-	Logger     *logger.Slog
+{% if service.Dependencies == "samber_do" %}
+type Deps do.Injector
+{% else if service.Dependencies == "plain_struct" %}
 
-{% for ad in app_deps %}
+	{% if service.Clients  %}
+type Clients struct {
+		{% for d in client_deps.Dedup() %}
+        {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
+		{% end %}
+}
+	{% end %}
+type Deps struct {
+	Config Config
+	Logger *logger.Slog
+	{% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
+	{% end %}
+}
 {% end %}
-{% for d in client_deps.Dedup() %}
-    {{ cap(d.AppVarName()) }} {{ d.AppVarName() }}.{{ d.InterfaceName() }}
+
+type App struct {
+	Deps       Deps
+	Logger     *logger.Slog
+{% if service.Clients  %}
+	Clients		Clients
+{% end %}
+{% if service.Dependencies == "samber_do" %}
+	{% for ad in app_deps %}
+    {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
+	{% end %}
 {% end %}
 }
 
-func NewApp(deps do.Injector) (*App, error) {
+	{% if service.Clients  %}
+func NewApp(deps Deps, clients Clients) (*App, error) {
+	{% else %}
+func NewApp(deps Deps) (*App, error) {
+	{% end %}
 	app := App{
 		Deps:       deps,
+{% if service.Dependencies == "samber_do" %}
 		Logger:     do.MustInvoke[*logger.Slog](deps),
 {% for ad in app_deps %}
         {{ cap(ad.AppVarName()) }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
@@ -40,7 +68,13 @@ func NewApp(deps do.Injector) (*App, error) {
 {% for d in client_deps.Dedup() %}
         {{ cap(d.AppVarName()) }}: do.MustInvokeAs[{{ d.AppVarName() }}.{{ d.InterfaceName() }}](deps),
 {% end %}
-
+{% else if service.Dependencies == "plain_struct" %}
+	{% if service.Clients  %}
+		Clients: clients,
+	{% else %}
+	{% end %}
+		Logger:     deps.Logger,
+{% end %}
 	}
 
 	return &app, nil
@@ -54,7 +88,11 @@ func (a App) RunConsumers() {
 	{% for consumer in service.KafkaConsumers %}
 
 	go func() {
+		{% if service.Dependencies == "samber_do" %}
 		for err := range a.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
+		{% else if service.Dependencies == "plain_struct" %}
+		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
+		{% end %}
 			a.Logger.Warn(err.Error())
 		}
 	}()

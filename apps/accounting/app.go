@@ -4,12 +4,10 @@ import (
 	"context"
 	"tonky/holistic/domain/accounting"
 	"tonky/holistic/domain/food"
-
-	"github.com/samber/do/v2"
 )
 
 func (a *App) ReadOrder(ctx context.Context, arg food.OrderID) (accounting.Order, error) {
-	return do.MustInvokeAs[OrdererRepository](a.Deps).ReadOrderByFoodID(ctx, arg)
+	return a.Deps.OrdererRepo.ReadOrderByFoodID(ctx, arg)
 }
 
 func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) error {
@@ -19,7 +17,7 @@ func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) erro
 		return nil
 	}
 
-	orderPrice, err := a.PricingClient.ReadOrder(ctx, in.ID)
+	orderPrice, err := a.Clients.PricingClient.ReadOrder(ctx, in.ID)
 	if err != nil {
 		return err
 	}
@@ -29,12 +27,12 @@ func (a *App) FoodOrderUpdatedProcessor(ctx context.Context, in food.Order) erro
 		Cost: orderPrice.Cost,
 	}
 
-	_, errSave := a.OrdererRepo.SaveFinishedOrder(ctx, paidOrder)
+	_, errSave := a.Deps.OrdererRepo.SaveFinishedOrder(ctx, paidOrder)
 	if errSave != nil {
 		return errSave
 	}
 
-	return a.AccountingOrderPaidProducer.ProduceAccountingOrderPaid(ctx, paidOrder)
+	return a.Deps.AccountingOrderPaidProducer.ProduceAccountingOrderPaid(ctx, paidOrder)
 }
 
 type NewOrder struct {
