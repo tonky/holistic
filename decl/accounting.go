@@ -1,41 +1,53 @@
 package decl
 
-import "tonky/holistic/generator/services"
+import (
+	"tonky/holistic/describer"
+)
 
-func AccountingService() services.Service {
-	getOrder := services.Endpoint{
+type Model struct {
+	Scope    string
+	Domain   string
+	Name     string
+	External struct {
+		PackagePath  string
+		PackageAlias string
+	}
+}
+
+func AccountingService() describer.Service {
+	getOrder := describer.Endpoint{
 		Name:   "order",
-		Method: services.Read,
-		In:     services.Inputs{Name: "food.OrderID"},
-		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK: "accounting.Order",
+		Method: describer.Read,
+		In:     describer.Inputs{Name: "food.OrderID"},
+		Out: map[describer.ResponseType]describer.ResponseObject{
+			describer.ResponseOK: "accounting.Order",
 		},
 	}
 
-	return services.Service{
+	return describer.Service{
 		Name:           "accounting",
-		Rpc:            services.GoNative,
-		Dependencies:   services.Struct,
-		ConfigItems:    []services.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
-		Endpoints:      []services.Endpoint{getOrder},
-		KafkaConsumers: []services.TopicDesc{services.TopicFoodOrderUpdated},
-		KafkaProducers: []services.TopicDesc{services.TopicAccountingOrderPaid},
-		Postgres: []services.Postgres{{
+		Rpc:            describer.GoNative,
+		Dependencies:   describer.Struct,
+		ConfigItems:    []describer.ConfigItem{{Name: "KafkaConsumptionRPS", Typ: "int"}},
+		Endpoints:      []describer.Endpoint{getOrder},
+		KafkaConsumers: []describer.TopicDesc{TopicFoodOrderUpdated},
+		KafkaProducers: []describer.TopicDesc{TopicAccountingOrderPaid},
+		Postgres: []describer.Postgres{{
 			Name: "orderer",
-			Methods: []services.InterfaceMethod{
+			Methods: []describer.InterfaceMethod{
 				{
 					Name: "SaveFinishedOrder",
-					Arg:  services.InfraObject{Name: "orderID", Typ: "accounting.Order"},
-					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
+					Arg:  describer.InfraObject{Name: "orderID", Typ: "accounting.Order"},
+					Ret:  describer.InfraObject{Name: "order", Typ: "accounting.Order"},
 				},
 				{
 					Name: "ReadOrderByFoodID",
-					Arg:  services.InfraObject{Name: "newOrder", Typ: "food.OrderID"},
-					Ret:  services.InfraObject{Name: "order", Typ: "accounting.Order"},
+					Arg:  describer.InfraObject{Name: "newOrder", Typ: "food.OrderID"},
+					Ret:  describer.InfraObject{Name: "order", Typ: "accounting.Order"},
 				},
 			},
 		}},
-		Clients: []services.Client{
+		Clients: []describer.Client{
 			{
 				VarName: "pricingClient",
 				IName:   "IPricingClient",

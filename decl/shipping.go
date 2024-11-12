@@ -1,38 +1,38 @@
 package decl
 
 import (
-	"tonky/holistic/generator/services"
+	"tonky/holistic/describer"
 )
 
-func ShippingService() services.Service {
-	getShipment := services.Endpoint{
+func ShippingService() describer.Service {
+	getShipment := describer.Endpoint{
 		Name:   "order",
-		Method: services.Read,
-		In:     services.Inputs{Name: "food.OrderID"},
-		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK: "shipping.Order",
+		Method: describer.Read,
+		In:     describer.Inputs{Name: "food.OrderID"},
+		Out: map[describer.ResponseType]describer.ResponseObject{
+			describer.ResponseOK: "shipping.Order",
 		},
 	}
 
-	return services.Service{
+	return describer.Service{
 		Name:           "shipping",
-		Rpc:            services.HTTP,
-		Dependencies:   services.Struct,
-		Endpoints:      []services.Endpoint{getShipment},
-		KafkaProducers: []services.TopicDesc{services.TopicShippingOrderShipped},
-		KafkaConsumers: []services.TopicDesc{services.TopicAccountingOrderPaid},
-		Postgres: []services.Postgres{{
+		Rpc:            describer.HTTP,
+		Dependencies:   describer.Struct,
+		Endpoints:      []describer.Endpoint{getShipment},
+		KafkaProducers: []describer.TopicDesc{TopicShippingOrderShipped},
+		KafkaConsumers: []describer.TopicDesc{TopicAccountingOrderPaid},
+		Postgres: []describer.Postgres{{
 			Name: "orderer",
-			Methods: []services.InterfaceMethod{
+			Methods: []describer.InterfaceMethod{
 				{
 					Name: "ReadOrderShippingByID",
-					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
-					Ret:  services.InfraObject{Name: "order", Typ: "shipping.Order"},
+					Arg:  describer.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Ret:  describer.InfraObject{Name: "order", Typ: "shipping.Order"},
 				},
 				{
 					Name: "SaveShipping",
-					Arg:  services.InfraObject{Name: "shipping", Typ: "shipping.Order"},
-					Ret:  services.InfraObject{Name: "order", Typ: "shipping.Order"},
+					Arg:  describer.InfraObject{Name: "shipping", Typ: "shipping.Order"},
+					Ret:  describer.InfraObject{Name: "order", Typ: "shipping.Order"},
 				},
 			},
 		}},

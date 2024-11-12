@@ -1,65 +1,65 @@
 package decl
 
 import (
-	"tonky/holistic/generator/services"
+	desriber "tonky/holistic/describer"
 )
 
-func PizzeriaService() services.Service {
+func PizzeriaService() desriber.Service {
 	// rpc: net/rpc, twirp, grpc with optional gateway
-	getOrder := services.Endpoint{
+	getOrder := desriber.Endpoint{
 		Name:   "order",
-		Method: services.Read,
-		In:     services.Inputs{Name: "food.OrderID"},
-		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK: "food.Order",
+		Method: desriber.Read,
+		In:     desriber.Inputs{Name: "food.OrderID"},
+		Out: map[desriber.ResponseType]desriber.ResponseObject{
+			desriber.ResponseOK: "food.Order",
 		},
 	}
 
-	createOrder := services.Endpoint{
+	createOrder := desriber.Endpoint{
 		Name:   "order",
-		Method: services.Create,
-		In:     services.Inputs{Name: "NewOrder"},
-		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK: "food.Order",
+		Method: desriber.Create,
+		In:     desriber.Inputs{Name: "NewOrder"},
+		Out: map[desriber.ResponseType]desriber.ResponseObject{
+			desriber.ResponseOK: "food.Order",
 		},
 	}
 
-	updateOrder := services.Endpoint{
+	updateOrder := desriber.Endpoint{
 		Name:   "order",
-		Method: services.Update,
-		In:     services.Inputs{Name: "UpdateOrder"},
-		Out: map[services.ResponseType]services.ResponseObject{
-			services.ResponseOK: "food.Order",
+		Method: desriber.Update,
+		In:     desriber.Inputs{Name: "UpdateOrder"},
+		Out: map[desriber.ResponseType]desriber.ResponseObject{
+			desriber.ResponseOK: "food.Order",
 		},
 	}
 
-	return services.Service{
+	return desriber.Service{
 		Name:           "pizzeria",
-		Rpc:            services.GoNative,
-		Dependencies:   services.SamberDO,
-		Endpoints:      []services.Endpoint{getOrder, createOrder, updateOrder},
-		ConfigItems:    []services.ConfigItem{{Name: "StartDelayMs", Typ: "int"}},
-		AppConfigItems: []services.ConfigItem{{Name: "EnabledInRegions", Typ: "[]string"}},
-		Postgres: []services.Postgres{{
+		Rpc:            desriber.GoNative,
+		Dependencies:   desriber.SamberDO,
+		Endpoints:      []desriber.Endpoint{getOrder, createOrder, updateOrder},
+		ConfigItems:    []desriber.ConfigItem{{Name: "StartDelayMs", Typ: "int"}},
+		AppConfigItems: []desriber.ConfigItem{{Name: "EnabledInRegions", Typ: "[]string"}},
+		Postgres: []desriber.Postgres{{
 			Name: "orderer",
-			Methods: []services.InterfaceMethod{
+			Methods: []desriber.InterfaceMethod{
 				{
 					Name: "ReadOrderByID",
-					Arg:  services.InfraObject{Name: "orderID", Typ: "food.OrderID"},
-					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
+					Arg:  desriber.InfraObject{Name: "orderID", Typ: "food.OrderID"},
+					Ret:  desriber.InfraObject{Name: "order", Typ: "food.Order"},
 				},
 				{
 					Name: "SaveOrder",
-					Arg:  services.InfraObject{Name: "newOrder", Typ: "NewOrder"},
-					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
+					Arg:  desriber.InfraObject{Name: "newOrder", Typ: "NewOrder"},
+					Ret:  desriber.InfraObject{Name: "order", Typ: "food.Order"},
 				},
 				{
 					Name: "UpdateOrder",
-					Arg:  services.InfraObject{Name: "newOrder", Typ: "UpdateOrder"},
-					Ret:  services.InfraObject{Name: "order", Typ: "food.Order"},
+					Arg:  desriber.InfraObject{Name: "newOrder", Typ: "UpdateOrder"},
+					Ret:  desriber.InfraObject{Name: "order", Typ: "food.Order"},
 				},
 			},
 		}},
-		KafkaProducers: []services.TopicDesc{services.TopicFoodOrderCreated, services.TopicFoodOrderUpdated},
+		KafkaProducers: []desriber.TopicDesc{TopicFoodOrderCreated, TopicFoodOrderUpdated},
 	}
 }

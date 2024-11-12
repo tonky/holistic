@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"tonky/holistic/decl"
 	"tonky/holistic/generator"
-	"tonky/holistic/generator/domain"
-	"tonky/holistic/generator/services"
 )
 
 func main() {
@@ -16,9 +14,9 @@ func main() {
 
 	// fmt.Printf("\n%s", pizzeria.New().Debug())
 
-	domain.Generate()
+	generator.GenModels(decl.DomainModels)
 
-	topics := services.KafkaTopics()
+	topics := decl.KafkaTopics
 
 	generator.GenKafka(topics)
 

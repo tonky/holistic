@@ -1,9 +1,9 @@
-package services
+package describer
 
 import (
 	"fmt"
 	"strings"
-	"tonky/holistic/generator/domain"
+	"tonky/holistic/typs"
 
 	"github.com/open2b/scriggo/builtin"
 )
@@ -55,7 +55,7 @@ func (r RPC) String() string {
 
 type InputParam struct {
 	Where      string
-	What       domain.Object
+	What       typs.Object
 	Validation string
 }
 

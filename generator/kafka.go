@@ -2,14 +2,14 @@ package generator
 
 import (
 	"fmt"
-	"tonky/holistic/generator/services"
+	"tonky/holistic/describer"
 
 	"github.com/open2b/scriggo"
 	"github.com/open2b/scriggo/builtin"
 	"github.com/open2b/scriggo/native"
 )
 
-func GenKafka(tds []services.TopicDesc) {
+func GenKafka(tds []describer.TopicDesc) {
 	template_dir := "templates"
 	kafka_producer_tpl := "kafka_producer_v2.tpl"
 	kafka_consumer_tpl := "kafka_consumer.tpl"

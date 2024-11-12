@@ -8,14 +8,14 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
-	"tonky/holistic/generator/services"
+	"tonky/holistic/describer"
 
 	"github.com/open2b/scriggo"
 	"github.com/open2b/scriggo/builtin"
 	"github.com/open2b/scriggo/native"
 )
 
-func GenService(s services.Service) {
+func GenService(s describer.Service) {
 	fmt.Printf("Generating %s service Go files\n", s.Name)
 
 	template_dir := "templates"
@@ -124,11 +124,11 @@ func GenService(s services.Service) {
 		clientDeps = append(clientDeps, c)
 	}
 
-	if s.Rpc == services.GoNative {
+	if s.Rpc == describer.GoNative {
 		writeTemplate(fsys, service_net_rpc_tpl, opts, nil, tplGenPath[service_net_rpc_tpl])
 		writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
 		writeTemplate(fsys, client_net_rpc, opts, nil, tplGenPath[client_net_rpc])
-	} else if s.Rpc == services.HTTP {
+	} else if s.Rpc == describer.HTTP {
 		writeTemplate(fsys, service_http_tpl, opts, nil, tplGenPath[service_http_tpl])
 		writeTemplate(fsys, app_plain_tpl, opts, nil, tplGenPath[app_plain_tpl])
 		writeTemplate(fsys, client_http_tpl, opts, nil, tplGenPath[client_http_tpl])

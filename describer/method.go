@@ -1,4 +1,4 @@
-package services
+package describer
 
 type MethodAction string
 
