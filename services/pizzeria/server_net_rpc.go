@@ -101,7 +101,6 @@ func (h Pizzeria) Start() error {
 		}()
 	}
 }
-// TODO: REMOVE
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()

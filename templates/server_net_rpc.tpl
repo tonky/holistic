@@ -128,10 +128,6 @@ func (h {{ cap(service.Name) }}) Start() error {
 		}()
 	}
 }
-// TODO: REMOVE
-{% if service.Dependencies == "samber_do" %}
-{% else if service.Dependencies == "plain_struct" %}
-{% end %}
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
@@ -164,7 +160,6 @@ func NewFromEnv() (ServiceStarter, error) {
 	do.ProvideValue(deps, {{ d.AppVarName() }}.NewFromEnv(cfg.Environment))
     {% end %}
 {% else if service.Dependencies == "plain_struct" %}
-    // plain deps code here
     deps := app.Deps{
         Logger: &logger.Slog{},
     }

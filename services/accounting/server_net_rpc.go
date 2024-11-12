@@ -82,7 +82,6 @@ func (h Accounting) Start() error {
 		}()
 	}
 }
-// TODO: REMOVE
 
 func NewFromEnv() (ServiceStarter, error) {
 	cfg, err := NewEnvConfig()
@@ -90,7 +89,6 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, err
     }
 
-    // plain deps code here
     deps := app.Deps{
         Logger: &logger.Slog{},
     }
