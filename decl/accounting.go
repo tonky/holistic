@@ -4,16 +4,6 @@ import (
 	"tonky/holistic/describer"
 )
 
-type Model struct {
-	Scope    string
-	Domain   string
-	Name     string
-	External struct {
-		PackagePath  string
-		PackageAlias string
-	}
-}
-
 func AccountingService() describer.Service {
 	getOrder := describer.Endpoint{
 		Name:   "order",
