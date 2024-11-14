@@ -72,7 +72,39 @@ func AccountingService() describer.Service {
 ```
 
 ## How application code looks
+
 ```
+// apps/gen_accouting_app.go
+
+type Clients struct {
+   PricingClient pricingClient.IPricingClient
+}
+
+type Deps struct {
+   Config Config
+   Logger *logger.Slog
+   OrdererRepo OrdererRepository
+   AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
+   FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
+}
+
+type App struct {
+	Deps       Deps
+	Logger     *logger.Slog
+	Clients		Clients
+}
+
+func NewApp(deps Deps, clients Clients) (*App, error) {
+	app := App{
+		Deps:       deps,
+		Clients: clients,
+		Logger:     deps.Logger,
+	}
+
+	return &app, nil
+}
+
+
 // apps/accounting/app.go
 
 // Kafka 'food.order.updated' consumer handler
