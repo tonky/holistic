@@ -18,13 +18,14 @@ func main() {
 
 	topics := decl.KafkaTopics
 
-	generator.GenKafka(topics)
+	gs := generator.ServiceGen{TemplatePath: "templates"}
 
-	generator.GenService(decl.PizzeriaService())
-	generator.GenService(decl.AccountingService())
-	generator.GenService(decl.PricingService())
-	generator.GenService(decl.ShippingService())
+	gs.GenerateKafka(topics)
 
-	// pizzeria.Generate()
-	// pizzeria.GenScrig()
+	gs.Generate(decl.PizzeriaService())
+	gs.Generate(decl.AccountingService())
+	gs.Generate(decl.PricingService())
+	gs.Generate(decl.ShippingService())
+
+	gs.Generate2(decl.AccountingServiceV2())
 }

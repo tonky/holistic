@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"os"
 	"tonky/holistic/describer"
 
 	"github.com/open2b/scriggo"
@@ -9,8 +10,7 @@ import (
 	"github.com/open2b/scriggo/native"
 )
 
-func GenKafka(tds []describer.TopicDesc) {
-	template_dir := "templates"
+func GenKafka(template_dir string, tds []describer.TopicDesc) {
 	kafka_producer_tpl := "kafka_producer_v2.tpl"
 	kafka_consumer_tpl := "kafka_consumer.tpl"
 
@@ -18,6 +18,8 @@ func GenKafka(tds []describer.TopicDesc) {
 		kafka_producer_tpl: readContent(template_dir, kafka_producer_tpl),
 		kafka_consumer_tpl: readContent(template_dir, kafka_consumer_tpl),
 	}
+
+	mustCreateDirs([]string{"./infra/kafkaProducer", "./infra/kafkaConsumer"})
 
 	for _, t := range tds {
 		fmt.Printf("Generating files for kafka topic: %s\n", t.TopicName)
@@ -41,6 +43,10 @@ func GenKafka(tds []describer.TopicDesc) {
 
 		fmt.Println("Generated kafka files")
 	}
+}
+
+func (g ServiceGen) GenerateKafka(tds []describer.TopicDesc) {
+	GenKafka(g.TemplatePath, tds)
 }
 
 type KafkaDep struct {
@@ -79,4 +85,16 @@ func (kd KafkaDep) PackageName() string {
 
 func (kd KafkaDep) AppImportPackageName() string {
 	return kd.PackageName()
+}
+
+func mustCreateDirs(dirs []string) {
+	fmt.Println("Creating directories: ", dirs)
+
+	for _, dir := range dirs {
+		err := os.MkdirAll(dir, os.ModePerm)
+		if err != nil {
+			fmt.Println("can't create directory: ", dir)
+			panic(err)
+		}
+	}
 }

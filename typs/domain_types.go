@@ -7,17 +7,6 @@ import (
 	"github.com/open2b/scriggo/builtin"
 )
 
-type Kind int
-
-const (
-	Int Kind = iota
-	Float
-	String
-	UUID
-	StringList
-	ObjectList
-)
-
 type FieldType string
 
 func (ft FieldType) StructType(domain string) string {

@@ -128,17 +128,17 @@ func (e Endpoint) FuncName() string {
 }
 
 type Service struct {
-	Name           string
-	Rpc            RPC
-	Dependencies   Deps
-	Endpoints      []Endpoint
-	Secrets        map[string]string
-	Publishes      []Topic
-	Consumes       []Topic
+	Name         string
+	Rpc          RPC
+	Dependencies Deps
+	Endpoints    []Endpoint
+	Secrets      map[string]string
+	// Publishes      []Topic
+	// Consumes       []Topic
 	ConfigItems    []ConfigItem
 	AppConfigItems []ConfigItem
 	Infra          []Infra
-	Interfaces     []JustInterface
+	// Interfaces     []JustInterface
 	Postgres       []Postgres
 	KafkaProducers []TopicDesc
 	KafkaConsumers []TopicDesc

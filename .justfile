@@ -5,6 +5,7 @@ rr:
   fd -E apps -E services -E clients -E domain -E infra '(.go|.tpl)' | entr -cr go run main.go 
 
 t:
+  go test ./generator -count 1
   go test ./tests -count 1
 
 ts:

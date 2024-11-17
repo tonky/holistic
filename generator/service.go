@@ -9,16 +9,16 @@ import (
 	"regexp"
 	"strings"
 	"tonky/holistic/describer"
+	"tonky/holistic/typs"
 
 	"github.com/open2b/scriggo"
 	"github.com/open2b/scriggo/builtin"
 	"github.com/open2b/scriggo/native"
 )
 
-func GenService(s describer.Service) {
+func GenService(template_dir string, s describer.Service) {
 	fmt.Printf("Generating %s service Go files\n", s.Name)
 
-	template_dir := "templates"
 	service_net_rpc_tpl := "server_net_rpc.tpl"
 	service_http_tpl := "server_http.tpl"
 	client_net_rpc := "client_net_rpc.tpl"
@@ -28,7 +28,7 @@ func GenService(s describer.Service) {
 	app_tpl := "app.tpl"
 	app_plain_tpl := "app_plain.tpl"
 	repo_pg_tpl := "repository_postgres.tpl"
-	repo_generic_tpl := "repository_generic.tpl"
+	// repo_generic_tpl := "repository_generic.tpl"
 	// kafka_consumer_tpl := "kafka_consumer.tpl"
 
 	if err := os.MkdirAll(filepath.Join(".", "clients", s.Name+"Client"), os.ModePerm); err != nil {
@@ -102,14 +102,6 @@ func GenService(s describer.Service) {
 
 		outFile := fmt.Sprintf("apps/%s/gen_%s_repository_postgres.go", s.Name, pg.Name)
 		writeTemplate(fsys, repo_pg_tpl, opts, nil, outFile)
-	}
-
-	for _, i := range s.Interfaces {
-		opts.Globals["repo"] = &i
-		appDeps = append(appDeps, &i)
-
-		outFile := fmt.Sprintf("apps/%s/gen_%s.go", s.Name, toSnakeCase(i.Struct))
-		writeTemplate(fsys, repo_generic_tpl, opts, nil, outFile)
 	}
 
 	for _, kp := range s.KafkaProducers {
@@ -204,4 +196,24 @@ func toSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+type ServiceGen struct {
+	TemplatePath string
+}
+
+func (g ServiceGen) Generate(s describer.Service) error {
+	fmt.Printf("Generating %s service Go files\nTemplate dir: %s\n", s.Name, g.TemplatePath)
+
+	GenService(g.TemplatePath, s)
+
+	return nil
+}
+
+func (g ServiceGen) GenModels(oo []typs.Object2) error {
+	for _, o := range oo {
+		g.GenModel2(o)
+	}
+
+	return nil
 }

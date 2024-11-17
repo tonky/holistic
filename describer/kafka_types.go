@@ -32,3 +32,29 @@ func (td TopicDesc) SnakeFileName() string {
 func (td TopicDesc) AppVarName() string {
 	return td.StructName()
 }
+
+type TopicDesc2 struct {
+	Name      string
+	TopicName string
+	Obj       typs.Object3
+}
+
+func (td TopicDesc2) InterfaceName() string {
+	return "I" + builtin.Capitalize(td.Name)
+}
+
+func (td TopicDesc2) StructName() string {
+	return builtin.Capitalize(td.Name)
+}
+
+func (td TopicDesc2) ModelName() string {
+	return td.Obj.GoQualifiedModel()
+}
+
+func (td TopicDesc2) SnakeFileName() string {
+	return strings.Replace(td.TopicName, ".", "_", -1)
+}
+
+func (td TopicDesc2) AppVarName() string {
+	return td.StructName()
+}
