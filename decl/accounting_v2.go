@@ -79,10 +79,13 @@ var NewFoodOrderApp = typs.Object3{
 
 var FoodOrderIDV2 = typs.Object3{
 	Kind:         typs.KindDomain,
-	Typ:          typs.UUID2,
+	Typ:          typs.Struct2,
 	Name:         "OrderID",
 	Module:       "tonky/holistic",
 	RelativePath: []string{"domain", "foodStore"},
+	Fields: []typs.Object3{
+		{Name: "id", Typ: typs.UUID2, Kind: typs.KindBasic},
+	},
 }
 
 var AccountingOrderID = typs.Object3{Kind: typs.KindDomain, Typ: typs.UUID2, Name: "OrderID", RelativePath: []string{"domain", "accounting"}}

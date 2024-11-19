@@ -13,13 +13,13 @@ import (
 	"{{ ci }}"
     {% end %}
 
-	app "tonky/holistic/apps/{{ service.Name }}"
+	app "{{ modulePath }}/apps/{{ service.Name }}"
 
 	{% if service.KafkaProducers %}
-	"tonky/holistic/infra/kafkaProducer"
+	"{{ modulePath }}/infra/kafkaProducer"
 	{% end %}
 	{% if service.KafkaConsumers %}
-	"tonky/holistic/infra/kafkaConsumer"
+	"{{ modulePath }}/infra/kafkaConsumer"
 	{% end %}
     {% for id in app_deps %}
         {% if id.AppImportPackageName() == "app" %}
@@ -27,13 +27,13 @@ import (
         {% else if id.PackageName() == "kafkaProducer" %} 
         {% else if id.PackageName() == "kafkaConsumer" %} 
         {% else %}
-	"tonky/holistic/infra/{{ id.PackageName() }}"
+	"{{ modulePath }}/infra/{{ id.PackageName() }}"
         {% end %}
     {% end %}
 	{% for cl in service.Clients %}
     "{{ cl.Model.AbsPath() }}"
 	{% end %}
-	"tonky/holistic/infra/logger"
+	"{{ modulePath }}/infra/logger"
 )
 
 type handlers struct {
@@ -56,7 +56,7 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
 
         var appErr error
 
-        {% if h.In.ServiceSpecific() %}
+        {% if h.In.IsService() %}
         out, appErr = h.app.{{h.Name}}(context.TODO(), serviceToApp{{ h.In.Name }}(in))
         {% else %}
         out, appErr = h.app.{{h.Name}}(context.TODO(), in)

@@ -23,10 +23,6 @@ func (o Object3) ShouldGenerate() bool {
 	return o.Kind == KindDomain || o.Kind == KindService
 }
 
-func (o Object3) ServiceSpecific() bool {
-	return o.Kind == KindService
-}
-
 func (o Object3) GoType() string {
 	if o.Kind == KindExternal {
 		return o.Package() + "." + o.Name
@@ -58,6 +54,14 @@ func (o Object3) IsDomain() bool {
 	return o.Kind == KindDomain
 }
 
+func (o Object3) IsClient() bool {
+	return o.Kind == KindClient
+}
+
+func (o Object3) IsService() bool {
+	return o.Kind == KindService
+}
+
 func (o Object3) IsBuiltin() bool {
 	return o.Typ == Int2 || o.Typ == Float2 || o.Typ == String2 || o.Typ == Bool2
 }
@@ -69,7 +73,7 @@ func (o Object3) IsBasic() bool {
 func (o Object3) GoQualifiedModel() string {
 	slog.Info("GoQualifiedModel", slog.String("name", fmt.Sprintf("%s.%s", o.RelPath(), o.Name)))
 
-	if o.Kind == KindService {
+	if o.IsService() {
 		return o.Name
 	}
 
@@ -82,6 +86,11 @@ func (o Object3) AbsPath() string {
 
 func (o Object3) GoStructModel(ctx Object3) string {
 	slog.Info("GoStructModel", slog.String("name", o.Name), slog.String("context", ctx.Name))
+
+	if ctx.IsClient() && o.IsService() {
+		return "svc." + o.Name
+
+	}
 
 	if o.IsDomain() {
 		slog.Info("IsDomain()")
@@ -129,6 +138,7 @@ const (
 	KindBuiltIn
 	KindBasic
 	KindExternal
+	KindClient
 )
 
 type Object3 struct {
@@ -167,7 +177,7 @@ func (o Object3) AbsImportsAll(ctx Object3) []string {
 	slog.Info("AbsImport", slog.String("name", fmt.Sprintf("%s.%s", o.RelPath(), o.Name)), slog.String("context", ctx.Name))
 	// fmt.Println("> AbsImport", o.Name)
 
-	if o.IsBuiltin() || o.Kind == KindService {
+	if o.IsBuiltin() || o.IsService() {
 		slog.Info("..builtin or service, no import required")
 
 		return []string{}

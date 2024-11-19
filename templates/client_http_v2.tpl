@@ -8,16 +8,16 @@ import (
 	"fmt"
 	"net/http"
 	"io"
-	"tonky/holistic/clients"
-	{% for c in service.Clients %}
-	"{{ modulePath }}/{{ c.Model.RelPath() }}"
-	{% end %}
-	svc{{ cap(service.Name ) }} "{{ modulePath }}/services/{{ service.Name }}"
+    {% for ci in service.AbsImports(ctx) %}
+	"{{ ci }}"
+    {% end %}
+	"{{ modulePath}}/clients"
+	svc "{{ modulePath }}/services/{{ service.Name }}"
 )
 
 type I{{ cap(service.Name) }}Client interface {
 {% for h in service.Endpoints %}
-	{{ h.Name }}(context.Context, {{ h.In.GoQualifiedModel() }}) ({{ h.Out.GoQualifiedModel() }}, error)
+	{{ h.Name }}(context.Context, {{ h.In.GoStructModel(ctx) }}) ({{ h.Out.GoStructModel(ctx) }}, error)
 {% end %}
 }
 
@@ -28,7 +28,7 @@ func New(config clients.Config) {{ cap(service.Name) }}Client {
 }
 
 func NewFromEnv(env string) {{ cap(service.Name) }}Client {
-	svcConf := svc{{ cap(service.Name ) }}.MustEnvConfig()
+	svcConf := svc.MustEnvConfig()
 
 	envConf := clients.ConfigForEnv("{{ service.Name }}", env)
 	envConf.Port = svcConf.Port
@@ -43,8 +43,8 @@ type {{ cap(service.Name) }}Client struct {
 }
 
 {% for h in service.Endpoints %}
-func (c {{ cap(service.Name) }}Client) {{ h.Name }}(ctx context.Context, arg {{ h.In.GoQualifiedModel() }}) ({{ h.Out.GoQualifiedModel() }}, error) {
-	var reply {{ h.Out.GoQualifiedModel() }}
+func (c {{ cap(service.Name) }}Client) {{ h.Name }}(ctx context.Context, arg {{ h.In.GoStructModel(ctx) }}) ({{ h.Out.GoStructModel(ctx) }}, error) {
+	var reply {{ h.Out.GoStructModel(ctx) }}
 
 	jsonBody, err := json.Marshal(arg)
 	if err != nil { return reply, err}

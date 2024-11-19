@@ -8,14 +8,14 @@ import (
 	"fmt"
 	"net/http"
 	"io"
+	"tonky/holistic/domain/foodStore"
 	"tonky/holistic/clients"
-	"tonky/holistic/clients/pricingClient"
-	svcAccountingV2 "tonky/holistic/services/accountingV2"
+	svc "tonky/holistic/services/accountingV2"
 )
 
 type IAccountingV2Client interface {
 	GetOrderByID(context.Context, foodStore.OrderID) (foodStore.Order, error)
-	CreateOrder(context.Context, NewFoodOrder) (foodStore.Order, error)
+	CreateOrder(context.Context, svc.NewFoodOrder) (foodStore.Order, error)
 }
 
 func New(config clients.Config) AccountingV2Client {
@@ -25,7 +25,7 @@ func New(config clients.Config) AccountingV2Client {
 }
 
 func NewFromEnv(env string) AccountingV2Client {
-	svcConf := svcAccountingV2.MustEnvConfig()
+	svcConf := svc.MustEnvConfig()
 
 	envConf := clients.ConfigForEnv("accountingV2", env)
 	envConf.Port = svcConf.Port
@@ -63,7 +63,7 @@ func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.Orde
 	return reply, nil
 }
 
-func (c AccountingV2Client) CreateOrder(ctx context.Context, arg NewFoodOrder) (foodStore.Order, error) {
+func (c AccountingV2Client) CreateOrder(ctx context.Context, arg svc.NewFoodOrder) (foodStore.Order, error) {
 	var reply foodStore.Order
 
 	jsonBody, err := json.Marshal(arg)

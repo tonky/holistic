@@ -114,16 +114,16 @@ func (g ServiceGen) Generate2(s describer.ServiceV2) error {
 
 	if s.Rpc == describer.GoNative {
 		writeTemplate(fsys, service_net_rpc_tpl, opts, nil, tplGenPath[service_net_rpc_tpl])
-		writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
 		writeTemplate(fsys, client_net_rpc, opts, nil, tplGenPath[client_net_rpc])
 	} else if s.Rpc == describer.HTTP {
 		writeTemplate(fsys, service_http_tpl, opts, nil, tplGenPath[service_http_tpl])
-		writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
+		opts.Globals["ctx"] = &typs.Object3{Kind: typs.KindClient}
 		writeTemplate(fsys, client_http_tpl, opts, nil, tplGenPath[client_http_tpl])
 	}
 
-	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
+	writeTemplate(fsys, app_tpl, opts, nil, tplGenPath[app_tpl])
 	writeTemplate(fsys, app_config_tpl, opts, nil, tplGenPath[app_config_tpl])
+	writeTemplate(fsys, service_config_tpl, opts, nil, tplGenPath[service_config_tpl])
 
 	fmt.Println("Generated Go files for service", s.Name)
 

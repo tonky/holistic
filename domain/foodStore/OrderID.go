@@ -5,4 +5,6 @@ import (
     "github.com/google/uuid"
 )
 
-type OrderID uuid.UUID
+type OrderID struct {
+    id uuid.UUID
+}
