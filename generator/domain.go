@@ -159,7 +159,7 @@ func GenModels(models []typs.Object) {
 		}
 
 		// open a file and get a writer
-		fm, err := os.Create(fmt.Sprintf("./domain/%s/%s.go", model.Domain, builtin.ToLower(model.Name)))
+		fm, err := os.Create(fmt.Sprintf("./domain/%s/gen_%s.go", model.Domain, builtin.ToLower(model.Name)))
 		if err != nil {
 			log.Fatal(err)
 		}

@@ -56,7 +56,7 @@ var FoodOrderV2 = typs.Object3{
 }
 
 var NewFoodOrderSvc = typs.Object3{
-	Kind:         typs.KindService,
+	Kind:         typs.KindDomain,
 	Typ:          typs.Struct2,
 	Name:         "NewFoodOrder",
 	RelativePath: []string{"services", "accountingV2"},
@@ -67,7 +67,7 @@ var NewFoodOrderSvc = typs.Object3{
 }
 
 var NewFoodOrderApp = typs.Object3{
-	Kind:         typs.KindService,
+	Kind:         typs.KindDomain,
 	Typ:          typs.Struct2,
 	Name:         "NewFoodOrder",
 	RelativePath: []string{"apps", "accountingV2"},

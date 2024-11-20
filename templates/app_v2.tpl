@@ -3,7 +3,7 @@
 package {{ service.Name }}
 
 import (
-	"{{ modulePath }}/infra/logger"
+	"tonky/holistic/infra/logger"
 	{% if service.KafkaProducers %}
 	"{{ modulePath }}/infra/kafkaProducer"
 	{% end %}

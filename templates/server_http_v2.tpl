@@ -33,7 +33,7 @@ import (
 	{% for cl in service.Clients %}
     "{{ cl.Model.AbsPath() }}"
 	{% end %}
-	"{{ modulePath }}/infra/logger"
+	"tonky/holistic/infra/logger"
 )
 
 type handlers struct {
@@ -54,16 +54,12 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
             return
         }
 
-        var appErr error
+        inDomain, dtoErr := in.ToDomain()
 
-        {% if h.In.IsService() %}
-        out, appErr = h.app.{{h.Name}}(context.TODO(), serviceToApp{{ h.In.Name }}(in))
-        {% else %}
-        out, appErr = h.app.{{h.Name}}(context.TODO(), in)
-        {% end %}
+        out, appErr := h.app.{{h.Name}}(context.TODO(), inDomain)
 
-        if appErr != nil {
-            http.Error(w, appErr.Error(), http.StatusInternalServerError)
+        if dtoErr != nil {
+            http.Error(w, appErr.Error(), http.StatusBadRequest)
             return
         }
 

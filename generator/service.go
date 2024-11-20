@@ -44,9 +44,9 @@ func GenService(template_dir string, s describer.Service) {
 	}
 
 	tplGenPath := map[string]string{
-		service_net_rpc_tpl: fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
-		service_http_tpl:    fmt.Sprintf("services/%s/server_%s.go", s.Name, s.Rpc.String()),
-		service_config_tpl:  fmt.Sprintf("services/%s/config.go", s.Name),
+		service_net_rpc_tpl: fmt.Sprintf("services/%s/gen_server_%s.go", s.Name, s.Rpc.String()),
+		service_http_tpl:    fmt.Sprintf("services/%s/gen_server_%s.go", s.Name, s.Rpc.String()),
+		service_config_tpl:  fmt.Sprintf("services/%s/gen_config.go", s.Name),
 		client_net_rpc:      fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
 		client_http_tpl:     fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
 		app_tpl:             fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
@@ -200,6 +200,7 @@ func toSnakeCase(str string) string {
 
 type ServiceGen struct {
 	TemplatePath string
+	ModulePath   string
 }
 
 func (g ServiceGen) Generate(s describer.Service) error {

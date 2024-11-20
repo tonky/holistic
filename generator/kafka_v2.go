@@ -38,10 +38,10 @@ func GenKafka2(template_dir string, tds []describer.TopicDesc2) {
 			},
 		}
 
-		outFile := fmt.Sprintf("infra/kafkaProducer/%s_producer.go", toSnakeCase(t.Name))
+		outFile := fmt.Sprintf("infra/kafkaProducer/gen_%s_producer.go", toSnakeCase(t.Name))
 		writeTemplate(fsys, kafka_producer_tpl, opts, nil, outFile)
 
-		outFileC := fmt.Sprintf("infra/kafkaConsumer/%s_consumer.go", toSnakeCase(t.Name))
+		outFileC := fmt.Sprintf("infra/kafkaConsumer/gen_%s_consumer.go", toSnakeCase(t.Name))
 		writeTemplate(fsys, kafka_consumer_tpl, opts, nil, outFileC)
 
 		fmt.Println("Generated kafka files")

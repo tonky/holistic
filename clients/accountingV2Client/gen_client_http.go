@@ -9,13 +9,14 @@ import (
 	"net/http"
 	"io"
 	"tonky/holistic/domain/foodStore"
+	"BasicGoImport(): undefined"
 	"tonky/holistic/clients"
 	svc "tonky/holistic/services/accountingV2"
 )
 
 type IAccountingV2Client interface {
-	GetOrderByID(context.Context, foodStore.OrderID) (foodStore.Order, error)
-	CreateOrder(context.Context, svc.NewFoodOrder) (foodStore.Order, error)
+	GetOrderByID(context.Context, svc.OrderID) (svc.Order, error)
+	CreateOrder(context.Context, svc.NewFoodOrder) (svc.Order, error)
 }
 
 func New(config clients.Config) AccountingV2Client {
@@ -39,8 +40,8 @@ type AccountingV2Client struct {
 	config clients.Config
 }
 
-func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.OrderID) (foodStore.Order, error) {
-	var reply foodStore.Order
+func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg svc.OrderID) (svc.Order, error) {
+	var reply svc.Order
 
 	jsonBody, err := json.Marshal(arg)
 	if err != nil { return reply, err}
@@ -63,8 +64,8 @@ func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.Orde
 	return reply, nil
 }
 
-func (c AccountingV2Client) CreateOrder(ctx context.Context, arg svc.NewFoodOrder) (foodStore.Order, error) {
-	var reply foodStore.Order
+func (c AccountingV2Client) CreateOrder(ctx context.Context, arg svc.NewFoodOrder) (svc.Order, error) {
+	var reply svc.Order
 
 	jsonBody, err := json.Marshal(arg)
 	if err != nil { return reply, err}

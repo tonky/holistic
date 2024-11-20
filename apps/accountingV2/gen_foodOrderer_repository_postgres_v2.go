@@ -6,13 +6,14 @@ import (
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
 	"tonky/holistic/domain/foodStore"
+	"BasicGoImport(): undefined"
 )
 
 var _ IFoodOrderer = new(FoodOrderer)
 
 type IFoodOrderer interface {
     GetOrderByID(context.Context, foodStore.OrderID) (foodStore.Order, error)
-    SaveNewOrder(context.Context, NewFoodOrder) (foodStore.Order, error)
+    SaveNewOrder(context.Context, accountingV2.NewFoodOrder) (foodStore.Order, error)
 }
 
 type FoodOrderer struct {

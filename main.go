@@ -18,7 +18,7 @@ func main() {
 
 	topics := decl.KafkaTopics
 
-	gs := generator.ServiceGen{TemplatePath: "templates"}
+	gs := generator.ServiceGen{TemplatePath: "templates", ModulePath: "tonky/holistic"}
 
 	gs.GenerateKafka(topics)
 
