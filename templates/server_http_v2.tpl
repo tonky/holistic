@@ -6,7 +6,6 @@ import (
     "fmt"
 	"net/http"
     "encoding/json"
-    "log/slog"
 
 	"github.com/go-chi/chi/v5"
 
@@ -17,10 +16,14 @@ import (
     {% end %}
 )
 
+type Deps struct {
+    Logger {{ service.Logger.Interface.GoQualifiedModel() }}
+}
+
 type handlers struct {
     config Config
+    deps Deps
     app app.App
-    mux *chi.Mux
 }
 
 {% for h in service.Endpoints %}
@@ -33,8 +36,6 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
             http.Error(w, err.Error(), http.StatusBadRequest)
             return
         }
-
-        // inDomain, dtoErr := in.ToDomain()
 
         out, appErr := h.app.{{h.Name}}(context.TODO(), in)
 
@@ -55,27 +56,10 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
 
 {% end %}
 
-func NewMux(conf Config, deps app.Deps) (*chi.Mux, error) {
-	a, err := app.NewApp(deps)
-	if err != nil {
-		panic(err)
-	}
-
-	r := chi.NewRouter()
-
-    h := handlers{app: *a, config: conf, mux: r}
-
-    {% for h in service.Endpoints %}
-	r.Post("/{{ cap(h.Name) }}", h.{{ h.Name }}())
-    {% end %}
-
-    return r, nil
-}
-
 func NewFromEnv() (ServiceStarter, error) {
 	cfg := MustEnvConfig()
 
-    slog.Debug("{{ service.Name }}.NewFromEnv()", slog.Any("config", cfg))
+    {{ service.Logger.Model.Package() }}.Default().Debug("{{ service.Name }}.NewFromEnv()", "config", cfg)
 
     deps, err := app.DepsFromConf(cfg.App)
     if err != nil {
@@ -87,12 +71,44 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, appErr
     }
 
-    mux, err := NewMux(cfg, deps)
-    if err != nil { return nil, err}
-
-    handlers := handlers{config: cfg, app: *application, mux: mux}
+    handlers := handlers{config: cfg, app: *application}
 
     return handlers, nil
+}
+
+func NewWithAppDeps(serviceDeps Deps, deps app.Deps) (ServiceStarter, error) {
+	cfg := MustEnvConfig()
+
+    serviceDeps.Logger.Debug("{{ service.Name }}.NewWithAppDeps()", "config", cfg)
+
+    application, appErr := app.NewApp(deps)
+    if appErr != nil {
+        return nil, appErr
+    }
+
+    return handlers{config: cfg, app: *application}, nil
+}
+
+func DepsFromConf(conf Config) Deps {
+    return Deps {
+        Logger: {{ service.Logger.Model.Package() }}.NewFromConfig(conf.Logger),
+    }
+}
+
+
+func (h handlers) Start() error {
+    fmt.Printf(">> {{ service.Name }}.Start() config: %+v\n", h.config)
+	{% if service.KafkaConsumers %}
+    h.app.RunConsumers()
+    {% end %}
+
+	r := chi.NewRouter()
+
+    {% for h in service.Endpoints %}
+	r.Post("/{{ cap(h.Name) }}", h.{{ h.Name }}())
+    {% end %}
+
+    return http.ListenAndServe(fmt.Sprintf(":%d", h.config.Port), r)
 }
 
 func (h handlers) Config() Config {
@@ -103,33 +119,13 @@ func (h handlers) App() app.App {
     return h.app
 }
 
-func (h handlers) Start() error {
-    fmt.Printf(">> {{ service.Name }}.Start() config: %+v\n", h.config)
-	{% if service.KafkaConsumers %}
-    h.app.RunConsumers()
-    {% end %}
-
-    return http.ListenAndServe(fmt.Sprintf(":%d", h.config.Port), h.mux)
-}
-
-func NewWithAppDeps(deps app.Deps) (ServiceStarter, error) {
-	cfg := MustEnvConfig()
-
-    slog.Debug("{{ service.Name }}.NewWithAppDeps()", slog.Any("config", cfg))
-
-    application, appErr := app.NewApp(deps)
-    if appErr != nil {
-        return nil, appErr
-    }
-
-    mux, err := NewMux(cfg, deps)
-    if err != nil { return nil, err}
-
-    return handlers{config: cfg, app: *application, mux: mux}, nil
+func (h handlers) Deps() Deps {
+    return h.deps
 }
 
 type ServiceStarter interface {
     Start() error
     Config() Config
     App() app.App
+    Deps() Deps
 }

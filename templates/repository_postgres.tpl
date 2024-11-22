@@ -19,18 +19,18 @@ type {{ repo.InterfaceName() }} interface {
 }
 
 type {{ repo.StructName() }} struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client postgres.Client
 }
 
-func New{{ repo.StructName() }}(logger logger.Slog, conf postgres.Config) (*{{ repo.StructName() }}, error) {
+func New{{ repo.StructName() }}(l logger.ILogger, conf postgres.Config) (*{{ repo.StructName() }}, error) {
 	client, err := postgres.NewClient(conf)
 	if err != nil {
 		return nil, err
 	}
 
 	return &{{ repo.StructName() }}{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

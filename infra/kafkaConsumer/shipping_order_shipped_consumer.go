@@ -19,17 +19,17 @@ type IShippingOrderShipped interface {
 }
 
 type ShippingOrderShipped struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IConsumer
 }
 
-func NewShippingOrderShippedConsumer(logger logger.Slog, config kafka.Config) (*ShippingOrderShipped, error) {
-	logger.Info(">> NewShippingOrderShippedConsumer()", "shipping.order.shipped", config.GroupID)
+func NewShippingOrderShippedConsumer(l logger.ILogger, config kafka.Config) (*ShippingOrderShipped, error) {
+	l.Info(">> NewShippingOrderShippedConsumer()", "shipping.order.shipped", config.GroupID)
 
 	client := NewConsumer(config, "shipping.order.shipped")
 
 	return &ShippingOrderShipped{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

@@ -19,17 +19,17 @@ type IFoodOrderUpdated interface {
 }
 
 type FoodOrderUpdated struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IConsumer
 }
 
-func NewFoodOrderUpdatedConsumer(logger logger.Slog, config kafka.Config) (*FoodOrderUpdated, error) {
-	logger.Info(">> NewFoodOrderUpdatedConsumer()", "food.order.updated", config.GroupID)
+func NewFoodOrderUpdatedConsumer(l logger.ILogger, config kafka.Config) (*FoodOrderUpdated, error) {
+	l.Info(">> NewFoodOrderUpdatedConsumer()", "food.order.updated", config.GroupID)
 
 	client := NewConsumer(config, "food.order.updated")
 
 	return &FoodOrderUpdated{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

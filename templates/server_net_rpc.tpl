@@ -37,7 +37,7 @@ import (
 	{% if imp.Alias %}{{ imp.Alias }} {% end if %}"tonky/holistic/{{ imp.RelPath }}"
 	{% end %}
 	app "tonky/holistic/apps/{{ service.Name }}"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
     {% for d in client_deps.Dedup() %}
 	"tonky/holistic/clients/{{ d.AppVarName() }}"
     {% end %}
@@ -135,12 +135,12 @@ func NewFromEnv() (ServiceStarter, error) {
         return nil, err
     }
 
+    l := slogLogger.Default()
+
 {% if service.Dependencies == "samber_do" %}
     deps := do.New()
 
 	do.ProvideValue(deps, cfg)
-
-    l := logger.Slog{}
 	do.ProvideValue(deps, &l)
 
     {% for ad in app_deps %}
@@ -161,14 +161,14 @@ func NewFromEnv() (ServiceStarter, error) {
     {% end %}
 {% else if service.Dependencies == "plain_struct" %}
     deps := app.Deps{
-        Logger: &logger.Slog{},
+        Logger: l,
     }
 
     {% for ad in app_deps %}
         {% if ad.PackageName() == "local" %}
 	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
         {% else %}
-	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(*deps.Logger, cfg.App.{{ ad.ConfigVarName() }})
+	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(deps.Logger, cfg.App.{{ ad.ConfigVarName() }})
     if err != nil {
         return nil, err
     }

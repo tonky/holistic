@@ -17,7 +17,7 @@ type Clients struct {
 }
 type Deps struct {
 	Config Config
-	Logger *logger.Slog
+	Logger logger.ILogger
     OrdererRepo OrdererRepository
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
@@ -25,7 +25,7 @@ type Deps struct {
 
 type App struct {
 	Deps       Deps
-	Logger     *logger.Slog
+	Logger     logger.ILogger
 	Clients		Clients
 }
 
@@ -40,13 +40,13 @@ func NewApp(deps Deps, clients Clients) (*App, error) {
 }
 
 func (a App) RunConsumers() {
-	a.Logger.Info(">> accounting.App.RunConsumers()")
+	a.Deps.Logger.Info(">> accounting.App.RunConsumers()")
 
 	ctx := context.Background()
 
 	go func() {
 		for err := range a.Deps.FoodOrderUpdatedConsumer.Run(ctx, a.FoodOrderUpdatedProcessor) {
-			a.Logger.Warn(err.Error())
+			a.Deps.Logger.Warn(err.Error())
 		}
 	}()
 }

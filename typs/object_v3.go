@@ -208,6 +208,10 @@ func (o Object3) AbsImportsAll(ctx Object3) []string {
 
 	slog.Info("returning full import")
 
+	if o.RelPath() == "" {
+		return []string{o.Module}
+	}
+
 	return []string{fmt.Sprintf("%s/%s", o.Module, o.RelPath())}
 }
 

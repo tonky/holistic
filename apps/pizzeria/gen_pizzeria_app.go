@@ -13,7 +13,7 @@ type Deps do.Injector
 
 type App struct {
 	Deps       Deps
-	Logger     *logger.Slog
+	Logger     logger.ILogger
     OrdererRepo OrdererRepository
     FoodOrderCreatedProducer kafkaProducer.IFoodOrderCreated
     FoodOrderUpdatedProducer kafkaProducer.IFoodOrderUpdated
@@ -22,7 +22,7 @@ type App struct {
 func NewApp(deps Deps) (*App, error) {
 	app := App{
 		Deps:       deps,
-		Logger:     do.MustInvoke[*logger.Slog](deps),
+		Logger:     do.MustInvokeAs[logger.ILogger](deps),
         OrdererRepo: do.MustInvokeAs[OrdererRepository](deps),
         FoodOrderCreatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderCreated](deps),
         FoodOrderUpdatedProducer: do.MustInvokeAs[kafkaProducer.IFoodOrderUpdated](deps),

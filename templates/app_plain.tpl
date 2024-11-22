@@ -20,7 +20,7 @@ import (
 
 type Deps struct {
 	Config Config
-	Logger *logger.Slog
+	Logger logger.ILogger
 {% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
 {% end %}
@@ -39,7 +39,6 @@ type App struct {
 {% if client_deps %}
 	Clients		Clients
 {% end %}
-	Logger		*logger.Slog
 }
 
 {% if client_deps %}
@@ -47,13 +46,8 @@ func NewApp(deps Deps, clients Clients) (App, error) {
 {% else %}
 func NewApp(deps Deps) (App, error) {
 {% end %}
-	if deps.Logger == nil {
-		deps.Logger = &logger.Slog{}
-	}
-
 	app := App{
 		Deps:       deps,
-		Logger:     deps.Logger,
 {% if client_deps %}
 		Clients: 	clients,
 {% end %}
@@ -64,14 +58,14 @@ func NewApp(deps Deps) (App, error) {
 
 {% if service.KafkaConsumers %}
 func (a App) RunConsumers() {
-	a.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
+	a.Deps.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
 
 	ctx := context.Background()
 	{% for consumer in service.KafkaConsumers %}
 
 	go func() {
 		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
-			a.Logger.Warn(err.Error())
+			a.Deps.Logger.Warn(err.Error())
 		}
 	}()
 	{% end %}

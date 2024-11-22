@@ -19,15 +19,15 @@ type {{ kp.InterfaceName() }} interface {
 }
 
 type {{ kp.StructName() }} struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IProducer
 }
 
-func New{{ kp.StructName() }}Producer(logger logger.Slog, config kafka.Config) (*{{ kp.StructName() }}, error) {
+func New{{ kp.StructName() }}Producer(l logger.ILogger, config kafka.Config) (*{{ kp.StructName() }}, error) {
 	client := NewProducer(config, "{{ kp.TopicName }}")
 
 	return &{{ kp.StructName() }}{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

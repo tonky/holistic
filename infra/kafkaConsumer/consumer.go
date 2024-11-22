@@ -5,6 +5,7 @@ import (
 
 	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -12,20 +13,20 @@ import (
 type IConsumer interface {
 	Consume(context.Context) (chan kafka.Message, chan error)
 	Topic() string
-	Logger() logger.Slog
+	Logger() logger.ILogger
 }
 
 type Consumer struct {
 	config kafkaInfra.Config
 	topic  string
-	logger logger.Slog
+	logger logger.ILogger
 }
 
 func NewConsumer(config kafkaInfra.Config, topic string) Consumer {
 	return Consumer{
 		config: config,
 		topic:  topic,
-		logger: logger.Slog{},
+		logger: slogLogger.Default(),
 	}
 }
 
@@ -33,7 +34,7 @@ func (c Consumer) Topic() string {
 	return c.topic
 }
 
-func (c Consumer) Logger() logger.Slog {
+func (c Consumer) Logger() logger.ILogger {
 	return c.logger
 }
 

@@ -19,15 +19,15 @@ type IShippingOrderShipped interface {
 }
 
 type ShippingOrderShipped struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IProducer
 }
 
-func NewShippingOrderShippedProducer(logger logger.Slog, config kafka.Config) (*ShippingOrderShipped, error) {
+func NewShippingOrderShippedProducer(l logger.ILogger, config kafka.Config) (*ShippingOrderShipped, error) {
 	client := NewProducer(config, "shipping.order.shipped")
 
 	return &ShippingOrderShipped{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

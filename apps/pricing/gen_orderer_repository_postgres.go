@@ -16,18 +16,18 @@ type OrdererRepository interface {
 }
 
 type PostgresOrderer struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client postgres.Client
 }
 
-func NewPostgresOrderer(logger logger.Slog, conf postgres.Config) (*PostgresOrderer, error) {
+func NewPostgresOrderer(l logger.ILogger, conf postgres.Config) (*PostgresOrderer, error) {
 	client, err := postgres.NewClient(conf)
 	if err != nil {
 		return nil, err
 	}
 
 	return &PostgresOrderer{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

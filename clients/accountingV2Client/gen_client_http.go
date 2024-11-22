@@ -7,8 +7,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"log/slog"
 	"io"
+	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 	"tonky/holistic/domain/foodStore"
 	"tonky/holistic/domain/accountingV2"
 	"tonky/holistic/clients"
@@ -21,21 +22,24 @@ type IAccountingV2Client interface {
 }
 
 func New(config clients.Config) AccountingV2Client {
-	return AccountingV2Client{
+	return AccountingV2Client {
 		config: config,
+		logger: slogLogger.Default(),
 	}
 }
 
 func NewFromEnv() AccountingV2Client {
 	svcConf := svc.MustEnvConfig()
 
-	return AccountingV2Client{
+	return AccountingV2Client {
 		config: clients.Config{Host: "http://localhost", Port: svcConf.Port},
+        logger: slogLogger.NewFromConfig(svcConf.Logger),
 	}
 }
 
 type AccountingV2Client struct {
 	config clients.Config
+    logger logger.ILogger
 }
 
 func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.OrderID) (foodStore.Order, error) {
@@ -48,7 +52,7 @@ func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.Orde
 
  	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "GetOrderByID")
 
-	slog.Debug("AccountingV2Client.GetOrderByID()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
+	c.logger.Debug("AccountingV2Client.GetOrderByID()", "requestURL", requestURL, "newRecipe", arg)
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }
@@ -74,7 +78,7 @@ func (c AccountingV2Client) CreateOrder(ctx context.Context, arg accountingV2.Ne
 
  	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "CreateOrder")
 
-	slog.Debug("AccountingV2Client.CreateOrder()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
+	c.logger.Debug("AccountingV2Client.CreateOrder()", "requestURL", requestURL, "newRecipe", arg)
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }

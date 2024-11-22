@@ -5,12 +5,15 @@ import (
 	app "{{ modulePath }}/apps/{{ service.Name }}"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
+
+    "{{ service.Logger.Interface.AbsPath() }}"
 )
 
 // service specific config - env, secrets, run mode, flags etc
 type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
+	Logger {{ service.Logger.Interface.Package() }}.Config
 
 	App app.Config
 

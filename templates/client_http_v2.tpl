@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"log/slog"
 	"io"
     {% for ci in service.AbsImports(ctx) %}
 	"{{ ci }}"
@@ -23,21 +22,24 @@ type I{{ cap(service.Name) }}Client interface {
 }
 
 func New(config clients.Config) {{ cap(service.Name) }}Client {
-	return {{ cap(service.Name) }}Client{
+	return {{ cap(service.Name) }}Client {
 		config: config,
+		logger: {{ service.Logger.Model.Package() }}.Default(),
 	}
 }
 
 func NewFromEnv() {{ cap(service.Name) }}Client {
 	svcConf := svc.MustEnvConfig()
 
-	return {{ cap(service.Name) }}Client{
+	return {{ cap(service.Name) }}Client {
 		config: clients.Config{Host: "http://localhost", Port: svcConf.Port},
+        logger: {{ service.Logger.Model.Package() }}.NewFromConfig(svcConf.Logger),
 	}
 }
 
 type {{ cap(service.Name) }}Client struct {
 	config clients.Config
+    logger {{ service.Logger.Interface.GoQualifiedModel() }}
 }
 
 {% for h in service.Endpoints %}
@@ -51,7 +53,7 @@ func (c {{ cap(service.Name) }}Client) {{ h.Name }}(ctx context.Context, arg {{ 
 
  	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "{{ h.Name }}")
 
-	slog.Debug("{{ cap(service.Name) }}Client.{{ h.Name }}()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
+	c.logger.Debug("{{ cap(service.Name) }}Client.{{ h.Name }}()", "requestURL", requestURL, "newRecipe", arg)
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }

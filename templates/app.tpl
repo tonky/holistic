@@ -33,7 +33,7 @@ type Clients struct {
 	{% end %}
 type Deps struct {
 	Config Config
-	Logger *logger.Slog
+	Logger logger.ILogger
 	{% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
 	{% end %}
@@ -42,7 +42,7 @@ type Deps struct {
 
 type App struct {
 	Deps       Deps
-	Logger     *logger.Slog
+	Logger     logger.ILogger
 {% if service.Clients  %}
 	Clients		Clients
 {% end %}
@@ -61,7 +61,7 @@ func NewApp(deps Deps) (*App, error) {
 	app := App{
 		Deps:       deps,
 {% if service.Dependencies == "samber_do" %}
-		Logger:     do.MustInvoke[*logger.Slog](deps),
+		Logger:     do.MustInvokeAs[logger.ILogger](deps),
 {% for ad in app_deps %}
         {{ cap(ad.AppVarName()) }}: do.MustInvokeAs[{{ ad.InterfaceName() }}](deps),
 {% end %}
@@ -82,7 +82,7 @@ func NewApp(deps Deps) (*App, error) {
 
 {% if service.KafkaConsumers %}
 func (a App) RunConsumers() {
-	a.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
+	a.Deps.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
 
 	ctx := context.Background()
 	{% for consumer in service.KafkaConsumers %}
@@ -93,7 +93,7 @@ func (a App) RunConsumers() {
 		{% else if service.Dependencies == "plain_struct" %}
 		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
 		{% end %}
-			a.Logger.Warn(err.Error())
+			a.Deps.Logger.Warn(err.Error())
 		}
 	}()
 	{% end %}

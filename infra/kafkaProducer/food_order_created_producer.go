@@ -19,15 +19,15 @@ type IFoodOrderCreated interface {
 }
 
 type FoodOrderCreated struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IProducer
 }
 
-func NewFoodOrderCreatedProducer(logger logger.Slog, config kafka.Config) (*FoodOrderCreated, error) {
+func NewFoodOrderCreatedProducer(l logger.ILogger, config kafka.Config) (*FoodOrderCreated, error) {
 	client := NewProducer(config, "food.order.created")
 
 	return &FoodOrderCreated{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

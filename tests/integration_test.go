@@ -13,7 +13,7 @@ import (
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaConsumer"
 	"tonky/holistic/infra/kafkaProducer"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 	svc_acc "tonky/holistic/services/accounting"
 	svc_piz "tonky/holistic/services/pizzeria"
 	svcPricing "tonky/holistic/services/pricing"
@@ -41,7 +41,7 @@ func startServices() do.Injector {
 
 	injector := do.New()
 
-	l := logger.Slog{}
+	l := slogLogger.Default()
 
 	shipping, err := svcShipping.NewFromEnv()
 	if err != nil {
@@ -106,7 +106,7 @@ func startServices() do.Injector {
 	// do.ProvideValue(injector, accounting.Config())
 	go accounting.Start()
 
-	logger.Slog{}.Info("Test init() - done! Services started")
+	slogLogger.Default().Info("Test init() - done! Services started")
 
 	return injector
 }

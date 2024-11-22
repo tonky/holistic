@@ -18,14 +18,10 @@ type ServiceV2 struct {
 	KafkaProducers []TopicDesc2
 	KafkaConsumers []TopicDesc2
 	Clients        []InfraV2
+	Logger         InfraInterface
 }
 
 type EndpointGroups []EndpointGroup
-
-type NamedModel struct {
-	Name  string
-	Model typs.Object3
-}
 
 type EndpointV2 struct {
 	Name   string
@@ -57,6 +53,11 @@ type InfraV2 struct {
 	Model typs.Object3
 }
 
+type InfraInterface struct {
+	Interface typs.Object3
+	Model     typs.Object3
+}
+
 type ConfigItemV2 struct {
 	Model      typs.Object3
 	SplitWords bool
@@ -78,6 +79,9 @@ func (egs EndpointGroups) AbsImports(ctx typs.Object3) []string {
 
 func (s ServiceV2) AbsImports(ctx typs.Object3) []string {
 	var imports []string
+
+	imports = append(imports, s.Logger.Interface.AbsImports(ctx)...)
+	imports = append(imports, s.Logger.Model.AbsImports(ctx)...)
 
 	for _, e := range s.Endpoints {
 		imports = append(imports, e.In.AbsImports(ctx)...)

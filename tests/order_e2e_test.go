@@ -10,7 +10,7 @@ import (
 	"tonky/holistic/domain/food"
 	"tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/kafkaConsumer"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 	"tonky/holistic/services/accounting"
 	"tonky/holistic/services/pizzeria"
 	svc_piz "tonky/holistic/services/pizzeria"
@@ -64,7 +64,7 @@ func TestE2E(t *testing.T) {
 		GroupID: "test-e2e-test",
 	}
 
-	consumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(logger.Slog{}, kConf)
+	consumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(slogLogger.Default(), kConf)
 	require.NoError(t, err)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)

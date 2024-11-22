@@ -3,7 +3,7 @@ package {{ service.Name }}
 
 import (
 	"context"
-	"tonky/holistic/infra/logger"
+	"{{ service.Logger.Interface.AbsPath() }}"
 	"tonky/holistic/infra/postgres"
     {% for ci in service.Postgres.AbsImports(ctx) %}
 	"{{ ci }}"
@@ -19,18 +19,18 @@ type {{ repo.InterfaceName() }} interface {
 }
 
 type {{ repo.StructName() }} struct {
-	logger logger.Slog
+    logger {{ service.Logger.Interface.GoQualifiedModel() }}
 	client postgres.Client
 }
 
-func New{{ repo.StructName() }}(logger logger.Slog, conf postgres.Config) (*{{ repo.StructName() }}, error) {
+func New{{ repo.StructName() }}(l {{ service.Logger.Interface.GoQualifiedModel() }}, conf postgres.Config) (*{{ repo.StructName() }}, error) {
 	client, err := postgres.NewClient(conf)
 	if err != nil {
 		return nil, err
 	}
 
 	return &{{ repo.StructName() }}{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

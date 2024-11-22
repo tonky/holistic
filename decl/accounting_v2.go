@@ -7,6 +7,20 @@ import (
 
 func AccountingServiceV2() describer.ServiceV2 {
 	return describer.ServiceV2{
+		Logger: describer.InfraInterface{
+			Interface: typs.Object3{
+				Name:         "ILogger",
+				Module:       "tonky/holistic",
+				RelativePath: []string{"infra", "logger"},
+				// Kind:         typs.KindExternal,
+			},
+			Model: typs.Object3{
+				Name:         "Logger",
+				Module:       "tonky/holistic",
+				RelativePath: []string{"infra", "slogLogger"},
+				// Kind:   typs.KindExternal,
+			},
+		},
 		Name:         "accountingV2",
 		Rpc:          describer.HTTP,
 		Dependencies: describer.Struct,

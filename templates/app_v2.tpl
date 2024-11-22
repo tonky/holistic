@@ -3,8 +3,8 @@
 package {{ service.Name }}
 
 import (
-	"log/slog"
-	"tonky/holistic/infra/logger"
+	"{{ service.Logger.Interface.AbsPath() }}"
+	"{{ service.Logger.Model.AbsPath() }}"
 	{% if service.KafkaProducers %}
 	"{{ modulePath }}/infra/kafkaProducer"
 	{% end %}
@@ -27,6 +27,7 @@ type Clients struct {
 
 type Deps struct {
 	Config Config
+    Logger {{ service.Logger.Interface.GoQualifiedModel() }}
 	{% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
 	{% end %}
@@ -51,25 +52,31 @@ func NewApp(deps Deps) (*App, error) {
 }
 
 func MustDepsFromEnv() Deps {
-    slog.Debug("{{ service.Name }}.App.MustDepsFromenv()")
+	l := {{ service.Logger.Model.Package() }}.Default()
+
+    l.Debug("{{ service.Name }}.App.MustDepsFromenv()")
 
 	cfg := MustEnvConfig()
 
 	deps, err := DepsFromConf(cfg)
 	if err != nil {
-    	slog.Error("DepsFromConf error", slog.Any("config", cfg), slog.Any("err", err))
+    	l.Error("DepsFromConf error", "config", cfg, "err", err)
 	}
 
 	return deps
 }
 
 func DepsFromConf(cfg Config) (Deps, error) {
-    slog.Debug("{{ service.Name }}.App.DepsFromConf()", slog.Any("config", cfg))
+	l := {{ service.Logger.Model.Package() }}.Default()
 
-    deps := Deps{}
+    l.Debug("{{ service.Name }}.App.DepsFromConf()", "config", cfg)
+
+    deps := Deps{
+		Logger: l,
+	}
 
     {% for pg in service.Postgres %}
-    {{ pg.Name}}, err := New{{ pg.Name }}(logger.Slog{}, cfg.{{ pg.Name }})
+    {{ pg.Name}}, err := New{{ pg.Name }}(l, cfg.{{ pg.Name }})
     if err != nil {
         return deps, err
     }
@@ -78,15 +85,11 @@ func DepsFromConf(cfg Config) (Deps, error) {
     {% end %}
 
     {% for ad in app_deps %}
-        {% if ad.PackageName() == "local" %}
-	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
-        {% else %}
-	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(logger.Slog{}, cfg.{{ ad.ConfigVarName() }})
+	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(l, cfg.{{ ad.ConfigVarName() }})
     if err != nil {
         return deps, err
     }
 	deps.{{ cap(ad.AppVarName()) }} = {{ ad.AppVarName() }}
-        {% end %}
     {% end for %}
 
 {% if service.Clients %}
@@ -102,14 +105,14 @@ func DepsFromConf(cfg Config) (Deps, error) {
 
 {% if service.KafkaConsumers %}
 func (a App) RunConsumers() {
-	slog.Info("{{ service.Name}}.App.RunConsumers()")
+	a.Deps.Logger.Info("{{ service.Name}}.App.RunConsumers()")
 
 	ctx := context.Background()
 	{% for consumer in service.KafkaConsumers %}
 
 	go func() {
 		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
-			slog.Warn(err.Error())
+			a.Deps.Logger.Warn(err.Error())
 		}
 	}()
 	{% end %}

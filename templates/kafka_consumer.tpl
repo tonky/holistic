@@ -19,17 +19,17 @@ type {{ k.InterfaceName() }} interface {
 }
 
 type {{ k.StructName() }} struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IConsumer
 }
 
-func New{{ k.StructName() }}Consumer(logger logger.Slog, config kafka.Config) (*{{ k.StructName() }}, error) {
-	logger.Info(">> New{{ k.StructName() }}Consumer()", "{{ k.TopicName }}", config.GroupID)
+func New{{ k.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{ k.StructName() }}, error) {
+	l.Info(">> New{{ k.StructName() }}Consumer()", "{{ k.TopicName }}", config.GroupID)
 
 	client := NewConsumer(config, "{{ k.TopicName }}")
 
 	return &{{ k.StructName() }}{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }

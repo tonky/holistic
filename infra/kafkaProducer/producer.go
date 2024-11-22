@@ -8,6 +8,7 @@ import (
 
 	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -20,14 +21,14 @@ type IProducer interface {
 type Producer struct {
 	config kafkaInfra.Config
 	topic  string
-	logger *logger.Slog
+	logger logger.ILogger
 }
 
 func NewProducer(config kafkaInfra.Config, topic string) Producer {
 	return Producer{
 		config: config,
 		topic:  topic,
-		logger: &logger.Slog{},
+		logger: slogLogger.Default(),
 	}
 }
 

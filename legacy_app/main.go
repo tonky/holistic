@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"tonky/holistic/apps/pizzeria"
 	"tonky/holistic/domain/food"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/slogLogger"
 	svc "tonky/holistic/services/pizzeria"
 
 	"github.com/go-chi/chi/v5"
@@ -21,7 +21,7 @@ type handlers struct {
 func main() {
 	deps := do.New()
 
-	l := logger.Slog{}
+	l := slogLogger.Default()
 
 	conf, err := pizzeria.NewEnvConfig()
 	if err != nil {

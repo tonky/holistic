@@ -1,18 +1,27 @@
-package logger
+package slogLogger
 
 import (
 	"fmt"
 	"os"
 	"strings"
 	"time"
-
-	"github.com/samber/do/v2"
+	"tonky/holistic/infra/logger"
 )
 
 var logLevel = strings.ToLower(os.Getenv("LOG_LEVEL"))
 
-func NewSlogLogger(i do.Injector) (*Slog, error) {
-	return &Slog{}, nil
+func Default() Slog {
+	if logLevel == "" {
+		logLevel = "info"
+	}
+
+	return Slog{}
+}
+
+func NewFromConfig(c logger.Config) Slog {
+	logLevel = strings.ToLower(c.Level)
+
+	return Slog{}
 }
 
 type Slog struct{}

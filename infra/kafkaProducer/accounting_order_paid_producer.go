@@ -19,15 +19,15 @@ type IAccountingOrderPaid interface {
 }
 
 type AccountingOrderPaid struct {
-	logger logger.Slog
+	logger logger.ILogger
 	client IProducer
 }
 
-func NewAccountingOrderPaidProducer(logger logger.Slog, config kafka.Config) (*AccountingOrderPaid, error) {
+func NewAccountingOrderPaidProducer(l logger.ILogger, config kafka.Config) (*AccountingOrderPaid, error) {
 	client := NewProducer(config, "accounting.order.paid")
 
 	return &AccountingOrderPaid{
-		logger: logger,
+		logger: l,
 		client: client,
 	}, nil
 }
