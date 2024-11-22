@@ -33,13 +33,13 @@ type Deps struct {
 	{% for pg in service.Postgres %}
     {{ pg.Name }} I{{ pg.Name }}
 	{% end %}
+{% if service.Clients  %}
+	Clients		Clients
+{% end %}
 }
 
 type App struct {
 	Deps       Deps
-{% if service.Clients  %}
-	Clients		Clients
-{% end %}
 }
 
 func NewApp(deps Deps) (*App, error) {
@@ -90,13 +90,11 @@ func DepsFromConf(cfg Config) (Deps, error) {
     {% end for %}
 
 {% if service.Clients %}
-    clients := app.Clients{
+    deps.Clients = Clients{
     {% for c in service.Clients %}
         {{ cap(c.Name) }}: {{ c.Model.Package() }}.NewFromEnv(cfg.Environment),
     {% end %}
     }
-
-	deps.Clients = clients
 {% end %}
 
     return deps, nil

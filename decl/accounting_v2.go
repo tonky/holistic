@@ -28,8 +28,13 @@ func AccountingServiceV2() describer.ServiceV2 {
 		},
 		Clients: []describer.InfraV2{
 			{
-				Name:  "pricingClient",
-				Model: typs.Object3{Kind: typs.KindExternal, Name: "PricingClient", Module: "tonky/holistic", RelativePath: []string{"clients", "pricingClient"}},
+				Name: "pricingClient",
+				Model: typs.Object3{
+					Kind:         typs.KindExternal,
+					Name:         "PricingClient",
+					Module:       "tonky/holistic",
+					RelativePath: []string{"clients", "pricingClient"},
+				},
 			},
 		},
 	}
@@ -53,7 +58,7 @@ var NewFoodOrder = typs.Object3{
 	Typ:          typs.Struct2,
 	Name:         "NewFoodOrder",
 	Module:       "tonky/holistic",
-	RelativePath: []string{"apps", "accountingV2"},
+	RelativePath: []string{"domain", "accountingV2"},
 	Fields: []typs.Object3{
 		{Name: "Name", Typ: typs.String2, Kind: typs.KindBasic},
 		{Name: "IsComplete", Typ: typs.Bool2, Kind: typs.KindBasic},

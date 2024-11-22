@@ -55,13 +55,8 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
 
 {% end %}
 
-{% if service.Clients %}
-func NewMux(conf Config, deps app.Deps, clients app.Clients) (*chi.Mux, error) {
-	a, err := app.NewApp(deps, clients)
-{% else %}
 func NewMux(conf Config, deps app.Deps) (*chi.Mux, error) {
 	a, err := app.NewApp(deps)
-{% end %}
 	if err != nil {
 		panic(err)
 	}

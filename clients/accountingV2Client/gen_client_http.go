@@ -10,7 +10,7 @@ import (
 	"log/slog"
 	"io"
 	"tonky/holistic/domain/foodStore"
-	"tonky/holistic/apps/accountingV2"
+	"tonky/holistic/domain/accountingV2"
 	"tonky/holistic/clients"
 	svc "tonky/holistic/services/accountingV2"
 )

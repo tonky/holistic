@@ -20,11 +20,11 @@ type Deps struct {
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
     FoodOrderer IFoodOrderer
+	Clients		Clients
 }
 
 type App struct {
 	Deps       Deps
-	Clients		Clients
 }
 
 func NewApp(deps Deps) (*App, error) {
@@ -71,11 +71,9 @@ func DepsFromConf(cfg Config) (Deps, error) {
     }
 	deps.FoodOrderUpdatedConsumer = FoodOrderUpdatedConsumer
 
-    clients := app.Clients{
+    deps.Clients = Clients{
         PricingClient: pricingClient.NewFromEnv(cfg.Environment),
     }
-
-	deps.Clients = clients
 
     return deps, nil
 }
