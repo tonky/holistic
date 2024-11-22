@@ -2,7 +2,7 @@
 package {{ service.Name }}
 
 import (
-	app "tonky/holistic/apps/{{ service.Name }}"
+	app "{{ modulePath }}/apps/{{ service.Name }}"
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
 )

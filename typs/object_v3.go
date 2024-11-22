@@ -79,10 +79,7 @@ func (o Object3) AbsPath() string {
 func (o Object3) GoStructModel(ctx Object3) string {
 	slog.Info("GoStructModel", slog.String("name", o.Name), slog.String("context", ctx.Name))
 
-	if ctx.IsClient() {
-		return "svc." + o.Name
-
-	}
+	// if ctx.IsClient() { return "svc." + o.Name }
 
 	if o.IsDomain() {
 		slog.Info("IsDomain()")

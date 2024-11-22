@@ -3,6 +3,7 @@
 package accountingV2
 
 import (
+	"log/slog"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/infra/kafkaConsumer"
@@ -16,35 +17,77 @@ type Clients struct {
 
 type Deps struct {
 	Config Config
-	Logger *logger.Slog
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
+    foodOrderer IfoodOrderer
 }
 
 type App struct {
 	Deps       Deps
-	Logger     *logger.Slog
 	Clients		Clients
 }
 
-func NewApp(deps Deps, clients Clients) (*App, error) {
+func NewApp(deps Deps) (*App, error) {
 	app := App{
 		Deps:       deps,
-		Clients: clients,
-		Logger:     deps.Logger,
 	}
 
 	return &app, nil
 }
 
+func MustDepsFromEnv() Deps {
+    slog.Debug("accountingV2.App.MustDepsFromenv()")
+
+	cfg := MustEnvConfig()
+
+	deps, err := DepsFromConf(cfg)
+	if err != nil {
+    	slog.Error("DepsFromConf error", slog.Any("config", cfg), slog.Any("err", err))
+	}
+
+	return deps
+}
+
+func DepsFromConf(cfg Config) (Deps, error) {
+    slog.Debug("accountingV2.App.DepsFromConf()", slog.Any("config", cfg))
+
+    deps := Deps{}
+
+    foodOrderer, err := NewfoodOrderer(logger.Slog{}, cfg.foodOrderer)
+    if err != nil {
+        return deps, err
+    }
+
+    deps.foodOrderer = foodOrderer
+
+	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(logger.Slog{}, cfg.Kafka)
+    if err != nil {
+        return deps, err
+    }
+	deps.AccountingOrderPaidProducer = AccountingOrderPaidProducer
+	FoodOrderUpdatedConsumer, err := kafkaConsumer.NewFoodOrderUpdatedConsumer(logger.Slog{}, cfg.Kafka)
+    if err != nil {
+        return deps, err
+    }
+	deps.FoodOrderUpdatedConsumer = FoodOrderUpdatedConsumer
+
+    clients := app.Clients{
+        PricingClient: pricingClient.NewFromEnv(cfg.Environment),
+    }
+
+	deps.Clients = clients
+
+    return deps, nil
+}
+
 func (a App) RunConsumers() {
-	a.Logger.Info(">> accountingV2.App.RunConsumers()")
+	slog.Info("accountingV2.App.RunConsumers()")
 
 	ctx := context.Background()
 
 	go func() {
 		for err := range a.Deps.FoodOrderUpdatedConsumer.Run(ctx, a.FoodOrderUpdatedProcessor) {
-			a.Logger.Warn(err.Error())
+			slog.Warn(err.Error())
 		}
 	}()
 }

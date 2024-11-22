@@ -2,6 +2,7 @@
 package {{ service.Name }}
 
 import (
+    "log/slog"
     {% for id in app_deps.Dedup() %}
     {% if id.ConfigVarName() == "Kafka" %}
 	"tonky/holistic/infra/kafka"
@@ -11,6 +12,10 @@ import (
     {% end %}
     {% end %}
 
+	{% if service.Postgres %}
+	"tonky/holistic/infra/postgres"
+	{% end %}
+    
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -22,6 +27,9 @@ type Config struct {
     {{ id.ConfigVarName() }} {{ id.ConfigVarType() }}
     {% end %}
 
+    {% for pg in service.Postgres %}
+    {{ pg.Name }} postgres.Config
+    {% end %}
     {% for ci in service.ConfigItems %}
     {{ ci.Model.Name }} {{ ci.Model.GoType() }} `split_words:"{{ ci.SplitWords }}"`
     {% end %}
@@ -31,4 +39,15 @@ func NewEnvConfig() (Config, error) {
 	var c Config
 
 	return c, envconfig.Process("{{ service.Name }}", &c)
+}
+
+func MustEnvConfig() Config {
+	var c Config
+
+	if err := envconfig.Process("{{ service.Name }}_app", &c); err != nil {
+        slog.Error("MustEnvConfig error for {{ service.Name }}", slog.Any("Process() error", err))
+        panic(err)
+    }
+
+	return c
 }

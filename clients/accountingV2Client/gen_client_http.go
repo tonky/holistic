@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"log/slog"
 	"io"
 	"tonky/holistic/domain/foodStore"
 	"BasicGoImport(): undefined"
@@ -15,8 +16,8 @@ import (
 )
 
 type IAccountingV2Client interface {
-	GetOrderByID(context.Context, svc.OrderID) (svc.Order, error)
-	CreateOrder(context.Context, svc.NewFoodOrder) (svc.Order, error)
+	GetOrderByID(context.Context, foodStore.OrderID) (foodStore.Order, error)
+	CreateOrder(context.Context, accountingV2.NewFoodOrder) (foodStore.Order, error)
 }
 
 func New(config clients.Config) AccountingV2Client {
@@ -25,14 +26,11 @@ func New(config clients.Config) AccountingV2Client {
 	}
 }
 
-func NewFromEnv(env string) AccountingV2Client {
+func NewFromEnv() AccountingV2Client {
 	svcConf := svc.MustEnvConfig()
 
-	envConf := clients.ConfigForEnv("accountingV2", env)
-	envConf.Port = svcConf.Port
-
 	return AccountingV2Client{
-		config: envConf,
+		config: clients.Config{Host: "http://localhost", Port: svcConf.Port},
 	}
 }
 
@@ -40,15 +38,17 @@ type AccountingV2Client struct {
 	config clients.Config
 }
 
-func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg svc.OrderID) (svc.Order, error) {
-	var reply svc.Order
+func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg foodStore.OrderID) (foodStore.Order, error) {
+	var reply foodStore.Order
 
 	jsonBody, err := json.Marshal(arg)
 	if err != nil { return reply, err}
 
 	bodyReader := bytes.NewReader(jsonBody)
 
- 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "GetOrderByIDGetOrderByID")
+ 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "GetOrderByID")
+
+	slog.Debug("AccountingV2Client.GetOrderByID()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }
@@ -64,15 +64,17 @@ func (c AccountingV2Client) GetOrderByID(ctx context.Context, arg svc.OrderID) (
 	return reply, nil
 }
 
-func (c AccountingV2Client) CreateOrder(ctx context.Context, arg svc.NewFoodOrder) (svc.Order, error) {
-	var reply svc.Order
+func (c AccountingV2Client) CreateOrder(ctx context.Context, arg accountingV2.NewFoodOrder) (foodStore.Order, error) {
+	var reply foodStore.Order
 
 	jsonBody, err := json.Marshal(arg)
 	if err != nil { return reply, err}
 
 	bodyReader := bytes.NewReader(jsonBody)
 
- 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "CreateOrderCreateOrder")
+ 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "CreateOrder")
+
+	slog.Debug("AccountingV2Client.CreateOrder()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }

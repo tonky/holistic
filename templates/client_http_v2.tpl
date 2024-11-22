@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"log/slog"
 	"io"
     {% for ci in service.AbsImports(ctx) %}
 	"{{ ci }}"
@@ -27,14 +28,11 @@ func New(config clients.Config) {{ cap(service.Name) }}Client {
 	}
 }
 
-func NewFromEnv(env string) {{ cap(service.Name) }}Client {
+func NewFromEnv() {{ cap(service.Name) }}Client {
 	svcConf := svc.MustEnvConfig()
 
-	envConf := clients.ConfigForEnv("{{ service.Name }}", env)
-	envConf.Port = svcConf.Port
-
 	return {{ cap(service.Name) }}Client{
-		config: envConf,
+		config: clients.Config{Host: "http://localhost", Port: svcConf.Port},
 	}
 }
 
@@ -51,7 +49,9 @@ func (c {{ cap(service.Name) }}Client) {{ h.Name }}(ctx context.Context, arg {{ 
 
 	bodyReader := bytes.NewReader(jsonBody)
 
- 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "{{ h.Name }}{{ cap(h.Name) }}")
+ 	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "{{ h.Name }}")
+
+	slog.Debug("{{ cap(service.Name) }}Client.{{ h.Name }}()", slog.String("requestURL", requestURL), slog.Any("newRecipe", arg))
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }

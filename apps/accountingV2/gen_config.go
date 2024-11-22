@@ -2,8 +2,11 @@
 package accountingV2
 
 import (
+    "log/slog"
 	"tonky/holistic/infra/kafka"
 
+	"tonky/holistic/infra/postgres"
+    
 	"github.com/kelseyhightower/envconfig"
 )
 
@@ -13,6 +16,7 @@ type Config struct {
 
     Kafka kafka.Config
 
+    foodOrderer postgres.Config
     KafkaConsumptionRPSLimit int `split_words:"false"`
 }
 
@@ -20,4 +24,15 @@ func NewEnvConfig() (Config, error) {
 	var c Config
 
 	return c, envconfig.Process("accountingV2", &c)
+}
+
+func MustEnvConfig() Config {
+	var c Config
+
+	if err := envconfig.Process("accountingV2_app", &c); err != nil {
+        slog.Error("MustEnvConfig error for accountingV2", slog.Any("Process() error", err))
+        panic(err)
+    }
+
+	return c
 }

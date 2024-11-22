@@ -6,40 +6,20 @@ import (
     "fmt"
 	"net/http"
     "encoding/json"
+    "log/slog"
 
 	"github.com/go-chi/chi/v5"
+
+	app "{{ modulePath }}/apps/{{ service.Name }}"
 
     {% for ci in service.AbsImports(ctx) %}
 	"{{ ci }}"
     {% end %}
-
-	app "{{ modulePath }}/apps/{{ service.Name }}"
-
-	{% if service.KafkaProducers %}
-	"{{ modulePath }}/infra/kafkaProducer"
-	{% end %}
-	{% if service.KafkaConsumers %}
-	"{{ modulePath }}/infra/kafkaConsumer"
-	{% end %}
-    {% for id in app_deps %}
-        {% if id.AppImportPackageName() == "app" %}
-        {% else if id.PackageName() == "local" %} 
-        {% else if id.PackageName() == "kafkaProducer" %} 
-        {% else if id.PackageName() == "kafkaConsumer" %} 
-        {% else %}
-	"{{ modulePath }}/infra/{{ id.PackageName() }}"
-        {% end %}
-    {% end %}
-	{% for cl in service.Clients %}
-    "{{ cl.Model.AbsPath() }}"
-	{% end %}
-	"tonky/holistic/infra/logger"
 )
 
 type handlers struct {
     config Config
     app app.App
-    deps app.Deps
     mux *chi.Mux
 }
 
@@ -54,11 +34,11 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
             return
         }
 
-        inDomain, dtoErr := in.ToDomain()
+        // inDomain, dtoErr := in.ToDomain()
 
-        out, appErr := h.app.{{h.Name}}(context.TODO(), inDomain)
+        out, appErr := h.app.{{h.Name}}(context.TODO(), in)
 
-        if dtoErr != nil {
+        if appErr != nil {
             http.Error(w, appErr.Error(), http.StatusBadRequest)
             return
         }
@@ -88,7 +68,7 @@ func NewMux(conf Config, deps app.Deps) (*chi.Mux, error) {
 
 	r := chi.NewRouter()
 
-    h := handlers{deps: deps, app: *a, config: conf, mux: r}
+    h := handlers{app: *a, config: conf, mux: r}
 
     {% for h in service.Endpoints %}
 	r.Post("/{{ cap(h.Name) }}", h.{{ h.Name }}())
@@ -98,57 +78,34 @@ func NewMux(conf Config, deps app.Deps) (*chi.Mux, error) {
 }
 
 func NewFromEnv() (ServiceStarter, error) {
-	cfg, err := NewEnvConfig()
+	cfg := MustEnvConfig()
+
+    slog.Debug("{{ service.Name }}.NewFromEnv()", slog.Any("config", cfg))
+
+    deps, err := app.DepsFromConf(cfg.App)
     if err != nil {
         return nil, err
     }
 
-    deps := app.Deps{
-        Logger: &logger.Slog{},
-    }
-
-    {% for ad in app_deps %}
-        {% if ad.PackageName() == "local" %}
-	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
-        {% else %}
-	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(*deps.Logger, cfg.App.{{ ad.ConfigVarName() }})
-    if err != nil {
-        return nil, err
-    }
-	deps.{{ cap(ad.AppVarName()) }} = {{ ad.AppVarName() }}
-        {% end %}
-    {% end for %}
-{% if service.Clients %}
-    clients := app.Clients{
-    {% for c in service.Clients %}
-        {{ cap(c.Name) }}: {{ c.Model.Package() }}.NewFromEnv(cfg.Environment),
-    {% end %}
-    }
-{% end %}
-
-{% if service.Clients %}
-    application, appErr := app.NewApp(deps, clients)
-{% else %}
     application, appErr := app.NewApp(deps)
-{% end %}
     if appErr != nil {
         return nil, appErr
     }
 
-{% if service.Clients %}
-    mux, err := NewMux(cfg, deps, clients)
-{% else %}
     mux, err := NewMux(cfg, deps)
-{% end %}
     if err != nil { return nil, err}
 
-    handlers := handlers{config: cfg, app: *application, deps: deps, mux: mux}
+    handlers := handlers{config: cfg, app: *application, mux: mux}
 
     return handlers, nil
 }
 
 func (h handlers) Config() Config {
     return h.config
+}
+
+func (h handlers) App() app.App {
+    return h.app
 }
 
 func (h handlers) Start() error {
@@ -160,17 +117,24 @@ func (h handlers) Start() error {
     return http.ListenAndServe(fmt.Sprintf(":%d", h.config.Port), h.mux)
 }
 
-func (h handlers) Deps() app.Deps {
-    return h.deps
-}
+func NewWithAppDeps(deps app.Deps) (ServiceStarter, error) {
+	cfg := MustEnvConfig()
 
-func (h handlers) Mux() *chi.Mux {
-    return h.mux
+    slog.Debug("{{ service.Name }}.NewWithAppDeps()", slog.Any("config", cfg))
+
+    application, appErr := app.NewApp(deps)
+    if appErr != nil {
+        return nil, appErr
+    }
+
+    mux, err := NewMux(cfg, deps)
+    if err != nil { return nil, err}
+
+    return handlers{config: cfg, app: *application, mux: mux}, nil
 }
 
 type ServiceStarter interface {
     Start() error
     Config() Config
-    Deps() app.Deps
-    Mux() *chi.Mux
+    App() app.App
 }

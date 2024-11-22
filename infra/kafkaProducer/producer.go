@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 
 	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
@@ -31,7 +32,7 @@ func NewProducer(config kafkaInfra.Config, topic string) Producer {
 }
 
 func (p Producer) Produce(ctx context.Context, data []byte) error {
-	p.logger.Info("Producer.Produce", p.topic, len(data))
+	slog.Info("Producer.Produce", slog.String("topic", p.topic), slog.Int("data len", len(data)))
 
 	w := &kafka.Writer{
 		Addr:                   kafka.TCP(p.config.Brokers...),

@@ -3,6 +3,7 @@
 package {{ service.Name }}
 
 import (
+	"log/slog"
 	"tonky/holistic/infra/logger"
 	{% if service.KafkaProducers %}
 	"{{ modulePath }}/infra/kafkaProducer"
@@ -26,50 +27,91 @@ type Clients struct {
 
 type Deps struct {
 	Config Config
-	Logger *logger.Slog
 	{% for ad in app_deps %}
     {{ cap(ad.AppVarName()) }} {{ ad.InterfaceName() }}
+	{% end %}
+	{% for pg in service.Postgres %}
+    {{ pg.Name }} I{{ pg.Name }}
 	{% end %}
 }
 
 type App struct {
 	Deps       Deps
-	Logger     *logger.Slog
 {% if service.Clients  %}
 	Clients		Clients
 {% end %}
 }
 
-{% if service.Clients  %}
-func NewApp(deps Deps, clients Clients) (*App, error) {
-{% else %}
 func NewApp(deps Deps) (*App, error) {
-{% end %}
 	app := App{
 		Deps:       deps,
-	{% if service.Clients  %}
-		Clients: clients,
-	{% end %}
-		Logger:     deps.Logger,
 	}
 
 	return &app, nil
 }
 
+func MustDepsFromEnv() Deps {
+    slog.Debug("{{ service.Name }}.App.MustDepsFromenv()")
+
+	cfg := MustEnvConfig()
+
+	deps, err := DepsFromConf(cfg)
+	if err != nil {
+    	slog.Error("DepsFromConf error", slog.Any("config", cfg), slog.Any("err", err))
+	}
+
+	return deps
+}
+
+func DepsFromConf(cfg Config) (Deps, error) {
+    slog.Debug("{{ service.Name }}.App.DepsFromConf()", slog.Any("config", cfg))
+
+    deps := Deps{}
+
+    {% for pg in service.Postgres %}
+    {{ pg.Name}}, err := New{{ pg.Name }}(logger.Slog{}, cfg.{{ pg.Name }})
+    if err != nil {
+        return deps, err
+    }
+
+    deps.{{ pg.Name }} = {{ pg.Name }}
+    {% end %}
+
+    {% for ad in app_deps %}
+        {% if ad.PackageName() == "local" %}
+	deps.{{ cap(ad.AppVarName()) }} = app.New{{ ad.StructName() }}(l)
+        {% else %}
+	{{ ad.AppVarName() }}, err := {% if ad.PackageName() != "local" %}{{ ad.AppImportPackageName() }}.{% else %}app.{% end %}New{{ ad.StructName() }}(logger.Slog{}, cfg.{{ ad.ConfigVarName() }})
+    if err != nil {
+        return deps, err
+    }
+	deps.{{ cap(ad.AppVarName()) }} = {{ ad.AppVarName() }}
+        {% end %}
+    {% end for %}
+
+{% if service.Clients %}
+    clients := app.Clients{
+    {% for c in service.Clients %}
+        {{ cap(c.Name) }}: {{ c.Model.Package() }}.NewFromEnv(cfg.Environment),
+    {% end %}
+    }
+
+	deps.Clients = clients
+{% end %}
+
+    return deps, nil
+}
+
 {% if service.KafkaConsumers %}
 func (a App) RunConsumers() {
-	a.Logger.Info(">> {{ service.Name}}.App.RunConsumers()")
+	slog.Info("{{ service.Name}}.App.RunConsumers()")
 
 	ctx := context.Background()
 	{% for consumer in service.KafkaConsumers %}
 
 	go func() {
-		{% if service.Dependencies == "samber_do" %}
-		for err := range a.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
-		{% else if service.Dependencies == "plain_struct" %}
 		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
-		{% end %}
-			a.Logger.Warn(err.Error())
+			slog.Warn(err.Error())
 		}
 	}()
 	{% end %}

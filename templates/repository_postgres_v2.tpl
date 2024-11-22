@@ -3,8 +3,8 @@ package {{ service.Name }}
 
 import (
 	"context"
-	"{{ modulePath }}/infra/logger"
-	"{{ modulePath }}/infra/postgres"
+	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/postgres"
     {% for ci in service.Postgres.AbsImports(ctx) %}
 	"{{ ci }}"
     {% end %}

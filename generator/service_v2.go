@@ -91,6 +91,8 @@ func (g ServiceGen) Generate2(s describer.ServiceV2) error {
 			g.GenModel3(eg.In)
 			g.GenModel3(eg.Out)
 		}
+
+		// appDeps = append(appDeps, pg)
 	}
 
 	for _, kp := range s.KafkaProducers {
