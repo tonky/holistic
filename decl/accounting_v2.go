@@ -13,16 +13,16 @@ func AccountingServiceV2() describer.ServiceV2 {
 		ConfigItems:  []describer.ConfigItemV2{{Model: typs.Object3{Name: "KafkaConsumptionRPSLimit", Typ: typs.Int2}}},
 		Endpoints: []describer.EndpointV2{
 			{Name: "GetOrderByID", In: FoodOrderIDV2, Out: FoodOrderV2},
-			{Name: "CreateOrder", In: NewFoodOrderSvc, Out: FoodOrderV2},
+			{Name: "CreateOrder", In: NewFoodOrder, Out: FoodOrderV2},
 		},
 		KafkaConsumers: []describer.TopicDesc2{FoodOrderUpdatedTopic},
 		KafkaProducers: []describer.TopicDesc2{AccountingOrderPaidTopic},
 		Postgres: describer.EndpointGroups{
 			{
-				Name: "foodOrderer",
+				Name: "FoodOrderer",
 				Endpoints: []describer.EndpointV2{
 					{Name: "GetOrderByID", In: FoodOrderIDV2, Out: FoodOrderV2},
-					{Name: "SaveNewOrder", In: NewFoodOrderApp, Out: FoodOrderV2},
+					{Name: "SaveNewOrder", In: NewFoodOrder, Out: FoodOrderV2},
 				},
 			},
 		},
@@ -33,13 +33,6 @@ func AccountingServiceV2() describer.ServiceV2 {
 			},
 		},
 	}
-}
-
-var AppContextAccounting = typs.Object3{
-	Kind:         typs.KindDomain,
-	Name:         "AccountingAppContext",
-	Module:       "tonky/holistic",
-	RelativePath: []string{"apps", "accounting"},
 }
 
 var FoodOrderV2 = typs.Object3{
@@ -55,21 +48,11 @@ var FoodOrderV2 = typs.Object3{
 	},
 }
 
-var NewFoodOrderSvc = typs.Object3{
+var NewFoodOrder = typs.Object3{
 	Kind:         typs.KindDomain,
 	Typ:          typs.Struct2,
 	Name:         "NewFoodOrder",
-	RelativePath: []string{"services", "accountingV2"},
-	Fields: []typs.Object3{
-		{Name: "Name", Typ: typs.String2, Kind: typs.KindBasic},
-		{Name: "IsComplete", Typ: typs.Bool2, Kind: typs.KindBasic},
-	},
-}
-
-var NewFoodOrderApp = typs.Object3{
-	Kind:         typs.KindDomain,
-	Typ:          typs.Struct2,
-	Name:         "NewFoodOrder",
+	Module:       "tonky/holistic",
 	RelativePath: []string{"apps", "accountingV2"},
 	Fields: []typs.Object3{
 		{Name: "Name", Typ: typs.String2, Kind: typs.KindBasic},

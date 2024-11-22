@@ -16,7 +16,7 @@ type Config struct {
 
     Kafka kafka.Config
 
-    foodOrderer postgres.Config
+    FoodOrderer postgres.Config
     KafkaConsumptionRPSLimit int `split_words:"false"`
 }
 

@@ -6,7 +6,7 @@ import (
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/postgres"
 	"tonky/holistic/domain/foodStore"
-	"BasicGoImport(): undefined"
+	"tonky/holistic/apps/accountingV2"
 )
 
 var _ IFoodOrderer = new(FoodOrderer)

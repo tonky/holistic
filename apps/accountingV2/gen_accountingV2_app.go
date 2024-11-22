@@ -19,7 +19,7 @@ type Deps struct {
 	Config Config
     AccountingOrderPaidProducer kafkaProducer.IAccountingOrderPaid
     FoodOrderUpdatedConsumer kafkaConsumer.IFoodOrderUpdated
-    foodOrderer IfoodOrderer
+    FoodOrderer IFoodOrderer
 }
 
 type App struct {
@@ -53,12 +53,12 @@ func DepsFromConf(cfg Config) (Deps, error) {
 
     deps := Deps{}
 
-    foodOrderer, err := NewfoodOrderer(logger.Slog{}, cfg.foodOrderer)
+    FoodOrderer, err := NewFoodOrderer(logger.Slog{}, cfg.FoodOrderer)
     if err != nil {
         return deps, err
     }
 
-    deps.foodOrderer = foodOrderer
+    deps.FoodOrderer = FoodOrderer
 
 	AccountingOrderPaidProducer, err := kafkaProducer.NewAccountingOrderPaidProducer(logger.Slog{}, cfg.Kafka)
     if err != nil {
