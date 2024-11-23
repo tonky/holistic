@@ -23,7 +23,8 @@ type AccountingOrderPaid struct {
 }
 
 func NewAccountingOrderPaidConsumer(l logger.ILogger, config kafka.Config) (*AccountingOrderPaid, error) {
-	l.Info("NewAccountingOrderPaidConsumer()", "topic", "accounting.order.paid", "groupID", config.GroupID)
+	// l = l.With("kafkaConsumer", "AccountingOrderPaidConsumer", "topic", "accounting.order.paid", "groupID", config.GroupID)
+	// l.Info("New consumer")
 
 	client := NewConsumer(config, "accounting.order.paid")
 

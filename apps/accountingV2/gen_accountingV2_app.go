@@ -29,17 +29,19 @@ type App struct {
 }
 
 func NewApp(deps Deps) (*App, error) {
+	deps.Logger = deps.Logger.With("app", "accountingV2")
+
 	app := App{
-		Deps:       deps,
+		Deps: deps,
 	}
 
 	return &app, nil
 }
 
 func MustDepsFromEnv() Deps {
-	l := slogLogger.Default()
+	l := slogLogger.Default().With("app", "accountingV2")
 
-    l.Debug("accountingV2.App.MustDepsFromenv()")
+    l.Debug("MustDepsFromenv()")
 
 	cfg := MustEnvConfig()
 
@@ -52,9 +54,9 @@ func MustDepsFromEnv() Deps {
 }
 
 func DepsFromConf(cfg Config) (Deps, error) {
-	l := slogLogger.Default()
+	l := slogLogger.Default().With("app", "accountingV2")
 
-    l.Debug("accountingV2.App.DepsFromConf()", "config", cfg)
+    l.Debug("DepsFromConf()", "config", cfg)
 
     deps := Deps{
 		Logger: l,
@@ -86,13 +88,13 @@ func DepsFromConf(cfg Config) (Deps, error) {
 }
 
 func (a App) RunConsumers() {
-	a.Deps.Logger.Info("accountingV2.App.RunConsumers()")
+	a.Deps.Logger.Info("RunConsumers()")
 
 	ctx := context.Background()
 
 	go func() {
 		for err := range a.Deps.FoodOrderUpdatedConsumer.Run(ctx, a.FoodOrderUpdatedProcessor) {
-			a.Deps.Logger.Warn(err.Error())
+			a.Deps.Logger.Error(err.Error())
 		}
 	}()
 }

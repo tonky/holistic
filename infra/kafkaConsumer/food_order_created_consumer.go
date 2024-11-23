@@ -23,7 +23,8 @@ type FoodOrderCreated struct {
 }
 
 func NewFoodOrderCreatedConsumer(l logger.ILogger, config kafka.Config) (*FoodOrderCreated, error) {
-	l.Info("NewFoodOrderCreatedConsumer()", "topic", "food.order.created", "groupID", config.GroupID)
+	// l = l.With("kafkaConsumer", "FoodOrderCreatedConsumer", "topic", "food.order.created", "groupID", config.GroupID)
+	// l.Info("New consumer")
 
 	client := NewConsumer(config, "food.order.created")
 

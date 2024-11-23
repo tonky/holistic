@@ -44,17 +44,19 @@ type App struct {
 }
 
 func NewApp(deps Deps) (*App, error) {
+	deps.Logger = deps.Logger.With("app", "{{ service.Name }}")
+
 	app := App{
-		Deps:       deps,
+		Deps: deps,
 	}
 
 	return &app, nil
 }
 
 func MustDepsFromEnv() Deps {
-	l := {{ service.Logger.Model.Package() }}.Default()
+	l := {{ service.Logger.Model.Package() }}.Default().With("app", "{{ service.Name }}")
 
-    l.Debug("{{ service.Name }}.App.MustDepsFromenv()")
+    l.Debug("MustDepsFromenv()")
 
 	cfg := MustEnvConfig()
 
@@ -67,9 +69,9 @@ func MustDepsFromEnv() Deps {
 }
 
 func DepsFromConf(cfg Config) (Deps, error) {
-	l := {{ service.Logger.Model.Package() }}.Default()
+	l := {{ service.Logger.Model.Package() }}.Default().With("app", "{{ service.Name }}")
 
-    l.Debug("{{ service.Name }}.App.DepsFromConf()", "config", cfg)
+    l.Debug("DepsFromConf()", "config", cfg)
 
     deps := Deps{
 		Logger: l,
@@ -105,14 +107,14 @@ func DepsFromConf(cfg Config) (Deps, error) {
 
 {% if service.KafkaConsumers %}
 func (a App) RunConsumers() {
-	a.Deps.Logger.Info("{{ service.Name}}.App.RunConsumers()")
+	a.Deps.Logger.Info("RunConsumers()")
 
 	ctx := context.Background()
 	{% for consumer in service.KafkaConsumers %}
 
 	go func() {
 		for err := range a.Deps.{{ cap(consumer.Name) }}Consumer.Run(ctx, a.{{ cap(consumer.Name) }}Processor) {
-			a.Deps.Logger.Warn(err.Error())
+			a.Deps.Logger.Error(err.Error())
 		}
 	}()
 	{% end %}

@@ -23,7 +23,8 @@ type ShippingOrderShipped struct {
 }
 
 func NewShippingOrderShippedConsumer(l logger.ILogger, config kafka.Config) (*ShippingOrderShipped, error) {
-	l.Info("NewShippingOrderShippedConsumer()", "topic", "shipping.order.shipped", "groupID", config.GroupID)
+	// l = l.With("kafkaConsumer", "ShippingOrderShippedConsumer", "topic", "shipping.order.shipped", "groupID", config.GroupID)
+	// l.Info("New consumer")
 
 	client := NewConsumer(config, "shipping.order.shipped")
 

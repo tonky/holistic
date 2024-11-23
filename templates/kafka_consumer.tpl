@@ -23,7 +23,8 @@ type {{ k.StructName() }} struct {
 }
 
 func New{{ k.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{ k.StructName() }}, error) {
-	l.Info("New{{ k.StructName() }}Consumer()", "topic", "{{ k.TopicName }}", "groupID", config.GroupID)
+	// l = l.With("kafkaConsumer", "{{ k.StructName() }}Consumer", "topic", "{{ k.TopicName }}", "groupID", config.GroupID)
+	// l.Info("New consumer")
 
 	client := NewConsumer(config, "{{ k.TopicName }}")
 
