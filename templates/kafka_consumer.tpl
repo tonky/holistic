@@ -4,7 +4,6 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -24,7 +23,7 @@ type {{ k.StructName() }} struct {
 }
 
 func New{{ k.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{ k.StructName() }}, error) {
-	l.Info(">> New{{ k.StructName() }}Consumer()", "{{ k.TopicName }}", config.GroupID)
+	l.Info("New{{ k.StructName() }}Consumer()", "topic", "{{ k.TopicName }}", "groupID", config.GroupID)
 
 	client := NewConsumer(config, "{{ k.TopicName }}")
 
@@ -35,7 +34,7 @@ func New{{ k.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{
 }
 
 func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Context, {{ k.ModelName() }}) error) chan error {
-	c.logger.Info(">> {{ k.StructName() }}.Run()", c.client.Topic())
+	c.logger.Info("{{ k.StructName() }}.Run()", "topic", c.client.Topic())
 
 	res := make(chan error)
 	models, errors := Consume{{ cap(k.Name) }}(ctx, c.client)
@@ -44,7 +43,7 @@ func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Co
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("kafkaConsumer.{{ k.StructName() }} got model", model)
+				c.logger.Info("kafkaConsumer.{{ k.StructName() }} got model in channel", "model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -61,7 +60,7 @@ func (c {{ k.StructName() }}) Run(ctx context.Context, processor func(context.Co
 }
 
 func Consume{{ cap(k.Name) }}(ctx context.Context, client IConsumer) (chan {{ k.ModelName() }}, chan error) {
-	fmt.Println(">> Consume{{ cap(k.Name) }}", client.Topic())
+	client.Logger().Info("consumer.Consume{{ cap(k.Name) }}", "topic", client.Topic())
 
 	models := make(chan {{ k.ModelName() }})
 	errors := make(chan error)

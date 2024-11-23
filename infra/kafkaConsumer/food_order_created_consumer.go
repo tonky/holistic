@@ -4,7 +4,6 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -24,7 +23,7 @@ type FoodOrderCreated struct {
 }
 
 func NewFoodOrderCreatedConsumer(l logger.ILogger, config kafka.Config) (*FoodOrderCreated, error) {
-	l.Info(">> NewFoodOrderCreatedConsumer()", "food.order.created", config.GroupID)
+	l.Info("NewFoodOrderCreatedConsumer()", "topic", "food.order.created", "groupID", config.GroupID)
 
 	client := NewConsumer(config, "food.order.created")
 
@@ -35,7 +34,7 @@ func NewFoodOrderCreatedConsumer(l logger.ILogger, config kafka.Config) (*FoodOr
 }
 
 func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Context, food.Order) error) chan error {
-	c.logger.Info(">> FoodOrderCreated.Run()", c.client.Topic())
+	c.logger.Info("FoodOrderCreated.Run()", "topic", c.client.Topic())
 
 	res := make(chan error)
 	models, errors := ConsumeFoodOrderCreated(ctx, c.client)
@@ -44,7 +43,7 @@ func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Contex
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("kafkaConsumer.FoodOrderCreated got model", model)
+				c.logger.Info("kafkaConsumer.FoodOrderCreated got model in channel", "model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -61,7 +60,7 @@ func (c FoodOrderCreated) Run(ctx context.Context, processor func(context.Contex
 }
 
 func ConsumeFoodOrderCreated(ctx context.Context, client IConsumer) (chan food.Order, chan error) {
-	fmt.Println(">> ConsumeFoodOrderCreated", client.Topic())
+	client.Logger().Info("consumer.ConsumeFoodOrderCreated", "topic", client.Topic())
 
 	models := make(chan food.Order)
 	errors := make(chan error)

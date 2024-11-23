@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"time"
+	"tonky/holistic/infra/slogLogger"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/kelseyhightower/envconfig"
@@ -29,6 +30,8 @@ func NewEnvConfig(service_name string) (Config, error) {
 }
 
 func NewClient(conf Config) (Client, error) {
+	l := slogLogger.Default().With("name", "postgresClient")
+
 	dsnPgx := fmt.Sprintf("postgres://%s:%s@%s:%d/%s", conf.User, conf.Password, conf.Host, conf.Port, conf.Database)
 
 	poolConf, err := pgxpool.ParseConfig(dsnPgx)
@@ -42,7 +45,7 @@ func NewClient(conf Config) (Client, error) {
 
 	pool, err := pgxpool.NewWithConfig(context.TODO(), poolConf)
 
-	fmt.Println("Connecting to Postgres DB: ", dsnPgx)
+	l.Debug("Connecting to Postgres DB", "dsn", dsnPgx)
 
 	// pool, err := pgx.Connect(context.Background(), dsnPgx)
 	// pool, err := pgxpool.New(context.Background(), dsnPgx)

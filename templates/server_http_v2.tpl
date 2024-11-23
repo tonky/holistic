@@ -59,34 +59,40 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
 func NewFromEnv() (ServiceStarter, error) {
 	cfg := MustEnvConfig()
 
-    {{ service.Logger.Model.Package() }}.Default().Debug("{{ service.Name }}.NewFromEnv()", "config", cfg)
+    log := {{ service.Logger.Model.Package() }}.Default().With("service", "{{ service.Name }}")
+
+    log.Debug("NewFromEnv()", "config", cfg)
 
     deps, err := app.DepsFromConf(cfg.App)
     if err != nil {
         return nil, err
     }
 
+    deps.Logger = log
+
     application, appErr := app.NewApp(deps)
     if appErr != nil {
         return nil, appErr
     }
 
-    handlers := handlers{config: cfg, app: *application}
+    handlers := handlers{config: cfg, app: *application, deps: Deps{Logger: log}}
 
     return handlers, nil
 }
 
-func NewWithAppDeps(serviceDeps Deps, deps app.Deps) (ServiceStarter, error) {
+func NewWithAppDeps(serviceDeps Deps, appDeps app.Deps) (ServiceStarter, error) {
 	cfg := MustEnvConfig()
 
     serviceDeps.Logger.Debug("{{ service.Name }}.NewWithAppDeps()", "config", cfg)
 
-    application, appErr := app.NewApp(deps)
+    appDeps.Logger = serviceDeps.Logger
+
+    application, appErr := app.NewApp(appDeps)
     if appErr != nil {
         return nil, appErr
     }
 
-    return handlers{config: cfg, app: *application}, nil
+    return handlers{config: cfg, app: *application, deps: serviceDeps}, nil
 }
 
 func DepsFromConf(conf Config) Deps {
@@ -97,7 +103,7 @@ func DepsFromConf(conf Config) Deps {
 
 
 func (h handlers) Start() error {
-    fmt.Printf(">> {{ service.Name }}.Start() config: %+v\n", h.config)
+    h.deps.Logger.Info("Start()", "config", h.config)
 	{% if service.KafkaConsumers %}
     h.app.RunConsumers()
     {% end %}

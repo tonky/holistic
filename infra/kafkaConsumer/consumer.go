@@ -39,7 +39,7 @@ func (c Consumer) Logger() logger.ILogger {
 }
 
 func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) {
-	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", c.topic, c.config.GroupID)
+	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", "topic", c.topic, "groupID", c.config.GroupID)
 
 	resMessages := make(chan kafka.Message)
 	resErrors := make(chan error)
@@ -49,24 +49,24 @@ func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) 
 
 	go func() {
 		for {
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop from", c.topic, c.config.GroupID)
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop from", "topic", c.topic)
 			m, err := reader.ReadMessage(ctx)
 
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop got message from", c.topic, c.config.GroupID)
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | inner loop got message from", "topic", c.topic)
 
 			if err != nil {
-				c.logger.Error("infra.kafkaConsumer.Consumer.Consume | consumer error, exiting: %v\n", err)
+				c.logger.Error("infra.kafkaConsumer.Consumer.Consume | consumer error, exiting: %v\n", "error", err)
 
 				resErrors <- err
 
 				if err := reader.Close(); err != nil {
-					c.logger.Error("infra.kafkaConsumer.Consumer.Consume | failed to close reader: %v\n", err)
+					c.logger.Error("infra.kafkaConsumer.Consumer.Consume | failed to close reader: %v\n", "error", err)
 				}
 
 				return
 			}
 
-			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | consumed ", m.Topic, c.config.GroupID, m.Partition, m.Offset, string(m.Key))
+			c.logger.Debug("infra.kafkaConsumer.Consumer.Consume | consumed ", "topic", m.Topic, "partition", m.Partition, "offset", m.Offset, "key", string(m.Key))
 
 			resMessages <- m
 		}

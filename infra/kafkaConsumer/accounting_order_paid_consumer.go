@@ -4,7 +4,6 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/kafka"
 
@@ -24,7 +23,7 @@ type AccountingOrderPaid struct {
 }
 
 func NewAccountingOrderPaidConsumer(l logger.ILogger, config kafka.Config) (*AccountingOrderPaid, error) {
-	l.Info(">> NewAccountingOrderPaidConsumer()", "accounting.order.paid", config.GroupID)
+	l.Info("NewAccountingOrderPaidConsumer()", "topic", "accounting.order.paid", "groupID", config.GroupID)
 
 	client := NewConsumer(config, "accounting.order.paid")
 
@@ -35,7 +34,7 @@ func NewAccountingOrderPaidConsumer(l logger.ILogger, config kafka.Config) (*Acc
 }
 
 func (c AccountingOrderPaid) Run(ctx context.Context, processor func(context.Context, accounting.Order) error) chan error {
-	c.logger.Info(">> AccountingOrderPaid.Run()", c.client.Topic())
+	c.logger.Info("AccountingOrderPaid.Run()", "topic", c.client.Topic())
 
 	res := make(chan error)
 	models, errors := ConsumeAccountingOrderPaid(ctx, c.client)
@@ -44,7 +43,7 @@ func (c AccountingOrderPaid) Run(ctx context.Context, processor func(context.Con
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("kafkaConsumer.AccountingOrderPaid got model", model)
+				c.logger.Info("kafkaConsumer.AccountingOrderPaid got model in channel", "model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -61,7 +60,7 @@ func (c AccountingOrderPaid) Run(ctx context.Context, processor func(context.Con
 }
 
 func ConsumeAccountingOrderPaid(ctx context.Context, client IConsumer) (chan accounting.Order, chan error) {
-	fmt.Println(">> ConsumeAccountingOrderPaid", client.Topic())
+	client.Logger().Info("consumer.ConsumeAccountingOrderPaid", "topic", client.Topic())
 
 	models := make(chan accounting.Order)
 	errors := make(chan error)

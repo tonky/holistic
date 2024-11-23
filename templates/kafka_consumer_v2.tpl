@@ -26,7 +26,7 @@ type {{ topic.StructName() }}Consumer struct {
 }
 
 func New{{ topic.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{ topic.StructName() }}Consumer, error) {
-	l.Info(">> New{{ topic.StructName() }}Consumer()", "{{ topic.TopicName }}", config.GroupID)
+	l.Info("New{{ topic.StructName() }}Consumer()", "topic", "{{ topic.TopicName }}", "groupID", config.GroupID)
 
 	client := kafkaConsumer.NewConsumer(config, "{{ topic.TopicName }}")
 
@@ -37,7 +37,7 @@ func New{{ topic.StructName() }}Consumer(l logger.ILogger, config kafka.Config) 
 }
 
 func (c {{ topic.StructName() }}Consumer) Run(ctx context.Context, processor func(context.Context, {{ topic.ModelName() }}) error) chan error {
-	c.logger.Info(">> {{ topic.StructName() }}.Run()", c.client.Topic())
+	c.logger.Info("{{ topic.StructName() }}.Run()", "topic", c.client.Topic())
 
 	res := make(chan error)
 	models, errors := Consume{{ cap(topic.Name) }}(ctx, c.client)
@@ -63,7 +63,7 @@ func (c {{ topic.StructName() }}Consumer) Run(ctx context.Context, processor fun
 }
 
 func Consume{{ cap(topic.Name) }}(ctx context.Context, client kafkaConsumer.IConsumer) (chan {{ topic.ModelName() }}, chan error) {
-	client.Logger().Info(">> Consume{{ cap(topic.Name) }}", client.Topic())
+	client.Logger().Info("Consume{{ cap(topic.Name) }}", "topic", client.Topic())
 
 	models := make(chan {{ topic.ModelName() }})
 	errors := make(chan error)
