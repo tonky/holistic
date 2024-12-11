@@ -39,7 +39,7 @@ func (c Consumer) Logger() logger.ILogger {
 }
 
 func (c Consumer) Consume(ctx context.Context) (chan kafka.Message, chan error) {
-	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", "topic", c.topic, "groupID", c.config.GroupID)
+	c.logger.Info("infra.kafkaConsumer.Consumer.Consume starting for", "topic", c.topic, "conf", c.config)
 
 	resMessages := make(chan kafka.Message)
 	resErrors := make(chan error)

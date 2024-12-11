@@ -6,5 +6,5 @@ type ILogger interface {
 	Warn(msg string, fields ...interface{})
 	Error(msg string, fields ...interface{})
 
-	With(string, any) ILogger
+	With(string, ...any) ILogger
 }

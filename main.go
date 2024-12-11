@@ -14,18 +14,19 @@ func main() {
 
 	// fmt.Printf("\n%s", pizzeria.New().Debug())
 
-	generator.GenModels(decl.DomainModels)
+	// generator.GenModels(decl.DomainModels)
 
-	topics := decl.KafkaTopics
+	// topics := decl.KafkaTopics
 
 	gs := generator.ServiceGen{TemplatePath: "templates", ModulePath: "tonky/holistic"}
 
-	gs.GenerateKafka(topics)
+	// gs.GenerateKafka(topics)
 
-	gs.Generate(decl.PizzeriaService())
-	gs.Generate(decl.AccountingService())
-	gs.Generate(decl.PricingService())
-	gs.Generate(decl.ShippingService())
+	// gs.Generate(decl.PizzeriaService())
+	// gs.Generate(decl.AccountingService())
+	// gs.Generate(decl.PricingService())
+	// gs.Generate(decl.ShippingService())
 
-	gs.Generate2(decl.AccountingServiceV2())
+	gs.GenKafka2(decl.KafkaTopicsv2)
+	gs.Generate2(decl.ShippingService())
 }

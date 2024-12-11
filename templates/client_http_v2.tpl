@@ -21,25 +21,25 @@ type I{{ cap(service.Name) }}Client interface {
 {% end %}
 }
 
-func New(config clients.Config) {{ cap(service.Name) }}Client {
+func New(lmt {{ service.Tele.Interface.GoQualifiedModel() }}, config clients.Config) {{ cap(service.Name) }}Client {
 	return {{ cap(service.Name) }}Client {
 		config: config,
-		logger: {{ service.Logger.Model.Package() }}.Default(),
+		lmt: lmt,
 	}
 }
 
-func NewFromEnv() {{ cap(service.Name) }}Client {
+func NewFromEnv(lmt {{ service.Tele.Interface.GoQualifiedModel() }}) {{ cap(service.Name) }}Client {
 	svcConf := svc.MustEnvConfig()
 
 	return {{ cap(service.Name) }}Client {
 		config: clients.Config{Host: "http://localhost", Port: svcConf.Port},
-        logger: {{ service.Logger.Model.Package() }}.NewFromConfig(svcConf.Logger),
+        lmt: lmt,
 	}
 }
 
 type {{ cap(service.Name) }}Client struct {
 	config clients.Config
-    logger {{ service.Logger.Interface.GoQualifiedModel() }}
+    lmt {{ service.Tele.Interface.GoQualifiedModel() }}
 }
 
 {% for h in service.Endpoints %}
@@ -53,7 +53,7 @@ func (c {{ cap(service.Name) }}Client) {{ h.Name }}(ctx context.Context, arg {{ 
 
  	requestURL := fmt.Sprintf("%s/%s", c.config.ServerAddress(), "{{ h.Name }}")
 
-	c.logger.Debug("{{ cap(service.Name) }}Client.{{ h.Name }}()", "requestURL", requestURL, "newRecipe", arg)
+	c.lmt.Logger.Debug("{{ cap(service.Name) }}Client.{{ h.Name }}()", "requestURL", requestURL, "newRecipe", arg)
 
  	req, err := http.NewRequest(http.MethodPost, requestURL, bodyReader)
 	if err != nil { return reply, err }

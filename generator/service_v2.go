@@ -39,13 +39,13 @@ func (g ServiceGen) Generate2(s describer.ServiceV2) error {
 	}
 
 	tplGenPath := map[string]string{
-		service_net_rpc_tpl: fmt.Sprintf("services/%s/gen_server_%s.go", s.Name, s.Rpc.String()),
-		service_http_tpl:    fmt.Sprintf("services/%s/gen_server_%s.go", s.Name, s.Rpc.String()),
-		service_config_tpl:  fmt.Sprintf("services/%s/gen_config.go", s.Name),
-		client_net_rpc:      fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
-		client_http_tpl:     fmt.Sprintf("clients/%sClient/gen_client_%s.go", s.Name, s.Rpc.String()),
-		app_tpl:             fmt.Sprintf("apps/%s/gen_%s_app.go", s.Name, s.Name),
-		app_config_tpl:      fmt.Sprintf("apps/%s/gen_config.go", s.Name),
+		service_net_rpc_tpl: fmt.Sprintf("services/%s/gen_server_%s_v2.go", s.Name, s.Rpc.String()),
+		service_http_tpl:    fmt.Sprintf("services/%s/gen_server_%s_v2.go", s.Name, s.Rpc.String()),
+		service_config_tpl:  fmt.Sprintf("services/%s/gen_config_v2.go", s.Name),
+		client_net_rpc:      fmt.Sprintf("clients/%sClient/gen_client_%s_v2.go", s.Name, s.Rpc.String()),
+		client_http_tpl:     fmt.Sprintf("clients/%sClient/gen_client_%s_v2.go", s.Name, s.Rpc.String()),
+		app_tpl:             fmt.Sprintf("apps/%s/gen_%s_app_v2.go", s.Name, s.Name),
+		app_config_tpl:      fmt.Sprintf("apps/%s/gen_config_v2.go", s.Name),
 	}
 
 	fsys := scriggo.Files{
@@ -97,10 +97,12 @@ func (g ServiceGen) Generate2(s describer.ServiceV2) error {
 
 	for _, kp := range s.KafkaProducers {
 		appDeps = append(appDeps, KafkaDep{Name: kp.Name, Kind: "producer"})
+		g.GenModel3(kp.Obj)
 	}
 
 	for _, kc := range s.KafkaConsumers {
 		appDeps = append(appDeps, KafkaDep{Name: kc.Name, Kind: "consumer"})
+		g.GenModel3(kc.Obj)
 	}
 
 	/*

@@ -2,7 +2,6 @@
 package {{ service.Name }}
 
 import (
-    "log/slog"
     {% for id in app_deps.Dedup() %}
     {% if id.ConfigVarName() == "Kafka" %}
 	"tonky/holistic/infra/kafka"
@@ -45,7 +44,6 @@ func MustEnvConfig() Config {
 	var c Config
 
 	if err := envconfig.Process("{{ service.Name }}_app", &c); err != nil {
-        slog.Error("MustEnvConfig error for {{ service.Name }}", slog.Any("Process() error", err))
         panic(err)
     }
 

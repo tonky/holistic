@@ -6,14 +6,14 @@ import (
 	"github.com/kelseyhightower/envconfig"
 	"github.com/samber/do/v2"
 
-    "{{ service.Logger.Interface.AbsPath() }}"
+	"{{ service.Tele.Model.AbsPath() }}"
 )
 
 // service specific config - env, secrets, run mode, flags etc
 type Config struct {
 	Environment   string `default:"dev"`
 	Port int `default:"1234"`
-	Logger {{ service.Logger.Interface.Package() }}.Config
+	Tele {{ service.Tele.Model.Package() }}.Config
 
 	App app.Config
 

@@ -8,9 +8,9 @@ func NewOrderID(us string) (OrderID, error) {
 		return OrderID{}, err
 	}
 
-	return OrderID{ID: id}, nil
+	return OrderID{id: id}, nil
 }
 
 func (o OrderID) String() string {
-	return o.ID.String()
+	return o.id.String()
 }

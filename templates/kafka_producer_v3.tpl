@@ -4,9 +4,8 @@ package kafkaProducer
 import (
 	"context"
 	"encoding/json"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/tele"
 	"tonky/holistic/infra/kafka"
-	"tonky/holistic/infra/kafkaProducer"
 
 	{% for i in topic.Obj.AbsImports(ctx) %}
 	"{{ i }}"
@@ -22,21 +21,21 @@ type {{ topic.InterfaceName() }} interface {
 }
 
 type {{ topic.StructName() }}Producer struct {
-	logger logger.Slog
-	client kafkaProducer.IProducer
+    lmt tele.Otel
+	client IProducer
 }
 
-func New{{ topic.StructName() }}Producer(logger logger.Slog, config kafka.Config) (*{{ topic.StructName() }}Producer, error) {
-	client := kafkaProducer.NewProducer(config, "{{ topic.TopicName }}")
+func New{{ topic.StructName() }}Producer(lmt tele.Otel, config kafka.Config) (*{{ topic.StructName() }}Producer, error) {
+	client := NewProducer(config, "{{ topic.TopicName }}")
 
 	return &{{ topic.StructName() }}Producer {
-		logger: logger,
+		lmt: lmt,
 		client: client,
 	}, nil
 }
 
 func (r {{ topic.StructName() }}Producer) Produce{{ cap(topic.Name) }}(ctx context.Context, in {{ topic.ModelName() }}) error {
-	r.logger.Info("{{ topic.StructName() }}.Produce{{ cap(topic.Name) }}", in)
+	r.lmt.Logger.Info("{{ topic.StructName() }}.Produce{{ cap(topic.Name) }}", in)
 
 	inBytes, err := json.Marshal(in)
 	if err != nil {
@@ -47,7 +46,7 @@ func (r {{ topic.StructName() }}Producer) Produce{{ cap(topic.Name) }}(ctx conte
 }
 
 func (r {{ topic.StructName() }}Producer) Produce{{ cap(topic.Name) }}Batch(ctx context.Context, ins []{{ topic.ModelName() }}) error {
-	r.logger.Info("{{ topic.StructName() }}.Produce{{ cap(topic.Name) }}Batch", ins)
+	r.lmt.Logger.Info("{{ topic.StructName() }}.Produce{{ cap(topic.Name) }}Batch", ins)
 
 	var data [][]byte
 

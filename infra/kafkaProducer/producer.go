@@ -61,7 +61,8 @@ func (p Producer) Produce(ctx context.Context, data []byte) error {
 		}
 	*/
 
-	p.logger.Info("Producer.Produce", p.topic, len(data), "done")
+	p.logger.Info("Producer.Produce OK", "topic", p.topic, "data len", len(data))
+
 	return nil
 }
 

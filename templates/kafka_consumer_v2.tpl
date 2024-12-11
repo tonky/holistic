@@ -4,9 +4,8 @@ package kafkaConsumer
 import (
 	"context"
 	"encoding/json"
-	"tonky/holistic/infra/logger"
+	"tonky/holistic/infra/tele"
 	"tonky/holistic/infra/kafka"
-	"tonky/holistic/infra/kafkaConsumer"
 
 	{% for i in topic.Obj.AbsImports(ctx) %}
 	"{{ i }}"
@@ -21,34 +20,34 @@ type {{ topic.InterfaceName() }} interface {
 }
 
 type {{ topic.StructName() }}Consumer struct {
-	logger logger.ILogger
-	client kafkaConsumer.IConsumer
+	lmt tele.Otel
+	client IConsumer
 }
 
-func New{{ topic.StructName() }}Consumer(l logger.ILogger, config kafka.Config) (*{{ topic.StructName() }}Consumer, error) {
-	l = l.With("kafkaConsumer", "{{ topic.StructName() }}Consumer", "topic", "{{ topic.TopicName }}", "groupID", config.GroupID)
+func New{{ topic.StructName() }}Consumer(lmt tele.Otel, config kafka.Config) (*{{ topic.StructName() }}Consumer, error) {
+	lmt.Logger = lmt.Logger.With("kafkaConsumer", "{{ topic.StructName() }}Consumer", "topic", "{{ topic.TopicName }}", "groupID", config.GroupID)
 	
-	l.Info("New consumer")
+	lmt.Logger.Info("New consumer")
 
-	client := kafkaConsumer.NewConsumer(config, "{{ topic.TopicName }}")
+	client := NewConsumer(config, "{{ topic.TopicName }}")
 
 	return &{{ topic.StructName() }}Consumer {
-		logger: l,
+		lmt: lmt,
 		client: client,
 	}, nil
 }
 
 func (c {{ topic.StructName() }}Consumer) Run(ctx context.Context, processor func(context.Context, {{ topic.ModelName() }}) error) chan error {
-	c.logger.Info("{{ topic.StructName() }}.Run()")
+	c.lmt.Logger.Info("{{ topic.StructName() }}.Run()")
 
 	res := make(chan error)
-	models, errors := Consume{{ cap(topic.Name) }}(ctx, c.client)
+	models, errors := c.Chan(ctx)
 
 	go func() {
 		for {
 			select {
 			case model := <-models:
-				c.logger.Info("got model", model)
+				c.lmt.Logger.Info("got model", model)
 
 				if err := processor(ctx, model); err != nil {
 					res <- err
@@ -64,13 +63,11 @@ func (c {{ topic.StructName() }}Consumer) Run(ctx context.Context, processor fun
 	return res
 }
 
-func Consume{{ cap(topic.Name) }}(ctx context.Context, client kafkaConsumer.IConsumer) (chan {{ topic.ModelName() }}, chan error) {
-	client.Logger().Info("Consume{{ cap(topic.Name) }}", "topic", client.Topic())
-
+func (c {{ topic.StructName() }}Consumer) Chan(ctx context.Context)(chan {{ topic.ModelName() }}, chan error) {
 	models := make(chan {{ topic.ModelName() }})
 	errors := make(chan error)
 
-	kafkaMessages, kafkaErrors := client.Consume(context.Background())
+	kafkaMessages, kafkaErrors := c.client.Consume(context.Background())
 
 	go func() {
 		for {

@@ -52,6 +52,7 @@ type Slog struct {
 }
 
 func (sl Slog) Debug(msg string, fields ...interface{}) {
+	// fmt.Println("slogLogger.Debug()", msg, sl.logger.Enabled(context.TODO(), slog.LevelDebug))
 	sl.logger.Debug(msg, fields...)
 
 }
@@ -68,8 +69,8 @@ func (sl Slog) Error(msg string, fields ...interface{}) {
 	sl.logger.Error(msg, fields...)
 }
 
-func (sl Slog) With(key string, value any) logger.ILogger {
-	sl.logger = *sl.logger.With(key, value)
+func (sl Slog) With(key string, values ...any) logger.ILogger {
+	sl.logger = *sl.logger.With(values...)
 
 	return sl
 }

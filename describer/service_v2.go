@@ -19,6 +19,7 @@ type ServiceV2 struct {
 	KafkaConsumers []TopicDesc2
 	Clients        []InfraV2
 	Logger         InfraInterface
+	Tele           InfraInterface
 }
 
 type EndpointGroups []EndpointGroup
@@ -80,8 +81,8 @@ func (egs EndpointGroups) AbsImports(ctx typs.Object3) []string {
 func (s ServiceV2) AbsImports(ctx typs.Object3) []string {
 	var imports []string
 
-	imports = append(imports, s.Logger.Interface.AbsImports(ctx)...)
-	imports = append(imports, s.Logger.Model.AbsImports(ctx)...)
+	imports = append(imports, s.Tele.Interface.AbsImports(ctx)...)
+	// imports = append(imports, s.Logger.Model.AbsImports(ctx)...)
 
 	for _, e := range s.Endpoints {
 		imports = append(imports, e.In.AbsImports(ctx)...)

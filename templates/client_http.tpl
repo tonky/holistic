@@ -27,11 +27,13 @@ func New(config clients.Config) {{ cap(service.Name) }}Client {
 	}
 }
 
-func NewFromEnv(env string) {{ cap(service.Name) }}Client {
+func NewFromEnv() {{ cap(service.Name) }}Client {
 	svcConf := svc{{ cap(service.Name ) }}.MustEnvConfig()
 
-	envConf := clients.ConfigForEnv("{{ service.Name }}", env)
-	envConf.Port = svcConf.Port
+	envConf := clients.Config {
+		Host: "localhost",
+		Port: svcConf.Port,
+	}
 
 	return {{ cap(service.Name) }}Client{
 		config: envConf,

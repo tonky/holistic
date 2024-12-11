@@ -5,8 +5,8 @@ rr:
   fd -E apps -E services -E clients -E domain -E infra '(.go|.tpl)' | entr -cr go run main.go 
 
 t:
+  go test -timeout 2s ./tests -count 1
   go test ./generator -count 1
-  go test ./tests -count 1
 
 ts:
   ls services/pizzeria/*.go | entr -cr go run tst/server/pizzeria.go
@@ -24,7 +24,7 @@ pgs:
   docker run --name postgres -p 5432:5432 -e POSTGRES_PASSWORD=postgres -d postgres
 
 rpw:
-  docker exec -it redpanda-0 rpk topic consume food.order.created -o -1
+  docker exec -it redpanda-0 rpk topic consume order.paid -o -1
 
 stats:
   wc -l apps/accounting/gen*.go services/accounting/* infra/postgres/* infra/kafkaConsumer/consumer.go infra/kafkaConsumer/food_order_shipped_consumer.go infra/kafkaProducer/producer.go infra/kafkaProducer/accounting_order_paid_producer.go clients/config.go clients/pricingClient/gen_client_http.go 

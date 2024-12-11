@@ -11,13 +11,14 @@ import (
 
 	app "{{ modulePath }}/apps/{{ service.Name }}"
 
+	"{{ service.Tele.Model.AbsPath() }}"
     {% for ci in service.AbsImports(ctx) %}
 	"{{ ci }}"
     {% end %}
 )
 
 type Deps struct {
-    Logger {{ service.Logger.Interface.GoQualifiedModel() }}
+    LMT    {{ service.Tele.Interface.GoQualifiedModel() }}
 }
 
 type handlers struct {
@@ -59,23 +60,22 @@ func (h handlers) {{h.Name}}() http.HandlerFunc {
 func NewFromEnv() (ServiceStarter, error) {
 	cfg := MustEnvConfig()
 
-    log := {{ service.Logger.Model.Package() }}.Default().With("service", "{{ service.Name }}")
+	svcDeps, err := DepsFromConf(cfg)
+	if err != nil {
+		return nil, err
+	}
 
-    log.Debug("NewFromEnv()", "config", cfg)
+	appDeps, err := app.DepsFromConf(svcDeps.LMT, cfg.App)
+	if err != nil {
+		return nil, err
+	}
 
-    deps, err := app.DepsFromConf(cfg.App)
-    if err != nil {
-        return nil, err
-    }
+	application, appErr := app.NewApp(svcDeps.LMT, appDeps)
+	if appErr != nil {
+		return nil, appErr
+	}
 
-    deps.Logger = log
-
-    application, appErr := app.NewApp(deps)
-    if appErr != nil {
-        return nil, appErr
-    }
-
-    handlers := handlers{config: cfg, app: *application, deps: Deps{Logger: log}}
+	handlers := handlers{config: cfg, app: *application, deps: *svcDeps}
 
     return handlers, nil
 }
@@ -83,11 +83,9 @@ func NewFromEnv() (ServiceStarter, error) {
 func NewWithAppDeps(serviceDeps Deps, appDeps app.Deps) (ServiceStarter, error) {
 	cfg := MustEnvConfig()
 
-    serviceDeps.Logger.Debug("{{ service.Name }}.NewWithAppDeps()", "config", cfg)
+    serviceDeps.LMT.Logger.Debug("{{ service.Name }}.NewWithAppDeps()", "config", cfg)
 
-    appDeps.Logger = serviceDeps.Logger
-
-    application, appErr := app.NewApp(appDeps)
+    application, appErr := app.NewApp(serviceDeps.LMT, appDeps)
     if appErr != nil {
         return nil, appErr
     }
@@ -95,15 +93,22 @@ func NewWithAppDeps(serviceDeps Deps, appDeps app.Deps) (ServiceStarter, error) 
     return handlers{config: cfg, app: *application, deps: serviceDeps}, nil
 }
 
-func DepsFromConf(conf Config) Deps {
-    return Deps {
-        Logger: {{ service.Logger.Model.Package() }}.NewFromConfig(conf.Logger),
-    }
+func DepsFromConf(conf Config) (*Deps, error) {
+	lmt, err := {{ service.Tele.Model.Package() }}.NewFromConfig(conf.Tele, "{{ service.Name }}", "path/to/service")
+	if err != nil {
+		return nil, err
+	}
+
+	lmt.Logger.Info("DepsFromConf(): Tele initialized", "global", conf.Tele.RegisterGlobal, "exporter", conf.Tele.ExporterType)
+
+	return &Deps{
+		LMT:    *lmt,
+	}, nil
 }
 
 
 func (h handlers) Start() error {
-    h.deps.Logger.Info("Start()", "config", h.config)
+    h.deps.LMT.Logger.Info("Start()", "config", h.config)
 	{% if service.KafkaConsumers %}
     h.app.RunConsumers()
     {% end %}
