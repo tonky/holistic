@@ -7,7 +7,6 @@ import (
 	"time"
 	"tonky/holistic/domain/food"
 
-	// domain "tonky/holistic/domain/shipping"
 	"tonky/holistic/infra/kafkaConsumer"
 	"tonky/holistic/infra/kafkaProducer"
 	"tonky/holistic/services/shipping"

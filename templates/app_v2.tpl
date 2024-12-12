@@ -3,13 +3,13 @@
 package {{ service.Name }}
 
 import (
+	"context"
 	"{{ service.Tele.Interface.AbsPath() }}"
 	{% if service.KafkaProducers %}
 	"{{ modulePath }}/infra/kafkaProducer"
 	{% end %}
 	{% if service.KafkaConsumers %}
 	"{{ modulePath }}/infra/kafkaConsumer"
-	"context"
 	{% end %}
 	{% for c in service.Clients %}
 	"{{ modulePath }}/clients/{{ c.Name }}"
@@ -104,20 +104,3 @@ func (a App) RunConsumers() {
 	{% end %}
 }
 {% end %}
-
-/*
-func MustDepsFromEnv() Deps {
-	l := {{ service.Logger.Model.Package() }}.Default().With("app", "{{ service.Name }}")
-
-    l.Debug("MustDepsFromenv()")
-
-	cfg := MustEnvConfig()
-
-	deps, err := DepsFromConf(cfg)
-	if err != nil {
-    	l.Error("DepsFromConf error", "config", cfg, "err", err)
-	}
-
-	return deps
-}
-*/
