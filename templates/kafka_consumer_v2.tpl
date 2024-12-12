@@ -21,7 +21,7 @@ type {{ topic.InterfaceName() }} interface {
 
 type {{ topic.StructName() }}Consumer struct {
 	lmt tele.Otel
-	client IConsumer
+	client kafka.IConsumer
 }
 
 func New{{ topic.StructName() }}Consumer(lmt tele.Otel, config kafka.Config) (*{{ topic.StructName() }}Consumer, error) {
@@ -29,7 +29,7 @@ func New{{ topic.StructName() }}Consumer(lmt tele.Otel, config kafka.Config) (*{
 	
 	lmt.Logger.Info("New consumer")
 
-	client := NewConsumer(config, "{{ topic.TopicName }}")
+	client := kafka.NewConsumer(config, "{{ topic.TopicName }}")
 
 	return &{{ topic.StructName() }}Consumer {
 		lmt: lmt,

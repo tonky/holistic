@@ -1,4 +1,4 @@
-package kafkaProducer
+package kafka
 
 import (
 	"context"
@@ -6,7 +6,6 @@ import (
 	"log"
 	"log/slog"
 
-	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/slogLogger"
 
@@ -19,12 +18,12 @@ type IProducer interface {
 }
 
 type Producer struct {
-	config kafkaInfra.Config
+	config Config
 	topic  string
 	logger logger.ILogger
 }
 
-func NewProducer(config kafkaInfra.Config, topic string) Producer {
+func NewProducer(config Config, topic string) Producer {
 	return Producer{
 		config: config,
 		topic:  topic,

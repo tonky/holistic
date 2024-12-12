@@ -22,11 +22,11 @@ type {{ topic.InterfaceName() }} interface {
 
 type {{ topic.StructName() }}Producer struct {
     lmt tele.Otel
-	client IProducer
+	client kafka.IProducer
 }
 
 func New{{ topic.StructName() }}Producer(lmt tele.Otel, config kafka.Config) (*{{ topic.StructName() }}Producer, error) {
-	client := NewProducer(config, "{{ topic.TopicName }}")
+	client := kafka.NewProducer(config, "{{ topic.TopicName }}")
 
 	return &{{ topic.StructName() }}Producer {
 		lmt: lmt,

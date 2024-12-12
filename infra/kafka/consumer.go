@@ -1,9 +1,8 @@
-package kafkaConsumer
+package kafka
 
 import (
 	"context"
 
-	kafkaInfra "tonky/holistic/infra/kafka"
 	"tonky/holistic/infra/logger"
 	"tonky/holistic/infra/slogLogger"
 
@@ -17,12 +16,12 @@ type IConsumer interface {
 }
 
 type Consumer struct {
-	config kafkaInfra.Config
+	config Config
 	topic  string
 	logger logger.ILogger
 }
 
-func NewConsumer(config kafkaInfra.Config, topic string) Consumer {
+func NewConsumer(config Config, topic string) Consumer {
 	return Consumer{
 		config: config,
 		topic:  topic,
